@@ -115,11 +115,11 @@ PY
 cython_one "$RT/src/main/python/java" chaquopy.pyx
 cython_one "$RT/src/main/python" chaquopy_java.pyx
 NDK=$ANDROID_HOME/ndk/$NDK_VERSION   # installed by step 1 (android-env.sh)
-cmake -S "$RT" -B "$WORK/runtime/build" -DCMAKE_BUILD_TYPE=Release \
+cmake -S "$RT" -B "$WORK/runtime/build" -DCMAKE_BUILD_TYPE=Release -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
   -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" -DANDROID_ABI=$ABI \
   -DANDROID_NATIVE_API_LEVEL=24 -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON \
   -DCHAQUOPY_SRC_DIR="$CY" -DCHAQUOPY_PYTHON_VERSION="$PY" -DCHAQUOPY_PY_SUFFIX=.so \
-  -DCHAQUOPY_INCLUDE_PYTHON="$PREFIX/include" -DCHAQUOPY_LIB_DIRS="$PREFIX/lib" >/dev/null
+  -DCHAQUOPY_INCLUDE_PYTHON="$PREFIX/include" -DCHAQUOPY_LIB_DIRS="$PREFIX/lib"
 cmake --build "$WORK/runtime/build" -j "$(nproc)"
 for name in chaquopy libchaquopy_java; do
   R=runtime/$name/$CHAQUOPY
