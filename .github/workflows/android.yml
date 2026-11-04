@@ -5,6 +5,13 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      test_user:
+        description: "Throwaway test account username (signed-in smoke test)"
+        required: false
+      test_pass:
+        description: "Its password"
+        required: false
 
 concurrency:
   group: android-${{ github.ref }}
@@ -78,7 +85,13 @@ jobs:
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Mask test account
+        if: ${{ inputs.test_pass != '' }}
+        run: echo "::add-mask::${{ inputs.test_pass }}"
       - name: Emulator smoke test
+        env:
+          BJ_USER: ${{ inputs.test_user }}
+          BJ_PASS: ${{ inputs.test_pass }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
