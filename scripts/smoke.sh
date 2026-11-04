@@ -60,7 +60,9 @@ back() { adb shell input keyevent 4; sleep 2; }
 focus() { adb shell dumpsys window | grep -E "mCurrentFocus" | head -1; }
 type_text() { adb shell "input text '$(echo "$1" | sed "s/ /%s/g")'"; sleep 1; }
 
-adb shell am start -W -n app.benchjot/.MainActivity
+# Start it the way the launcher icon does (MAIN/LAUNCHER), so the task's root intent matches the
+# relaunch after process death below; a bare -n start makes that relaunch stack a fresh activity on top.
+adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n app.benchjot/.MainActivity
 sleep 8; alive; shot 1-landing
 # The landing's example note is read-only: shown, with no text field on screen.
 landing="$(dump)"
@@ -133,7 +135,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "New note"; waitfor "Experiment note" 20; type_text "Filed note"; sleep 3
   adb shell input keyevent KEYCODE_HOME; sleep 2; adb shell am kill app.benchjot; sleep 2
   adb shell pidof app.benchjot >/dev/null && echo "process still alive after am kill" || echo "process killed while in Recents"
-  adb shell monkey -p app.benchjot -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+  adb shell monkey -p app.benchjot -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 # = tapping the icon / the Recents card
   waitfor "Preview" 60; waitfor "Filed note" 20; alive; shot 11b-restored
   to_bottom; tap "Delete note"; waitfor "OK" 10; tap "OK"
   waitfor "Rename" 20; waitfor "Smoke project" 10; alive; shot 11c-deleted-in-project
