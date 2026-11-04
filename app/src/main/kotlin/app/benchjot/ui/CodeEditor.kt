@@ -99,21 +99,39 @@ class CodeState(initial: String) {
     fun undo() { history.removeLastOrNull()?.let { field = it } }
 }
 
-private class Highlighter(private val language: String, private val tones: Map<TokenKind, SpanStyle>, private val errorLine: Int?, private val errorBg: Color) : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        val code = text.text
-        val b = AnnotatedString.Builder(code)
-        if (errorLine != null && errorLine >= 1) {
-            var start = 0
-            repeat(errorLine - 1) { start = code.indexOf('\n', start).let { if (it < 0) code.length else it + 1 } }
-            if (start < code.length) {
-                val end = code.indexOf('\n', start).let { if (it < 0) code.length else it }
-                b.addStyle(SpanStyle(background = errorBg), start, end)
-            }
+/** Code with its syntax colours (and the failed line's background): the editor's and static code's one highlighter. */
+private fun highlighted(code: String, language: String, tones: Map<TokenKind, SpanStyle>, errorLine: Int? = null, errorBg: Color = Color.Transparent): AnnotatedString {
+    val b = AnnotatedString.Builder(code)
+    if (errorLine != null && errorLine >= 1) {
+        var start = 0
+        repeat(errorLine - 1) { start = code.indexOf('\n', start).let { if (it < 0) code.length else it + 1 } }
+        if (start < code.length) {
+            val end = code.indexOf('\n', start).let { if (it < 0) code.length else it }
+            b.addStyle(SpanStyle(background = errorBg), start, end)
         }
-        for (tok in highlight(code, language)) tones[tok.kind]?.let { b.addStyle(it, tok.start, tok.end) }
-        return TransformedText(b.toAnnotatedString(), OffsetMapping.Identity)
     }
+    for (tok in highlight(code, language)) tones[tok.kind]?.let { b.addStyle(it, tok.start, tok.end) }
+    return b.toAnnotatedString()
+}
+
+/** Syntax colours from the theme (follow light/dark). */
+@Composable
+private fun rememberCodeTones(): Map<TokenKind, SpanStyle> {
+    val tk = t
+    return remember(tk) {
+        mapOf(
+            TokenKind.Keyword to SpanStyle(color = tk.hlKeyword, fontWeight = FontWeight.Medium),
+            TokenKind.Str to SpanStyle(color = tk.hlString),
+            TokenKind.Number to SpanStyle(color = tk.hlNumber),
+            TokenKind.Comment to SpanStyle(color = tk.hlComment),
+            TokenKind.Type to SpanStyle(color = tk.hlType),
+        )
+    }
+}
+
+private class Highlighter(private val language: String, private val tones: Map<TokenKind, SpanStyle>, private val errorLine: Int?, private val errorBg: Color) : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText =
+        TransformedText(highlighted(text.text, language, tones, errorLine, errorBg), OffsetMapping.Identity)
 
     override fun equals(other: Any?) = other is Highlighter && other.language == language && other.errorLine == errorLine && other.tones == tones
     override fun hashCode() = language.hashCode() * 31 + (errorLine ?: 0)
@@ -123,15 +141,7 @@ private class Highlighter(private val language: String, private val tones: Map<T
 fun CodeEditor(state: CodeState, language: String, label: String, errorLine: Int?, onChange: () -> Unit) {
     val keys = LocalCodeKeys.current
     val tk = t
-    val tones = remember(tk) {
-        mapOf(
-            TokenKind.Keyword to SpanStyle(color = tk.hlKeyword, fontWeight = FontWeight.Medium),
-            TokenKind.Str to SpanStyle(color = tk.hlString),
-            TokenKind.Number to SpanStyle(color = tk.hlNumber),
-            TokenKind.Comment to SpanStyle(color = tk.hlComment),
-            TokenKind.Type to SpanStyle(color = tk.hlType),
-        )
-    }
+    val tones = rememberCodeTones()
     val transform = remember(language, errorLine, tones) { Highlighter(language, tones, errorLine, tk.fg.copy(alpha = 0.07f)) }
     val indent = languageConfig(language).indent
     val target = remember(language, state) { CodeKeysTarget(language, { s -> state.insert(if (s == "Tab") indent else s); onChange() }, { state.undo(); onChange() }) }
@@ -151,6 +161,17 @@ fun CodeEditor(state: CodeState, language: String, label: String, errorLine: Int
                 inner()
             }
         },
+    )
+}
+
+/** Read-only code in the editor's type, colours and padding (the landing preview). Not editable or focusable. */
+@Composable
+fun StaticCode(code: String, language: String, label: String) {
+    val tones = rememberCodeTones()
+    Text(
+        remember(code, language, tones) { highlighted(code, language, tones) },
+        Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(vertical = 8.dp).semantics { contentDescription = label },
+        style = Type.code, color = t.fg,
     )
 }
 

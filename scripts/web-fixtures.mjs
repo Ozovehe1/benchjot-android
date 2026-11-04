@@ -48,4 +48,7 @@ const detect = [
   "x <- c(1, 2, 3)", "echo hello world", "name: x\nversion: 2", "# Title\n\nSome text", "hello", "def f(x):\n    return x",
 ];
 write("detect.json", detect.map((code) => ({ code, language: detectLanguage(code) })));
+// The signed-out landing's example note (title, body, one code block with its saved run)
+const sample = await load("src/lib/sample-note.ts");
+write("sample_note.json", { entry: sample.SAMPLE_ENTRY, snippets: sample.SAMPLE_SNIPPETS });
 console.log(`web fixtures written to ${out}`);
