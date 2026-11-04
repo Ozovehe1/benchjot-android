@@ -17,14 +17,18 @@ dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb shell ca
 find() {
   python3 - "$1" "${2:-first}" "$(dump)" <<'PY'
 import re, sys
+import xml.etree.ElementTree as ET
 want, which, xml = sys.argv[1], sys.argv[2], sys.argv[3]
 hits = []
-for m in re.finditer(r'<node [^>]*>', xml):
-    n = m.group(0)
-    t = re.search(r' text="([^"]*)"', n).group(1); d = re.search(r' content-desc="([^"]*)"', n).group(1)
-    t = t.replace("&#10;", "\n")
+# A real XML parse: attribute values may hold '>' or quotes (the Python symbol row has '"').
+try:
+    nodes = ET.fromstring(xml[xml.index("<hierarchy"):]).iter("node")
+except (ValueError, ET.ParseError):
+    nodes = []
+for n in nodes:
+    t, d = n.get("text", ""), n.get("content-desc", "")
     if want in (t, d) or (want.startswith("^") and t.startswith(want[1:])):
-        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        x1, y1, x2, y2 = map(int, re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', n.get("bounds", "")).groups())
         hits.append(f"{(x1 + x2) // 2} {(y1 + y2) // 2}")
 if hits: print(hits[0] if which == "first" else hits[-1])
 PY
