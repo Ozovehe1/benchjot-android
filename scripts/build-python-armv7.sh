@@ -27,7 +27,7 @@ cd "$(dirname "$0")/.."
 ROOT=$PWD
 ABI=armeabi-v7a
 HOST=arm-linux-androideabi
-CHAQUOPY=$(grep '^chaquopy = ' gradle/libs.versions.toml | cut -d'"' -f2)
+CHAQUOPY=$(grep -m1 '^chaquopy = "' gradle/libs.versions.toml | cut -d'"' -f2)
 PY=$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | cut -d'"' -f2)
 OUT=${PY_ARMV7_OUT:-$ROOT/build/python-armv7}
 WORK=${PY_ARMV7_WORK:-/tmp/py-armv7}
