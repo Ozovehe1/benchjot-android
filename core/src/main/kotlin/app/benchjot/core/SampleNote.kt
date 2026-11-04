@@ -9,7 +9,8 @@ const val SAMPLE_NOTES = "Lower dropout should help on the small set. Mean accur
 private const val SAMPLE_CODE = """acc = {0.1: [91.8, 92.4, 92.1],
        0.3: [90.9, 90.7, 91.1]}
 for p, r in acc.items():
-    print(p, round(sum(r) / len(r), 1))"""
+    mean = sum(r) / len(r)
+    print(p, round(mean, 1))"""
 
 val SAMPLE_SNIPPET = Snippet(
     id = "sample-dropout",
