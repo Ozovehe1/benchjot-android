@@ -104,6 +104,7 @@ jobs:
       - name: Web parity (fixtures, transpiler and Ruff match the web app's current code)
         run: |
           git clone --depth 1 https://github.com/Ozovehe1/benchjot.git /tmp/web
+          (cd /tmp/web && npm ci --ignore-scripts --no-audit --no-fund --silent) # the web modules import their own deps (zod)
           node --experimental-strip-types scripts/web-fixtures.mjs /tmp/web
           node --experimental-strip-types scripts/web-engines.mjs /tmp/web
           git status --short
