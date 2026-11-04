@@ -7,3 +7,6 @@ local.properties
 captures/
 *.keystore
 !debug-ci.keystore
+# Ruff binaries: fetched by scripts/fetch-ruff.sh from scripts/ruff.lock
+app/src/main/jniLibs/*/libruff.so
+node_modules/

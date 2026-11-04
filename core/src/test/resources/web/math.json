@@ -1,0 +1,140 @@
+[
+ {
+  "md": "Energy $E = mc^2$ here.",
+  "pieces": [
+   {
+    "tex": "E = mc^2",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "$$\n\\int_0^1 x\\,dx\n$$",
+  "pieces": [
+   {
+    "tex": "\\int_0^1 x\\,dx",
+    "display": true
+   }
+  ]
+ },
+ {
+  "md": "Price is $5 and $10 total.",
+  "pieces": [
+   {
+    "tex": "5 and ",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "Escaped \\$5 and $x$.",
+  "pieces": [
+   {
+    "tex": "x",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "`$not math$` but $y$",
+  "pieces": [
+   {
+    "tex": "y",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "```\n$inside code$\n```\n\nafter $z$",
+  "pieces": [
+   {
+    "tex": "z",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "Two $$a+b$$ dollars inline",
+  "pieces": [
+   {
+    "tex": "a+b",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "Multi $a\nb$ line",
+  "pieces": [
+   {
+    "tex": "a\nb",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "Space $ x $ trimmed",
+  "pieces": [
+   {
+    "tex": "x",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "Para one $a$\n\nPara two $b$",
+  "pieces": [
+   {
+    "tex": "a",
+    "display": false
+   },
+   {
+    "tex": "b",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "- item $i$\n- other",
+  "pieces": [
+   {
+    "tex": "i",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "$$\nunclosed",
+  "pieces": [
+   {
+    "tex": "unclosed",
+    "display": true
+   }
+  ]
+ },
+ {
+  "md": "No math at all",
+  "pieces": []
+ },
+ {
+  "md": "$$ x $$",
+  "pieces": [
+   {
+    "tex": "x",
+    "display": false
+   }
+  ]
+ },
+ {
+  "md": "Text\n$$\ny\n$$\nmore $w$",
+  "pieces": [
+   {
+    "tex": "y",
+    "display": true
+   },
+   {
+    "tex": "w",
+    "display": false
+   }
+  ]
+ }
+]

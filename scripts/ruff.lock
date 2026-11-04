@@ -1,0 +1,6 @@
+# Ruff for the on-device lint/autofix: the version the web's @astral-sh/ruff-wasm-web
+# is (checked by RuffTest against the web fixture), and the sha256 of each
+# official static binary from https://github.com/astral-sh/ruff/releases.
+version=0.17.3
+aarch64=650d5991fea0baf8a5ee17672a3b20c45ac238ac85fa09077d66ef0cec31cdcf
+x86_64=85e76bbb60e708a22624b31efb227e8bdaa6978177b93c146d352de4caf37ba1
