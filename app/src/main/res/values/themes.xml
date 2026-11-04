@@ -1,0 +1,8 @@
+<resources>
+    <!-- Compose draws everything; this only sets the first frame before it does. Light: ash. -->
+    <style name="Theme.Benchjot" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/ash</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+</resources>

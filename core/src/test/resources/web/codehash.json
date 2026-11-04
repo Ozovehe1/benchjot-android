@@ -1,0 +1,22 @@
+[
+  {
+    "code": "",
+    "hash": "bdcb81aee8d83"
+  },
+  {
+    "code": "print(1)",
+    "hash": "8b9dac4df1a0c"
+  },
+  {
+    "code": "print(2)",
+    "hash": "24a813512fc0"
+  },
+  {
+    "code": "héllo 🌍\nworld",
+    "hash": "12bb98da141b98"
+  },
+  {
+    "code": "x = 1\nfor i in range(3):\n    print(i)\n",
+    "hash": "2b0bcfdc99274"
+  }
+]

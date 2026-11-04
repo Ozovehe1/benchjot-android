@@ -1,0 +1,58 @@
+[
+  {
+    "code": "import numpy as np\nprint(np.zeros(3))",
+    "language": "python"
+  },
+  {
+    "code": "const x = 1;\nconsole.log(x)",
+    "language": "javascript"
+  },
+  {
+    "code": "interface A { b: string }",
+    "language": "typescript"
+  },
+  {
+    "code": "#include <stdio.h>\nint main(){}",
+    "language": "c"
+  },
+  {
+    "code": "#include <iostream>\nint main(){ std::cout << 1; }",
+    "language": "cpp"
+  },
+  {
+    "code": "package main\nfunc main() {}",
+    "language": "go"
+  },
+  {
+    "code": "{\"a\": [1, 2]}",
+    "language": "json"
+  },
+  {
+    "code": "SELECT a FROM t WHERE b = 1",
+    "language": "sql"
+  },
+  {
+    "code": "x <- c(1, 2, 3)",
+    "language": "r"
+  },
+  {
+    "code": "echo hello world",
+    "language": "bash"
+  },
+  {
+    "code": "name: x\nversion: 2",
+    "language": "yaml"
+  },
+  {
+    "code": "# Title\n\nSome text",
+    "language": "markdown"
+  },
+  {
+    "code": "hello",
+    "language": null
+  },
+  {
+    "code": "def f(x):\n    return x",
+    "language": "python"
+  }
+]

@@ -1,0 +1,69 @@
+<!doctype html>
+<meta charset="utf-8">
+<!--
+  The on-device code runner. The app loads this page headless with the web app as
+  its base URL, so the workers are the web's own /workers/python.js (Pyodide) and
+  /workers/js.js: one runtime and one protocol for both apps. Kotlin (DeviceRunner)
+  owns the 30 s limit and stopping; this page only starts and kills workers.
+-->
+<script>
+  "use strict";
+  const live = new Map(); // run id -> { w, lang, end }
+  let py = null; // the Python worker stays warm between runs, as on the web
+  let sucrase = null;
+  const send = (o) => BJ.post(JSON.stringify(o));
+
+  async function toJs(lang, code) {
+    if (lang !== "typescript") return code;
+    sucrase = sucrase || import("https://esm.sh/sucrase@3.35.0?bundle");
+    const { transform } = await sucrase;
+    return transform(code, { transforms: ["typescript"], disableESTransforms: true, keepUnusedImports: true }).code;
+  }
+
+  function worker(lang) {
+    if (lang === "python") return (py = py || new Worker("/workers/python.js"));
+    return new Worker("/workers/js.js");
+  }
+
+  window.bjRun = async (id, lang, code) => {
+    let source;
+    try {
+      source = await toJs(lang, code);
+    } catch (e) {
+      const msg = String((e && e.message) || e);
+      const m = /\((\d+):(\d+)\)\s*$/.exec(msg);
+      send({ id, type: "syntax", text: msg.replace(/\s*\(\d+:\d+\)\s*$/, ""), line: m ? +m[1] : 1, column: m ? +m[2] : 1 });
+      return;
+    }
+    const w = worker(lang);
+    const end = () => {
+      w.removeEventListener("message", onMessage);
+      live.delete(id);
+      if (lang !== "python") w.terminate();
+    };
+    function onMessage({ data }) {
+      if (data.id !== id) return;
+      send(data);
+      if (data.type === "done" || data.type === "error") end();
+    }
+    live.set(id, { w, lang, end });
+    w.addEventListener("message", onMessage);
+    w.addEventListener("error", (e) => {
+      if (lang === "python") py = null;
+      send({ id, type: "error", text: e.message || "The runner couldn't start. Check your connection: Python and JavaScript load from the web the first time." });
+      end();
+    }, { once: true });
+    w.postMessage({ id, code: source });
+  };
+
+  // Stopping Python means throwing its worker away; the next run loads it again (from cache).
+  window.bjKill = (id) => {
+    const r = live.get(id);
+    if (!r) return;
+    r.w.terminate();
+    if (r.lang === "python") py = null;
+    r.end();
+  };
+
+  send({ type: "ready" });
+</script>

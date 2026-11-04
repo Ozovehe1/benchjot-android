@@ -1,0 +1,52 @@
+{
+  "brand": {
+    "charcoal": "#161616",
+    "ash": "#e8e6e3"
+  },
+  "mark": {
+    "viewBox": 64,
+    "radius": 14,
+    "stroke": 4,
+    "paths": [
+      "M13 15H51V55H13Z",
+      "M22 9V19M32 9V19M42 9V19",
+      "M21 30L27 36L21 42"
+    ],
+    "cursor": {
+      "x": 31,
+      "y": 39,
+      "width": 10,
+      "height": 4
+    }
+  },
+  "dark": {
+    "bg": "#161616",
+    "fg": "#e8e6e3",
+    "muted": "#8a8885",
+    "faint": "#6f6d6a",
+    "line": "#2a2a2a",
+    "tint": "#1d1d1d",
+    "ok": "#e8e6e3",
+    "fail": "#b0625a",
+    "hl-keyword": "#d9d7d4",
+    "hl-string": "#a3aeb1",
+    "hl-number": "#c2c0bc",
+    "hl-comment": "#6f6d6a",
+    "hl-type": "#b3b1ad"
+  },
+  "light": {
+    "bg": "#e8e6e3",
+    "fg": "#161616",
+    "muted": "#5c5a57",
+    "faint": "#7a7874",
+    "line": "#d0cecb",
+    "tint": "#dedcd9",
+    "ok": "#8a8885",
+    "fail": "#9a4d45",
+    "hl-keyword": "#161616",
+    "hl-string": "#4b585c",
+    "hl-number": "#3f3d3a",
+    "hl-comment": "#7a7874",
+    "hl-type": "#34322f"
+  }
+}
