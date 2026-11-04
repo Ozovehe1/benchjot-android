@@ -35,43 +35,50 @@ jobs:
         with:
           node-version: 22
 
+      # Chaquopy builds the app's Python with the same Python version it embeds.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Web parity (fixtures match the web app's current rules)
+      - name: No WebView in the sources
+        run: bash scripts/check-no-webview.sh
+
+      - name: Web parity (fixtures, transpiler and Ruff match the web app's current code)
         run: |
           git clone --depth 1 https://github.com/Ozovehe1/benchjot.git /tmp/web
           node --experimental-strip-types scripts/web-fixtures.mjs /tmp/web
-          git diff --exit-code -- core/src/test/resources/web || { echo "::error::The web app's rules changed. Run scripts/web-fixtures.mjs, update core to match, commit."; exit 1; }
+          node --experimental-strip-types scripts/web-engines.mjs /tmp/web
+          git status --short
+          git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
 
-      - name: Unit tests
-        run: ./gradlew --no-daemon :core:test :app:testDebugUnitTest
-
-      - name: Build APK
-        run: ./gradlew --no-daemon :app:assembleRelease
-
-      - name: On-device runner test (runner.html against the live web workers, in Chromium)
+      - name: Ruff binaries (pinned in scripts/ruff.lock)
         run: |
-          npm install --no-save --no-package-lock playwright@1.48.2
-          npx playwright install --with-deps chromium
-          node scripts/runner-test.mjs
+          bash scripts/fetch-ruff.sh host
+          bash scripts/fetch-ruff.sh app
 
-      - name: Upload APK (workflow artifact)
-        uses: actions/upload-artifact@v4
+      - name: Unit tests (core rules, JS engine, Ruff vs the web's WASM)
+        run: ./gradlew --no-daemon :core:test :engine:test :app:testDebugUnitTest
+
+      - name: Build APKs (release, plus debug + instrumented tests for the emulator)
+        run: ./gradlew --no-daemon :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest
+
+      - name: No WebView in the APK
+        run: bash scripts/check-no-webview.sh app/build/outputs/apk/release/app-release.apk
+
+      - name: APK size
+        run: |
+          ls -l app/build/outputs/apk/release/app-release.apk | awk '{printf "release APK: %.1f MB\n", $5/1048576}' | tee -a "$GITHUB_STEP_SUMMARY"
+          unzip -l app/build/outputs/apk/release/app-release.apk | sort -k1 -n -r | head -15
+
+      - uses: actions/upload-artifact@v4
         with:
           name: benchjot-apk
-          path: app/build/outputs/apk/release/app-release.apk
-
-      - name: Publish release
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          TAG="build-${GITHUB_RUN_NUMBER}"
-          cp app/build/outputs/apk/release/app-release.apk benchjot.apk
-          gh release create "$TAG" benchjot.apk \
-            --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
-            --notes "Built from ${GITHUB_SHA::7}. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
-            --latest
+          path: |
+            app/build/outputs/apk/release/app-release.apk
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
 
   smoke:
     needs: build
@@ -81,6 +88,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: benchjot-apk
+          path: apks
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -88,7 +96,7 @@ jobs:
       - name: Mask test account
         if: ${{ inputs.test_pass != '' }}
         run: echo "::add-mask::${{ inputs.test_pass }}"
-      - name: Emulator smoke test
+      - name: Instrumented engine tests + emulator smoke test
         env:
           BJ_USER: ${{ inputs.test_user }}
           BJ_PASS: ${{ inputs.test_pass }}
@@ -99,9 +107,31 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
-          script: bash scripts/smoke.sh app-release.apk
+          script: bash scripts/instrumented.sh apks && bash scripts/smoke.sh apks/release/app-release.apk
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: smoke-screenshots
           path: smoke/
+
+  release:
+    # Only an APK that passed the emulator checks is published.
+    needs: [build, smoke]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: benchjot-apk
+          path: apks
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${GITHUB_RUN_NUMBER}"
+          cp apks/release/app-release.apk benchjot.apk
+          gh release create "$TAG" benchjot.apk \
+            --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
+            --notes "Built from ${GITHUB_SHA::7}. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
+            --latest

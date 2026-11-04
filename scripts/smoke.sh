@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Emulator smoke test (CI): install the APK, open it signed out, and walk the
-# landing -> sign in -> create account screens by their accessible names,
-# saving a screenshot of each to smoke/. Fails if the app crashes.
+# landing -> sign in (Continue with Google opens Credential Manager) -> create
+# account screens by their accessible names, saving a screenshot of each to
+# smoke/. With a throwaway account (BJ_USER/BJ_PASS): sign in, write a note,
+# run Python/JS/TS on the device, Stop a runaway run, math preview, the Map.
+# Fails if the app crashes.
 set -euo pipefail
 APK=${1:-benchjot.apk}
 mkdir -p smoke
@@ -39,11 +42,26 @@ tap() {
 alive() { adb shell pidof app.benchjot >/dev/null || { echo "app is not running (crash?)"; adb logcat -d | grep -A30 "FATAL EXCEPTION" | tail -60; exit 1; }; }
 clear_field() { adb shell input keyevent KEYCODE_MOVE_END; adb shell input keyevent $(printf 'KEYCODE_DEL %.0s' $(seq 1 40)); }
 to_top() { for _ in 1 2 3 4; do adb shell input swipe 160 250 160 900 150; done; sleep 1; }
+to_bottom() { for _ in 1 2 3 4; do adb shell input swipe 160 1400 160 400 150; done; sleep 1; }
+back() { adb shell input keyevent 4; sleep 2; }
+focus() { adb shell dumpsys window | grep -E "mCurrentFocus" | head -1; }
 type_text() { adb shell "input text '$(echo "$1" | sed "s/ /%s/g")'"; sleep 1; }
 
 adb shell am start -W -n app.benchjot/.MainActivity
 sleep 8; alive; shot 1-landing
 tap "Sign in"; alive; shot 2-sign-in
+# Continue with Google: the button must hand over to Android's Credential Manager.
+# (A real Google account can't be used by automation, so the sign-in itself isn't completed here.)
+adb logcat -c
+tap "Continue with Google"; sleep 6; shot 2b-google
+{ echo "focus after tap: $(focus)"; adb logcat -d | grep -iE "CredentialManager|credentials|GetSignInWithGoogle|GoogleId|identity" | grep -v "^--" | head -40; } > smoke/google.txt || true
+cat smoke/google.txt
+if focus | grep -q "app.benchjot/"; then
+  echo "google: no system sheet in front; app message: $(dump | grep -o 'text="[^"]*"' | grep -iE 'google|credential|account' | head -3 | tr '\n' ' ')"
+else
+  echo "google: Credential Manager UI in front ($(focus))"; back
+fi
+alive; waitfor "Create an account" 10
 tap "Create an account"; alive; shot 3-create-account
 tap "Email"; type_text "not-an-email"; adb shell input keyevent 4; sleep 1; tap "Create account" last; alive
 waitfor "Password needs at least 8 characters." 5; shot 4-validation
@@ -61,15 +79,30 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   waitfor "New note" 30; alive; shot 6-home
   tap "New note"; waitfor "Experiment note" 20
   type_text "Smoke test note"; sleep 1
-  tap "Experiment note"; type_text "Hypothesis: it runs."; adb shell input keyevent 4; sleep 2
+  tap "Experiment note"; type_text 'Hypothesis: it runs. $E=mc^2$'; adb shell input keyevent 4; sleep 2
   tap "Add code"; waitfor "Code 1" 20
   tap "Code 1"; type_text "print(6*7)"; adb shell input keyevent 4; sleep 2
   waitfor "Python" 10; shot 7-note
   tap "Run"; waitfor "^42" 120; alive; shot 8-ran
+  # JavaScript and TypeScript on the device (QuickJS + the web's own sucrase transpile)
+  to_bottom; tap "Add code"; waitfor "Code 2" 20; to_bottom
+  tap "Code 2"; type_text "console.log(6*7+1)"; back
+  to_bottom; waitfor "JavaScript" 10; tap "Run" last; waitfor "^43" 60; alive; shot 8b-js
+  to_bottom; tap "Add code"; waitfor "Code 3" 20; to_bottom
+  tap "Code 3"; type_text "const n: number = 44; console.log(n)"; back
+  to_bottom; waitfor "TypeScript" 10; tap "Run" last; waitfor "^44" 60; alive; shot 8c-ts
+  # Stop really stops a runaway Python run (its process is killed)
+  to_bottom; tap "Add code"; waitfor "Code 4" 20; to_bottom
+  tap "Code 4"; type_text "import os"; adb shell input keyevent 66; type_text "while True: pass"; back
+  to_bottom; tap "Run" last; waitfor "Stop" 30; sleep 2; shot 8d-running; tap "Stop"; waitfor "^Stopped" 15; alive; shot 8e-stopped
   to_top; waitfor "Saved" 10
-  tap "Preview"; sleep 2; shot 9-preview
+  tap "Preview"; waitfor "E=mc^2" 10; shot 9-preview-math
   tap "Successful"; sleep 2
   tap "All notes"; waitfor "Smoke test note" 20; shot 10-list
+  # The map: one dot for the one note, legend, tap the dot to open it
+  tap "Map"; waitfor "Sub-note" 20; waitfor "Map of 1 notes" 20; sleep 1; shot 10b-map
+  tap "Map of 1 notes"; waitfor "Preview" 20; alive; shot 10c-map-opened
+  tap "All notes"; waitfor "Smoke test note" 20
   tap "Search"; type_text "hypothesis"; sleep 3; waitfor "Smoke test note" 10; shot 11-search
   adb shell input keyevent 4; sleep 1
   tap "Settings"; waitfor "@${BJ_USER}" 10; shot 12-settings
