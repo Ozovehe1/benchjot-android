@@ -51,7 +51,10 @@ import app.benchjot.core.resolveLink
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
-import com.mikepenz.markdown.model.markdownAnnotator
+import com.mikepenz.markdown.model.DefaultMarkdownAnnotator
+import com.mikepenz.markdown.utils.codeSpanStyle
+import com.mikepenz.markdown.utils.linkTextSpanStyle
+import androidx.compose.foundation.text.appendInlineContent
 import com.mikepenz.markdown.utils.MARKDOWN_TAG_URL
 import com.mikepenz.markdown.utils.buildMarkdownAnnotatedString
 import org.intellij.markdown.MarkdownElementTypes
@@ -97,10 +100,10 @@ fun NoteMarkdown(text: String, notes: List<NoteIndexItem>, onOpenNote: (String) 
     val color = t.fg
     // Placeholders become inline content ids ("bjmath:N") the paragraph below can size one by one.
     val annotator = remember(doc) {
-        markdownAnnotator { content, child ->
-            if (child.type != MarkdownElementTypes.IMAGE) return@markdownAnnotator false
+        DefaultMarkdownAnnotator { content, child ->
+            if (child.type != MarkdownElementTypes.IMAGE) return@DefaultMarkdownAnnotator false
             val link = child.find(MarkdownElementTypes.LINK_DESTINATION)?.getTextInNode(content)?.toString()
-            val piece = link?.let { mathPieceAt(it, doc) } ?: return@markdownAnnotator false
+            val piece = link?.let { mathPieceAt(it, doc) } ?: return@DefaultMarkdownAnnotator false
             appendInlineContent(link, piece.source)
             true
         }
