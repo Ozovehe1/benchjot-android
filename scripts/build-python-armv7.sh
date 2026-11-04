@@ -95,6 +95,10 @@ PY
 done
 mkdir -p "$SRC/maven/com/chaquo/python/target"   # where build-wheel.py looks
 rm -rf "$SRC/maven/com/chaquo/python/target/$TVER"; cp -r "$OWN" "$SRC/maven/com/chaquo/python/target/$TVER"
+# build-wheel.py links lib<name>.so to each library under its other names, and both
+# libpython3.so and libpython3.13.so map to libpython.so, so it fails on the second.
+# numpy links libpython3.13.so; the stable-ABI stub only goes into the app's copy.
+zip -q -d "$SRC/maven/com/chaquo/python/target/$TVER/target-$TVER-$ABI.zip" "jniLibs/$ABI/libpython3.so"
 endlog
 
 # 2. Chaquopy runtime ---------------------------------------------------------
