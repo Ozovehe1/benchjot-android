@@ -15,7 +15,7 @@ val runNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 1
 
 android {
     namespace = "app.benchjot"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "app.benchjot"

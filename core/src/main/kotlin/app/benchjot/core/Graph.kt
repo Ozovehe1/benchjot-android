@@ -287,7 +287,7 @@ private class QuadTree private constructor(private val px: (Int) -> Double, priv
             i = (if (bottom) 2 else 0) or (if (right) 1 else 0)
             j = (if (yp >= ym) 2 else 0) or (if (xp >= xm) 1 else 0)
         } while (i == j)
-        parent!!.children[j] = node
+        parent.children[j] = node
         parent.children[i] = leaf
     }
 
