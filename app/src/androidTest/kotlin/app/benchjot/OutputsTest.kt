@@ -135,6 +135,7 @@ class OutputsTest {
             assertTrue("${f.format}: ${head.take(16)}", head.trimStart().startsWith(sig.getValue(f.format)) || (f.format == "svg" && head.contains("<svg")))
         }
         dir.deleteRecursively()
+        Unit
     }
 }
 

@@ -329,5 +329,5 @@ fun OutputScreen(noteId: String, snippetId: String, start: Int, onBack: () -> Un
         return
     }
     val files = remember(saved) { OutputFiles.Saved(saved) }
-    OutputViewer(saved.items, index, files, snippet.filename.ifEmpty { "output" }, onBack, onHome) { index = it }
+    OutputViewer(saved.items, index, files, snippet?.filename.orEmpty().ifEmpty { "output" }, onBack, onHome) { index = it }
 }

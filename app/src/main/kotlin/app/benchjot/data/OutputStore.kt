@@ -47,7 +47,6 @@ class LocalOutputs(val manifest: Manifest, val dir: File) {
             return LocalOutputs(m, dir)
         }
     }
-    }
 }
 
 object OutputStore {

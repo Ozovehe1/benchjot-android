@@ -161,11 +161,11 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
                 Backend.saveLastRun(snippet.id, toLastRun(chunks, r, where, src, outputs = uploaded))
                 savedOutputs = uploaded; live = null; hideSaved = false
                 if (previous != null && previous.dir != uploaded?.dir) OutputStore.delete(previous)
+                if (uploaded != null) local?.dir?.deleteRecursively() // the cache holds a copy now
             } catch (e: Exception) {
                 saveError = "Output not saved: ${Accounts.message(e)}"
-                OutputStore.delete(uploaded)
+                OutputStore.delete(uploaded) // the live outputs stay on screen from their folder
             }
-            local?.dir?.deleteRecursively()
         }
     }
 
