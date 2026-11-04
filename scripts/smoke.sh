@@ -37,6 +37,7 @@ tap() {
   sleep 2
 }
 alive() { adb shell pidof app.benchjot >/dev/null || { echo "app is not running (crash?)"; adb logcat -d | grep -A30 "FATAL EXCEPTION" | tail -60; exit 1; }; }
+clear_field() { adb shell input keyevent KEYCODE_MOVE_END; adb shell input keyevent $(printf 'KEYCODE_DEL %.0s' $(seq 1 40)); }
 type_text() { adb shell "input text '$(echo "$1" | sed "s/ /%s/g")'"; sleep 1; }
 
 adb shell am start -W -n app.benchjot/.MainActivity
@@ -53,8 +54,8 @@ adb shell "cmd uimode night no" || true
 # write a note with a [[link]]-free body, run Python on the device, find it by search.
 if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "I have an account"; sleep 1
-  tap "Email or username"; type_text "$BJ_USER"
-  tap "Password"; type_text "$BJ_PASS"; adb shell input keyevent 4; sleep 1
+  tap "Email or username"; clear_field; type_text "$BJ_USER"
+  tap "Password"; clear_field; type_text "$BJ_PASS"; adb shell input keyevent 4; sleep 1
   tap "Sign in" last
   waitfor "New note" 30; alive; shot 6-home
   tap "New note"; waitfor "Experiment note" 20
