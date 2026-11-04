@@ -39,11 +39,48 @@ jobs:
           name: ruff-android
           path: app/src/main/jniLibs
 
-  build:
-    needs: ruff
+  python-armv7:
+    # Python 3.13 + numpy for 32-bit ARM phones, which Chaquopy only publishes for 64-bit
+    # (scripts/build-python-armv7.sh). Cached per Chaquopy version, Python version and script.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - id: key
+        run: echo "key=python-armv7-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-armv7.sh', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
+      - id: cache
+        uses: actions/cache@v4
+        with:
+          path: build/python-armv7
+          key: ${{ steps.key.outputs.key }}
+      - uses: actions/setup-python@v5
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-java@v4
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Build CPython, Chaquopy runtime and numpy for armeabi-v7a
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq patchelf
+          bash scripts/build-python-armv7.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-armv7
+          path: build/python-armv7
+
+  build:
+    needs: [ruff, python-armv7]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-armv7
+          path: build/python-armv7
 
       - uses: actions/setup-java@v4
         with:
@@ -83,23 +120,31 @@ jobs:
       - name: Unit tests (core rules, JS engine, Ruff vs the web's WASM)
         run: ./gradlew --no-daemon :core:test :engine:test :app:testDebugUnitTest
 
-      - name: "Build APKs (phones arm64-v8a; emulator x86_64 release, debug and instrumented tests)"
+      - name: "Build APKs (phones: universal arm64-v8a + armeabi-v7a; armeabi-v7a debug; emulator x86_64 release, debug and instrumented tests)"
         run: |
           mkdir -p apks
-          ./gradlew --no-daemon -Pabi=arm64-v8a :app:assembleRelease
-          cp app/build/outputs/apk/release/app-release.apk apks/app-release-arm64-v8a.apk
+          ./gradlew --no-daemon :app:assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk apks/app-release-universal.apk
+          ./gradlew --no-daemon -Pabi=armeabi-v7a :app:assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk apks/app-debug-armeabi-v7a.apk
           ./gradlew --no-daemon -Pabi=x86_64 :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest
           cp app/build/outputs/apk/release/app-release.apk apks/app-release-x86_64.apk
           cp app/build/outputs/apk/debug/app-debug.apk apks/app-debug-x86_64.apk
           cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk apks/
 
       - name: No WebView in the APK
-        run: bash scripts/check-no-webview.sh apks/app-release-arm64-v8a.apk
+        run: bash scripts/check-no-webview.sh apks/app-release-universal.apk
+
+      - name: Every engine is in the APKs for each ABI (Python, numpy, QuickJS, Ruff; by ELF header)
+        run: |
+          python3 scripts/check-apk-abis.py apks/app-release-universal.apk arm64-v8a armeabi-v7a
+          python3 scripts/check-apk-abis.py apks/app-debug-armeabi-v7a.apk armeabi-v7a
+          python3 scripts/check-apk-abis.py apks/app-release-x86_64.apk x86_64
 
       - name: APK size
         run: |
           for f in apks/app-release-*.apk; do ls -l "$f" | awk '{printf "%s: %.1f MB\n", $9, $5/1048576}'; done | tee -a "$GITHUB_STEP_SUMMARY"
-          unzip -l apks/app-release-arm64-v8a.apk | sort -k1 -n -r | head -12
+          unzip -l apks/app-release-universal.apk | sort -k1 -n -r | head -16
 
       - uses: actions/upload-artifact@v4
         with:
@@ -140,9 +185,40 @@ jobs:
           name: smoke-screenshots
           path: smoke/
 
+  armv7:
+    # The 32-bit ARM engines running: the armeabi-v7a debug APK on an x86_64 Android 11
+    # image, whose ARM translation (ndk_translation) runs 32-bit ARM apps; the app must
+    # install as armeabi-v7a (scripts/instrumented.sh checks) and pass the same tests.
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: benchjot-apk
+          path: apks
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Instrumented engine tests as armeabi-v7a
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: bash scripts/instrumented.sh apks/app-debug-armeabi-v7a.apk apks/app-debug-androidTest.apk armeabi-v7a
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: armv7-logs
+          path: smoke/
+
   release:
     # Only an APK that passed the emulator checks is published.
-    needs: [build, smoke]
+    needs: [build, smoke, armv7]
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -156,8 +232,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="build-${GITHUB_RUN_NUMBER}"
-          cp apks/app-release-arm64-v8a.apk benchjot.apk
+          cp apks/app-release-universal.apk benchjot.apk
           gh release create "$TAG" benchjot.apk \
             --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
-            --notes "Built from ${GITHUB_SHA::7}. For 64-bit ARM phones (arm64-v8a, nearly every phone since 2017). Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
+            --notes "Built from ${GITHUB_SHA::7}. One APK for 64-bit and 32-bit ARM phones (arm64-v8a and armeabi-v7a), Python 3.13 + numpy on both. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
             --latest

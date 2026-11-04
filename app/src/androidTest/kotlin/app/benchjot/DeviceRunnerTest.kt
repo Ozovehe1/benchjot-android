@@ -66,6 +66,17 @@ class DeviceRunnerTest {
         assertEquals("6\n", r.out)
     }
 
+    // CI runs these on x86_64 and, under the emulator's ARM translation, as armeabi-v7a:
+    // the Python that runs must be the one built for the ABI the app was installed as.
+    @Test fun python_isBuiltForTheAppsAbi() {
+        val libDir = java.io.File(context.applicationInfo.nativeLibraryDir).name // arm64, arm, x86_64
+        val multiarch = mapOf("arm64" to "aarch64-linux-android", "arm" to "arm-linux-androideabi", "x86_64" to "x86_64-linux-android")[libDir]
+        val bits = if (android.os.Process.is64Bit()) 64 else 32
+        val r = run("python", "import importlib.machinery as m, struct\nprint(m.EXTENSION_SUFFIXES[0], struct.calcsize('P') * 8)")
+        assertEquals(r.result.error?.text, RunOutcome.Ok, r.result.outcome)
+        assertEquals(".cpython-313-$multiarch.so $bits\n", r.out)
+    }
+
     @Test fun python_freshNamespaceAndNoStdin() {
         run("python", "leak = 1")
         assertEquals("False\n", run("python", "print('leak' in globals())").out)

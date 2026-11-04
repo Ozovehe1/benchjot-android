@@ -27,10 +27,10 @@ android {
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${cfg("supabaseAnonKey")}\"")
         buildConfigField("String", "WEB_URL", "\"${cfg("webUrl")}\"")
         buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"${cfg("googleServerClientId")}\"")
-        // Phones (arm64) and the CI emulator (x86_64). Python and Ruff are native, one copy per ABI.
-        // Phones are arm64-v8a, the CI emulator x86_64. Python and Ruff are native, so CI builds
-        // one APK per ABI (-Pabi=arm64-v8a / -Pabi=x86_64); a plain build carries both.
-        ndk { abiFilters += (providers.gradleProperty("abi").orNull?.split(",") ?: listOf("arm64-v8a", "x86_64")) }
+        // Python, Ruff and QuickJS are native, one copy per ABI. A plain build is the phone APK:
+        // 64-bit and 32-bit ARM in one (universal). CI also builds -Pabi=x86_64 for the emulator
+        // and -Pabi=armeabi-v7a to run the 32-bit engines under the emulator's ARM translation.
+        ndk { abiFilters += (providers.gradleProperty("abi").orNull?.split(",") ?: listOf("arm64-v8a", "armeabi-v7a")) }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -104,7 +104,11 @@ dependencies {
 chaquopy {
     defaultConfig {
         version = "3.13"
-        pip { install("numpy") }
+        pip {
+            // numpy for armeabi-v7a is built by scripts/build-python-armv7.sh (Chaquopy's index has 64-bit only).
+            options("--find-links", rootProject.file("build/python-armv7/wheels").path)
+            install("numpy")
+        }
     }
 }
 
