@@ -261,7 +261,9 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                 // Code
                 Column(Modifier.padding(top = 40.dp).semantics { contentDescription = "Code" }) {
                     snippets.value.orEmpty().forEachIndexed { i, s ->
-                        androidx.compose.runtime.key(s.id) { SnippetBlock(s, i, outcome, pro, registry) }
+                        androidx.compose.runtime.key(s.id) {
+                            SnippetBlock(s, i, outcome, pro, registry) { sid, n -> scope.launch { registry.flushAll(); nav.navigate(outputRoute(entry.id, sid, n)) } }
+                        }
                     }
                     Row(Modifier.fillMaxWidth().topLine(t.line), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                         TextBtn("Add code", { scope.launch { runCatching { Backend.createEmptySnippet(entry.id, count) }.onFailure { uploadError = Accounts.message(it) } } })

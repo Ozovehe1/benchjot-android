@@ -1,0 +1,1166 @@
+{
+  "altair-area": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-bar": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-boxplot": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-heatmap": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-histogram": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-line": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-pie": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "altair-scatter-color": [
+    {
+      "label": "Vega-Lite chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-area": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-heatmap": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-histogram": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-line": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-numpy": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-pie": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "bokeh-vbar": [
+    {
+      "label": "Bokeh chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "file": [
+    {
+      "label": "written.png",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "file",
+          "file": "0.png"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "convert",
+          "from": "0.png"
+        }
+      ]
+    }
+  ],
+  "matplotlib": [
+    {
+      "label": "Figure",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "file",
+          "file": "0.png"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "file",
+          "file": "0.svg"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "file",
+          "file": "0.pdf"
+        }
+      ]
+    }
+  ],
+  "pandas-plot": [
+    {
+      "label": "Figure",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "file",
+          "file": "0.png"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "file",
+          "file": "0.svg"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "file",
+          "file": "0.pdf"
+        }
+      ]
+    }
+  ],
+  "pil": [
+    {
+      "label": "Image",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "file",
+          "file": "0.png"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "convert",
+          "from": "0.png"
+        }
+      ]
+    }
+  ],
+  "plotly-area": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-bar": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-box": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-express": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-hbar": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-heatmap": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-histogram": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-numpy": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-pie": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-scatter": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "plotly-unsupported": [
+    {
+      "label": "Plotly chart",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "render"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "render"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "render"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "render"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "render"
+        },
+        {
+          "format": "json",
+          "label": "JSON",
+          "how": "file",
+          "file": "0.json"
+        }
+      ]
+    }
+  ],
+  "seaborn": [
+    {
+      "label": "Figure",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "file",
+          "file": "0.png"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "file",
+          "file": "0.svg"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "file",
+          "file": "0.pdf"
+        }
+      ]
+    }
+  ],
+  "sklearn-confusion": [
+    {
+      "label": "Figure",
+      "formats": [
+        {
+          "format": "png",
+          "label": "PNG",
+          "how": "file",
+          "file": "0.png"
+        },
+        {
+          "format": "jpg",
+          "label": "JPG",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "webp",
+          "label": "WebP",
+          "how": "convert",
+          "from": "0.png"
+        },
+        {
+          "format": "svg",
+          "label": "SVG",
+          "how": "file",
+          "file": "0.svg"
+        },
+        {
+          "format": "pdf",
+          "label": "PDF",
+          "how": "file",
+          "file": "0.pdf"
+        }
+      ]
+    }
+  ],
+  "table": [
+    {
+      "label": "Table · 5 × 3",
+      "formats": [
+        {
+          "format": "csv",
+          "label": "CSV",
+          "how": "file",
+          "file": "0.csv"
+        }
+      ]
+    }
+  ]
+}

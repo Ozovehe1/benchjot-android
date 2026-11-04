@@ -85,7 +85,12 @@ data class ServerRunResponse(
     val exitCode: Int? = null,
     val ms: Long = 0,
     val line: Int? = null,
+    /** Python: bj_capture's manifest and files (base64) when the run made figures, tables or charts. */
+    val outputs: ServerOutputs? = null,
 )
+
+@Serializable
+data class ServerOutputs(val manifest: Manifest, val files: Map<String, String> = emptyMap())
 
 /** Maps the /api/run answer to the same chunks and result a device run gives. */
 fun toRunResult(r: ServerRunResponse): Pair<List<Chunk>, RunResult> {
@@ -109,6 +114,8 @@ data class LastRun(
     val where: String,
     @SerialName("code_hash") val codeHash: String,
     @SerialName("ran_at") val ranAt: String,
+    /** Figures, tables and charts (Outputs.kt); null on runs without any and on older runs. */
+    val outputs: SavedOutputs? = null,
 )
 
 /** Keeps the first `max` characters and says how much was cut. */
@@ -134,7 +141,7 @@ fun codeHash(code: String): String {
 }
 
 /** Builds the stored record from a finished run. `where` is "browser" for on-device runs. */
-fun toLastRun(chunks: List<Chunk>, result: RunResult, where: String, code: String, now: java.time.Instant = java.time.Instant.now()): LastRun {
+fun toLastRun(chunks: List<Chunk>, result: RunResult, where: String, code: String, now: java.time.Instant = java.time.Instant.now(), outputs: SavedOutputs? = null): LastRun {
     fun join(s: Stream) = chunks.filter { it.stream == s }.joinToString("") { it.text }
     return LastRun(
         outcome = result.outcome,
@@ -146,6 +153,7 @@ fun toLastRun(chunks: List<Chunk>, result: RunResult, where: String, code: Strin
         where = where,
         codeHash = codeHash(code),
         ranAt = java.time.format.DateTimeFormatter.ISO_INSTANT.format(now.truncatedTo(java.time.temporal.ChronoUnit.MILLIS)),
+        outputs = outputs?.takeIf { it.items.isNotEmpty() },
     )
 }
 

@@ -1,0 +1,436 @@
+{
+ "doc": {
+  "config": {
+   "attributes": {
+    "notifications": {
+     "id": "p1340",
+     "name": "Notifications",
+     "type": "object"
+    }
+   },
+   "id": "p1339",
+   "name": "DocumentConfig",
+   "type": "object"
+  },
+  "roots": [
+   {
+    "attributes": {
+     "below": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1309",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1310",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1308",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1307",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "center": [
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1307"
+        }
+       },
+       "id": "p1311",
+       "name": "Grid",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1312"
+        },
+        "dimension": 1
+       },
+       "id": "p1316",
+       "name": "Grid",
+       "type": "object"
+      }
+     ],
+     "left": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1314",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1315",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1313",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1312",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "renderers": [
+      {
+       "attributes": {
+        "data_source": {
+         "attributes": {
+          "data": {
+           "entries": [
+            [
+             "start_angle",
+             [
+              0,
+              3.141592653589793
+             ]
+            ],
+            [
+             "end_angle",
+             [
+              3.141592653589793,
+              6.283185307179586
+             ]
+            ],
+            [
+             "fill_color",
+             [
+              "#1f77b4",
+              "#ff7f0e"
+             ]
+            ]
+           ],
+           "type": "map"
+          },
+          "selected": {
+           "attributes": {
+            "indices": [],
+            "line_indices": []
+           },
+           "id": "p1331",
+           "name": "Selection",
+           "type": "object"
+          },
+          "selection_policy": {
+           "id": "p1332",
+           "name": "UnionRenderers",
+           "type": "object"
+          }
+         },
+         "id": "p1330",
+         "name": "ColumnDataSource",
+         "type": "object"
+        },
+        "glyph": {
+         "attributes": {
+          "end_angle": {
+           "field": "end_angle",
+           "type": "field"
+          },
+          "fill_color": {
+           "field": "fill_color",
+           "type": "field"
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "radius": {
+           "type": "value",
+           "value": 1
+          },
+          "start_angle": {
+           "field": "start_angle",
+           "type": "field"
+          },
+          "x": {
+           "type": "value",
+           "value": 0
+          },
+          "y": {
+           "type": "value",
+           "value": 0
+          }
+         },
+         "id": "p1333",
+         "name": "Wedge",
+         "type": "object"
+        },
+        "muted_glyph": {
+         "attributes": {
+          "end_angle": {
+           "field": "end_angle",
+           "type": "field"
+          },
+          "fill_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "fill_color": {
+           "field": "fill_color",
+           "type": "field"
+          },
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "line_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "radius": {
+           "type": "value",
+           "value": 1
+          },
+          "start_angle": {
+           "field": "start_angle",
+           "type": "field"
+          },
+          "x": {
+           "type": "value",
+           "value": 0
+          },
+          "y": {
+           "type": "value",
+           "value": 0
+          }
+         },
+         "id": "p1335",
+         "name": "Wedge",
+         "type": "object"
+        },
+        "nonselection_glyph": {
+         "attributes": {
+          "end_angle": {
+           "field": "end_angle",
+           "type": "field"
+          },
+          "fill_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "fill_color": {
+           "field": "fill_color",
+           "type": "field"
+          },
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "line_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "radius": {
+           "type": "value",
+           "value": 1
+          },
+          "start_angle": {
+           "field": "start_angle",
+           "type": "field"
+          },
+          "x": {
+           "type": "value",
+           "value": 0
+          },
+          "y": {
+           "type": "value",
+           "value": 0
+          }
+         },
+         "id": "p1334",
+         "name": "Wedge",
+         "type": "object"
+        },
+        "view": {
+         "attributes": {
+          "filter": {
+           "id": "p1338",
+           "name": "AllIndices",
+           "type": "object"
+          }
+         },
+         "id": "p1337",
+         "name": "CDSView",
+         "type": "object"
+        }
+       },
+       "id": "p1336",
+       "name": "GlyphRenderer",
+       "type": "object"
+      }
+     ],
+     "title": {
+      "id": "p1303",
+      "name": "Title",
+      "type": "object"
+     },
+     "toolbar": {
+      "attributes": {
+       "tools": [
+        {
+         "id": "p1317",
+         "name": "PanTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "renderers": "auto"
+         },
+         "id": "p1318",
+         "name": "WheelZoomTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "overlay": {
+           "attributes": {
+            "bottom": {
+             "type": "number",
+             "value": "nan"
+            },
+            "bottom_units": "canvas",
+            "fill_alpha": 0.5,
+            "fill_color": "lightgrey",
+            "handles": {
+             "attributes": {
+              "all": {
+               "attributes": {
+                "fill_color": "white",
+                "hover_fill_color": "lightgray"
+               },
+               "id": "p1325",
+               "name": "AreaVisuals",
+               "type": "object"
+              }
+             },
+             "id": "p1326",
+             "name": "BoxInteractionHandles",
+             "type": "object"
+            },
+            "left": {
+             "type": "number",
+             "value": "nan"
+            },
+            "left_units": "canvas",
+            "level": "overlay",
+            "line_alpha": 1.0,
+            "line_color": "black",
+            "line_dash": [
+             4,
+             4
+            ],
+            "line_width": 2,
+            "right": {
+             "type": "number",
+             "value": "nan"
+            },
+            "right_units": "canvas",
+            "syncable": false,
+            "top": {
+             "type": "number",
+             "value": "nan"
+            },
+            "top_units": "canvas",
+            "visible": false
+           },
+           "id": "p1320",
+           "name": "BoxAnnotation",
+           "type": "object"
+          }
+         },
+         "id": "p1319",
+         "name": "BoxZoomTool",
+         "type": "object"
+        },
+        {
+         "id": "p1327",
+         "name": "SaveTool",
+         "type": "object"
+        },
+        {
+         "id": "p1328",
+         "name": "ResetTool",
+         "type": "object"
+        },
+        {
+         "id": "p1329",
+         "name": "HelpTool",
+         "type": "object"
+        }
+       ]
+      },
+      "id": "p1304",
+      "name": "Toolbar",
+      "type": "object"
+     },
+     "x_range": {
+      "id": "p1297",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "x_scale": {
+      "id": "p1305",
+      "name": "LinearScale",
+      "type": "object"
+     },
+     "y_range": {
+      "id": "p1298",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "y_scale": {
+      "id": "p1306",
+      "name": "LinearScale",
+      "type": "object"
+     }
+    },
+    "id": "p1296",
+    "name": "Figure",
+    "type": "object"
+   }
+  ],
+  "title": "",
+  "version": "3.10.1"
+ },
+ "root_id": "p1296",
+ "target_id": null,
+ "version": "3.10.1"
+}

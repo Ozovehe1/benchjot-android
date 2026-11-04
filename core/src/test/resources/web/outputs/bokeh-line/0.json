@@ -1,0 +1,567 @@
+{
+ "doc": {
+  "config": {
+   "attributes": {
+    "notifications": {
+     "id": "p1063",
+     "name": "Notifications",
+     "type": "object"
+    }
+   },
+   "id": "p1062",
+   "name": "DocumentConfig",
+   "type": "object"
+  },
+  "roots": [
+   {
+    "attributes": {
+     "below": [
+      {
+       "attributes": {
+        "axis_label": "epoch",
+        "formatter": {
+         "id": "p1020",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1021",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1019",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1018",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "center": [
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1018"
+        }
+       },
+       "id": "p1022",
+       "name": "Grid",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1023"
+        },
+        "dimension": 1
+       },
+       "id": "p1027",
+       "name": "Grid",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "items": [
+         {
+          "attributes": {
+           "label": {
+            "type": "value",
+            "value": "train"
+           },
+           "renderers": [
+            {
+             "id": "p1047"
+            }
+           ]
+          },
+          "id": "p1051",
+          "name": "LegendItem",
+          "type": "object"
+         },
+         {
+          "attributes": {
+           "label": {
+            "type": "value",
+            "value": "val"
+           },
+           "renderers": [
+            {
+             "id": "p1058"
+            }
+           ]
+          },
+          "id": "p1061",
+          "name": "LegendItem",
+          "type": "object"
+         }
+        ]
+       },
+       "id": "p1050",
+       "name": "Legend",
+       "type": "object"
+      }
+     ],
+     "left": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1025",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1026",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1024",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1023",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "renderers": [
+      {
+       "attributes": {
+        "data_source": {
+         "attributes": {
+          "data": {
+           "entries": [
+            [
+             "x",
+             [
+              1,
+              2,
+              3,
+              4
+             ]
+            ],
+            [
+             "y",
+             [
+              0.9,
+              0.6,
+              0.5,
+              0.45
+             ]
+            ]
+           ],
+           "type": "map"
+          },
+          "selected": {
+           "attributes": {
+            "indices": [],
+            "line_indices": []
+           },
+           "id": "p1042",
+           "name": "Selection",
+           "type": "object"
+          },
+          "selection_policy": {
+           "id": "p1043",
+           "name": "UnionRenderers",
+           "type": "object"
+          }
+         },
+         "id": "p1041",
+         "name": "ColumnDataSource",
+         "type": "object"
+        },
+        "glyph": {
+         "attributes": {
+          "line_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1044",
+         "name": "Line",
+         "type": "object"
+        },
+        "muted_glyph": {
+         "attributes": {
+          "line_alpha": 0.2,
+          "line_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1046",
+         "name": "Line",
+         "type": "object"
+        },
+        "nonselection_glyph": {
+         "attributes": {
+          "line_alpha": 0.1,
+          "line_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1045",
+         "name": "Line",
+         "type": "object"
+        },
+        "view": {
+         "attributes": {
+          "filter": {
+           "id": "p1049",
+           "name": "AllIndices",
+           "type": "object"
+          }
+         },
+         "id": "p1048",
+         "name": "CDSView",
+         "type": "object"
+        }
+       },
+       "id": "p1047",
+       "name": "GlyphRenderer",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "data_source": {
+         "attributes": {
+          "data": {
+           "entries": [
+            [
+             "x",
+             [
+              1,
+              2,
+              3,
+              4
+             ]
+            ],
+            [
+             "y",
+             [
+              1.0,
+              0.7,
+              0.6,
+              0.58
+             ]
+            ]
+           ],
+           "type": "map"
+          },
+          "selected": {
+           "attributes": {
+            "indices": [],
+            "line_indices": []
+           },
+           "id": "p1053",
+           "name": "Selection",
+           "type": "object"
+          },
+          "selection_policy": {
+           "id": "p1054",
+           "name": "UnionRenderers",
+           "type": "object"
+          }
+         },
+         "id": "p1052",
+         "name": "ColumnDataSource",
+         "type": "object"
+        },
+        "glyph": {
+         "attributes": {
+          "fill_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "hatch_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1055",
+         "name": "Scatter",
+         "type": "object"
+        },
+        "muted_glyph": {
+         "attributes": {
+          "fill_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "fill_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "hatch_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "line_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1057",
+         "name": "Scatter",
+         "type": "object"
+        },
+        "nonselection_glyph": {
+         "attributes": {
+          "fill_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "fill_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "hatch_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "line_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#ff7f0e"
+          },
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1056",
+         "name": "Scatter",
+         "type": "object"
+        },
+        "view": {
+         "attributes": {
+          "filter": {
+           "id": "p1060",
+           "name": "AllIndices",
+           "type": "object"
+          }
+         },
+         "id": "p1059",
+         "name": "CDSView",
+         "type": "object"
+        }
+       },
+       "id": "p1058",
+       "name": "GlyphRenderer",
+       "type": "object"
+      }
+     ],
+     "title": {
+      "attributes": {
+       "text": "Loss"
+      },
+      "id": "p1009",
+      "name": "Title",
+      "type": "object"
+     },
+     "toolbar": {
+      "attributes": {
+       "tools": [
+        {
+         "id": "p1028",
+         "name": "PanTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "renderers": "auto"
+         },
+         "id": "p1029",
+         "name": "WheelZoomTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "overlay": {
+           "attributes": {
+            "bottom": {
+             "type": "number",
+             "value": "nan"
+            },
+            "bottom_units": "canvas",
+            "fill_alpha": 0.5,
+            "fill_color": "lightgrey",
+            "handles": {
+             "attributes": {
+              "all": {
+               "attributes": {
+                "fill_color": "white",
+                "hover_fill_color": "lightgray"
+               },
+               "id": "p1036",
+               "name": "AreaVisuals",
+               "type": "object"
+              }
+             },
+             "id": "p1037",
+             "name": "BoxInteractionHandles",
+             "type": "object"
+            },
+            "left": {
+             "type": "number",
+             "value": "nan"
+            },
+            "left_units": "canvas",
+            "level": "overlay",
+            "line_alpha": 1.0,
+            "line_color": "black",
+            "line_dash": [
+             4,
+             4
+            ],
+            "line_width": 2,
+            "right": {
+             "type": "number",
+             "value": "nan"
+            },
+            "right_units": "canvas",
+            "syncable": false,
+            "top": {
+             "type": "number",
+             "value": "nan"
+            },
+            "top_units": "canvas",
+            "visible": false
+           },
+           "id": "p1031",
+           "name": "BoxAnnotation",
+           "type": "object"
+          }
+         },
+         "id": "p1030",
+         "name": "BoxZoomTool",
+         "type": "object"
+        },
+        {
+         "id": "p1038",
+         "name": "SaveTool",
+         "type": "object"
+        },
+        {
+         "id": "p1039",
+         "name": "ResetTool",
+         "type": "object"
+        },
+        {
+         "id": "p1040",
+         "name": "HelpTool",
+         "type": "object"
+        }
+       ]
+      },
+      "id": "p1015",
+      "name": "Toolbar",
+      "type": "object"
+     },
+     "x_range": {
+      "id": "p1007",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "x_scale": {
+      "id": "p1016",
+      "name": "LinearScale",
+      "type": "object"
+     },
+     "y_range": {
+      "id": "p1008",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "y_scale": {
+      "id": "p1017",
+      "name": "LinearScale",
+      "type": "object"
+     }
+    },
+    "id": "p1006",
+    "name": "Figure",
+    "type": "object"
+   }
+  ],
+  "title": "",
+  "version": "3.10.1"
+ },
+ "root_id": "p1006",
+ "target_id": null,
+ "version": "3.10.1"
+}

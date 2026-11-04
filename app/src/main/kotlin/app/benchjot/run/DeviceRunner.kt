@@ -36,6 +36,8 @@ object DeviceRunner {
         onStatus: (String) -> Unit,
         onOutput: (Stream, String) -> Unit,
         timeoutMs: Long = RUN_TIMEOUT_MS,
+        /** Python: where its figures, tables and charts go (see PythonRunner). */
+        outDir: File? = null,
     ): RunHandle {
         val status = onStatus
         val output = onOutput
@@ -44,7 +46,7 @@ object DeviceRunner {
             override fun onOutput(stream: Stream, text: String) = onMain { output(stream, text) }
         }
         return when (language) {
-            "python" -> PythonRunner.run(context, scope, code, events, timeoutMs)
+            "python" -> PythonRunner.run(context, scope, code, events, timeoutMs, outDir)
             "javascript", "typescript" -> js.run(scope, language, code, events, timeoutMs).let { h ->
                 // The engine prints from its own thread; finish only after its last output reached the main thread.
                 RunHandle(scope.async(Dispatchers.Main) { h.done.await().also { drainMain() } }, h.stop)

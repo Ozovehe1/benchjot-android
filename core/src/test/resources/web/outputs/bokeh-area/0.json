@@ -1,0 +1,380 @@
+{
+ "doc": {
+  "config": {
+   "attributes": {
+    "notifications": {
+     "id": "p1295",
+     "name": "Notifications",
+     "type": "object"
+    }
+   },
+   "id": "p1294",
+   "name": "DocumentConfig",
+   "type": "object"
+  },
+  "roots": [
+   {
+    "attributes": {
+     "below": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1264",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1265",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1263",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1262",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "center": [
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1262"
+        }
+       },
+       "id": "p1266",
+       "name": "Grid",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1267"
+        },
+        "dimension": 1
+       },
+       "id": "p1271",
+       "name": "Grid",
+       "type": "object"
+      }
+     ],
+     "left": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1269",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1270",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1268",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1267",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "renderers": [
+      {
+       "attributes": {
+        "data_source": {
+         "attributes": {
+          "data": {
+           "entries": [
+            [
+             "x",
+             [
+              1,
+              2,
+              3
+             ]
+            ],
+            [
+             "y1",
+             [
+              0,
+              0,
+              0
+             ]
+            ],
+            [
+             "y2",
+             [
+              1,
+              3,
+              2
+             ]
+            ]
+           ],
+           "type": "map"
+          },
+          "selected": {
+           "attributes": {
+            "indices": [],
+            "line_indices": []
+           },
+           "id": "p1286",
+           "name": "Selection",
+           "type": "object"
+          },
+          "selection_policy": {
+           "id": "p1287",
+           "name": "UnionRenderers",
+           "type": "object"
+          }
+         },
+         "id": "p1285",
+         "name": "ColumnDataSource",
+         "type": "object"
+        },
+        "glyph": {
+         "attributes": {
+          "fill_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y1": {
+           "field": "y1",
+           "type": "field"
+          },
+          "y2": {
+           "field": "y2",
+           "type": "field"
+          }
+         },
+         "id": "p1288",
+         "name": "VArea",
+         "type": "object"
+        },
+        "muted_glyph": {
+         "attributes": {
+          "fill_alpha": 0.2,
+          "fill_color": "#1f77b4",
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y1": {
+           "field": "y1",
+           "type": "field"
+          },
+          "y2": {
+           "field": "y2",
+           "type": "field"
+          }
+         },
+         "id": "p1290",
+         "name": "VArea",
+         "type": "object"
+        },
+        "nonselection_glyph": {
+         "attributes": {
+          "fill_alpha": 0.1,
+          "fill_color": "#1f77b4",
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y1": {
+           "field": "y1",
+           "type": "field"
+          },
+          "y2": {
+           "field": "y2",
+           "type": "field"
+          }
+         },
+         "id": "p1289",
+         "name": "VArea",
+         "type": "object"
+        },
+        "view": {
+         "attributes": {
+          "filter": {
+           "id": "p1293",
+           "name": "AllIndices",
+           "type": "object"
+          }
+         },
+         "id": "p1292",
+         "name": "CDSView",
+         "type": "object"
+        }
+       },
+       "id": "p1291",
+       "name": "GlyphRenderer",
+       "type": "object"
+      }
+     ],
+     "title": {
+      "id": "p1258",
+      "name": "Title",
+      "type": "object"
+     },
+     "toolbar": {
+      "attributes": {
+       "tools": [
+        {
+         "id": "p1272",
+         "name": "PanTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "renderers": "auto"
+         },
+         "id": "p1273",
+         "name": "WheelZoomTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "overlay": {
+           "attributes": {
+            "bottom": {
+             "type": "number",
+             "value": "nan"
+            },
+            "bottom_units": "canvas",
+            "fill_alpha": 0.5,
+            "fill_color": "lightgrey",
+            "handles": {
+             "attributes": {
+              "all": {
+               "attributes": {
+                "fill_color": "white",
+                "hover_fill_color": "lightgray"
+               },
+               "id": "p1280",
+               "name": "AreaVisuals",
+               "type": "object"
+              }
+             },
+             "id": "p1281",
+             "name": "BoxInteractionHandles",
+             "type": "object"
+            },
+            "left": {
+             "type": "number",
+             "value": "nan"
+            },
+            "left_units": "canvas",
+            "level": "overlay",
+            "line_alpha": 1.0,
+            "line_color": "black",
+            "line_dash": [
+             4,
+             4
+            ],
+            "line_width": 2,
+            "right": {
+             "type": "number",
+             "value": "nan"
+            },
+            "right_units": "canvas",
+            "syncable": false,
+            "top": {
+             "type": "number",
+             "value": "nan"
+            },
+            "top_units": "canvas",
+            "visible": false
+           },
+           "id": "p1275",
+           "name": "BoxAnnotation",
+           "type": "object"
+          }
+         },
+         "id": "p1274",
+         "name": "BoxZoomTool",
+         "type": "object"
+        },
+        {
+         "id": "p1282",
+         "name": "SaveTool",
+         "type": "object"
+        },
+        {
+         "id": "p1283",
+         "name": "ResetTool",
+         "type": "object"
+        },
+        {
+         "id": "p1284",
+         "name": "HelpTool",
+         "type": "object"
+        }
+       ]
+      },
+      "id": "p1259",
+      "name": "Toolbar",
+      "type": "object"
+     },
+     "x_range": {
+      "id": "p1252",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "x_scale": {
+      "id": "p1260",
+      "name": "LinearScale",
+      "type": "object"
+     },
+     "y_range": {
+      "id": "p1253",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "y_scale": {
+      "id": "p1261",
+      "name": "LinearScale",
+      "type": "object"
+     }
+    },
+    "id": "p1251",
+    "name": "Figure",
+    "type": "object"
+   }
+  ],
+  "title": "",
+  "version": "3.10.1"
+ },
+ "root_id": "p1251",
+ "target_id": null,
+ "version": "3.10.1"
+}

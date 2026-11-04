@@ -1,16 +1,19 @@
 """Runs a code block on the phone, as the web's Pyodide worker (public/workers/python.js):
 a fresh __main__ namespace per run, stdout/stderr line by line, no stdin, top-level
 await, and the code compiled as "<exec>" so tracebacks point at the user's lines.
+The code runs through bj_capture.py (the web's own file, copied by
+scripts/web-fixtures.mjs), so figures, tables and charts land in `out_dir` with a
+manifest.json, exactly as in the browser; the app uploads them after the run.
 
 `emit` is a Kotlin object (PythonService.Emitter) with out(stream, text), start(),
 done() and error(text).
 """
-import ast
-import asyncio
 import builtins
-import inspect
+import os
 import sys
 import traceback
+
+import bj_capture
 
 
 class _Stream:
@@ -55,17 +58,18 @@ class _NoStdin:
         return False
 
 
-def run(code, emit):
+def run(code, emit, out_dir, work_dir):
     out, err = _Stream(emit, "stdout"), _Stream(emit, "stderr")
     saved = sys.stdout, sys.stderr, sys.stdin
     sys.stdout, sys.stderr, sys.stdin = out, err, _NoStdin()
     try:
+        # Files the code writes land here (kept between runs, like Pyodide's home folder).
+        os.makedirs(work_dir, exist_ok=True)
+        os.chdir(work_dir)
+        os.environ.setdefault("MPLCONFIGDIR", os.path.join(work_dir, ".matplotlib"))
         emit.start()
         globals_ = {"__name__": "__main__", "__builtins__": builtins}
-        compiled = compile(code, "<exec>", "exec", flags=ast.PyCF_ALLOW_TOP_LEVEL_AWAIT, dont_inherit=True)
-        result = eval(compiled, globals_)
-        if inspect.iscoroutine(result):
-            asyncio.run(result)
+        bj_capture.run_sync(code, out_dir, "<exec>", globals_)
         out.flush()
         err.flush()
         emit.done()

@@ -21,6 +21,15 @@
             </intent-filter>
         </activity>
 
+        <!-- Shares a downloaded figure, table or chart (OutputViewer.kt) from the app's cache. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/shared_files" />
+        </provider>
+
         <!-- Embedded Python runs in its own process so Stop can kill it (run/PythonService.kt). -->
         <service
             android:name=".run.PythonService"

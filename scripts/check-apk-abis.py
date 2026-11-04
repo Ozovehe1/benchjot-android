@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Fails unless the APK carries every native engine for each given ABI, built for it:
-Python (libpython, Chaquopy's runtime), numpy, QuickJS and Ruff, each checked by its
+Python (libpython, Chaquopy's runtime), the native Python packages (numpy, matplotlib,
+pandas, pillow, ...: one extension module each), QuickJS and Ruff, each checked by its
 ELF header (32/64-bit and machine), not just by its path.
 
     scripts/check-apk-abis.py app.apk arm64-v8a armeabi-v7a
@@ -15,6 +16,17 @@ ELF = {  # abi: (ELF class, e_machine)
     "armeabi-v7a": (1, 40),  # 32-bit, ARM
     "x86_64": (2, 62),       # 64-bit, x86-64
     "x86": (1, 3),
+}
+
+
+# One compiled module per native package the app bundles (scripts/python-armv7-packages.txt).
+NATIVE = {
+    "numpy": r"numpy/core/_multiarray_umath[^/]*\.so$",
+    "contourpy": r"contourpy/_contourpy[^/]*\.so$",
+    "kiwisolver": r"kiwisolver/_cext[^/]*\.so$",
+    "pillow": r"PIL/_imaging\.[^/]*so$",
+    "matplotlib": r"matplotlib/_path[^/]*\.so$",
+    "pandas": r"pandas/_libs/lib[.][^/]*so$",
 }
 
 
@@ -56,11 +68,12 @@ def main(apk: str, abis: list[str]) -> int:
             problems.append(f"{reqs} missing")
             continue
         r = zipfile.ZipFile(io.BytesIO(z.read(reqs)))
-        numpy = [n for n in r.namelist() if re.search(r"numpy/core/_multiarray_umath[^/]*\.so$", n)]
-        if not numpy:
-            problems.append(f"numpy's _multiarray_umath missing from {reqs}")
-        for n in numpy:
-            check(f"{reqs}!{n}", r.read(n), abi)
+        for pkg, module in NATIVE.items():
+            found = [n for n in r.namelist() if re.search(module, n)]
+            if not found:
+                problems.append(f"{pkg} ({module}) missing from {reqs}")
+            for n in found:
+                check(f"{reqs}!{n}", r.read(n), abi)
 
     for p in problems:
         print(f"::error::{apk}: {p}")

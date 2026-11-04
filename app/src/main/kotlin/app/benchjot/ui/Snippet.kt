@@ -70,7 +70,10 @@ import app.benchjot.core.toLastRun
 import app.benchjot.core.toRunResult
 import app.benchjot.data.Accounts
 import app.benchjot.data.Backend
+import app.benchjot.data.LocalOutputs
+import app.benchjot.data.OutputStore
 import app.benchjot.data.WebApi
+import app.benchjot.core.SavedOutputs
 import app.benchjot.run.DeviceRunner
 import app.benchjot.core.OutputBuffer
 import app.benchjot.core.RunHandle
@@ -88,7 +91,7 @@ private data class CodeValue(val language: String, val content: String)
 private data class Fix(val before: String, val code: String, val summary: String)
 
 @Composable
-fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, registry: SaveRegistry) {
+fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, registry: SaveRegistry, onOpenOutput: (snippetId: String, index: Int) -> Unit = { _, _ -> }) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val clipboard = LocalClipboardManager.current
@@ -107,6 +110,10 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     var result by remember(snippet.id) { mutableStateOf(saved?.second) }
     var ranHash by remember(snippet.id) { mutableStateOf(snippet.lastRun?.codeHash) }
     var saveError by remember { mutableStateOf<String?>(null) }
+    // Figures, tables and charts: the live run's until it's saved, then the stored run's.
+    var live by remember(snippet.id) { mutableStateOf<LocalOutputs?>(null) }
+    var savedOutputs by remember(snippet.id) { mutableStateOf(snippet.lastRun?.outputs) }
+    var hideSaved by remember(snippet.id) { mutableStateOf(false) }
     var fix by remember { mutableStateOf<Fix?>(null) }
     var fixing by remember { mutableStateOf(false) }
     var handle by remember { mutableStateOf<RunHandle?>(null) }
@@ -141,9 +148,33 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
         saver.update(CodeValue(language, code.text))
     }
 
+    /** Uploads the run's outputs, saves the run, then deletes the run it replaced (the web's persistRun). */
+    fun persistRun(chunks: List<Chunk>, r: RunResult, where: String, src: String, local: LocalOutputs?) {
+        saveError = null
+        val previous = savedOutputs
+        Backend.scope.launch {
+            var uploaded: SavedOutputs? = null
+            if (local != null) {
+                try { uploaded = OutputStore.upload(snippet.id, local) } catch (e: Exception) { saveError = "Figures not saved: ${Accounts.message(e)}" }
+            }
+            try {
+                Backend.saveLastRun(snippet.id, toLastRun(chunks, r, where, src, outputs = uploaded))
+                savedOutputs = uploaded; live = null; hideSaved = false
+                if (previous != null && previous.dir != uploaded?.dir) OutputStore.delete(previous)
+            } catch (e: Exception) {
+                saveError = "Output not saved: ${Accounts.message(e)}"
+                OutputStore.delete(uploaded)
+            }
+            local?.dir?.deleteRecursively()
+        }
+    }
+
     fun clearOutput() {
+        val previous = savedOutputs
         output.clear(); hasOutput = false; result = null; fix = null; ranHash = null
+        live = null; savedOutputs = null
         persist(null)
+        Backend.scope.launch { OutputStore.delete(previous) }
     }
 
     fun run(where: String) {
@@ -152,16 +183,24 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
         if (!onDevice && !(where == "server" && serverable && pro)) return
         val src = code.text
         output.clear(); hasOutput = true; ranHash = codeHash(src); result = null; fix = null; running = true
+        live = null; hideSaved = true
         val buffer = OutputBuffer { output += it }
+        // bj_capture writes figures, tables and charts here (device runs) / server runs' are unpacked here.
+        val outDir = java.io.File(context.cacheDir, "py-out/${java.util.UUID.randomUUID()}")
+        var serverOutputs: LocalOutputs? = null
         val h = if (onDevice) {
-            DeviceRunner.run(context, scope, lang, src, onStatus = { status = it }, onOutput = { s, txt -> buffer.add(s, txt) })
+            DeviceRunner.run(context, scope, lang, src, onStatus = { status = it }, onOutput = { s, txt -> buffer.add(s, txt) }, outDir = outDir)
         } else {
             status = "Running on server…"
             val started = System.currentTimeMillis()
             val job = scope.async(start = CoroutineStart.LAZY) {
                 try {
-                    val (chunks, r) = toRunResult(WebApi.runOnServer(lang, src))
+                    val response = WebApi.runOnServer(lang, src)
+                    val (chunks, r) = toRunResult(response)
                     chunks.forEach { buffer.add(it.stream, it.text) }
+                    response.outputs?.let { o ->
+                        serverOutputs = runCatching { LocalOutputs.fromServer(o, outDir) }.getOrElse { e -> saveError = "Figures couldn’t load: ${e.message}"; null }
+                    }
                     r
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
@@ -186,7 +225,9 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
             status = ""
             result = r
             running = false
-            persist(toLastRun(buffer.chunks, r, if (onDevice) "browser" else "server", src))
+            val local = if (onDevice) runCatching { LocalOutputs.read(outDir) }.getOrNull() else serverOutputs
+            live = local
+            persistRun(buffer.chunks, r, if (onDevice) "browser" else "server", src, local)
         }
     }
 
@@ -251,6 +292,10 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
 
         if (hasOutput) RunOutput(output, status, running, result, stale, saveError, onClear = ::clearOutput)
 
+        val shownSaved = savedOutputs.takeUnless { hideSaved }
+        live?.let { l -> RunOutputs(l.manifest.items, l.manifest.notes, remember(l) { OutputFiles.Live(l) }, onOpen = null) }
+            ?: shownSaved?.let { o -> RunOutputs(o.items, o.notes, remember(o) { OutputFiles.Saved(o) }, onOpen = { i -> onOpenOutput(snippet.id, i) }) }
+
         fix?.let { f ->
             FixDiff(f, onAccept = { code.replaceAll(f.code); fix = null; edited() }, onReject = { fix = null })
         }
@@ -264,17 +309,17 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
             if (lastError.isNotEmpty() && !running && fix == null) TextBtn(if (fixing) "Fixing…" else "Fix", ::proposeFix, enabled = !fixing)
             if (language == "python" && fixable > 0) TextBtn("Autofix", ::autofix)
             Spacer(Modifier.weight(1f))
-            TextBtn("Remove", { if (code.text.isNotBlank()) confirmRemove = true else remove(snippet, saver, handle) })
+            TextBtn("Remove", { if (code.text.isNotBlank()) confirmRemove = true else remove(snippet, saver, handle, savedOutputs) })
         }
     }
-    if (confirmRemove) ConfirmDialog("Remove this code?") { ok -> confirmRemove = false; if (ok) remove(snippet, saver, handle) }
+    if (confirmRemove) ConfirmDialog("Remove this code?") { ok -> confirmRemove = false; if (ok) remove(snippet, saver, handle, savedOutputs) }
 }
 
-private fun remove(snippet: Snippet, saver: Autosaver<*>, handle: RunHandle?) {
+private fun remove(snippet: Snippet, saver: Autosaver<*>, handle: RunHandle?, outputs: SavedOutputs?) {
     handle?.stop?.invoke()
     Backend.scope.launch {
         saver.flush()
-        runCatching { Backend.deleteSnippet(snippet.id) }
+        if (runCatching { Backend.deleteSnippet(snippet.id) }.isSuccess) OutputStore.delete(outputs)
     }
 }
 

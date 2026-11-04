@@ -3,7 +3,8 @@
 # landing -> sign in (Continue with Google opens Credential Manager) -> create
 # account screens by their accessible names, saving a screenshot of each to
 # smoke/. With a throwaway account (BJ_USER/BJ_PASS): sign in, write a note,
-# run Python/JS/TS on the device, Stop a runaway run, Ruff Autofix, math preview, the Map.
+# run Python/JS/TS on the device, Stop a runaway run, Ruff Autofix, figures and charts (own
+# screen, downloads), math preview, the Map.
 # Fails if the app crashes.
 set -euo pipefail
 APK=${1:-benchjot.apk}
@@ -120,6 +121,20 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   waitfor "^while True: pass" 10
   [ -z "$(find "^import os")" ] || { echo "::error::Autofix left the unused import"; shot timeout-autofix; exit 1; }
   shot 8f-autofixed; echo "ruff autofix: ok"
+  # Rich outputs: a matplotlib figure and a Plotly chart under the block, saved to Storage; each
+  # opens on its own screen and downloads (PNG, then the chart as PDF) into Downloads/Benchjot.
+  to_bottom; tap "Add code"; seek "Code 5"
+  tap "Code 5"
+  for line in "import matplotlib.pyplot as plt" "plt.plot([1,2,3],[3,1,2])" "plt.show()" "import plotly.express as px" "px.scatter(x=[1,2,3],y=[4,1,2]).show()"; do
+    type_text "$line"; adb shell input keyevent 66
+  done
+  back; to_bottom; tap "Run" last
+  seek "Open" 90; alive; shot 8g-outputs
+  tap "Open"; waitfor "Download" 30; waitfor "^Figure" 10; shot 8h-figure-viewer
+  tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; echo "figure download: ok"
+  tap "Next"; waitfor "^Plotly chart" 20; sleep 2; shot 8i-chart-viewer
+  tap "PNG"; waitfor "PDF" 10; tap "PDF"; tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; alive; shot 8j-chart-pdf; echo "chart pdf download: ok"
+  tap "Back to note"; waitfor "Code 5" 20
   to_top; waitfor "Saved" 10
   tap "Preview"; waitfor "E=mc^2" 10; shot 9-preview-math
   tap "Successful"; sleep 2
