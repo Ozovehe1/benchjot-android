@@ -38,6 +38,7 @@ tap() {
 }
 alive() { adb shell pidof app.benchjot >/dev/null || { echo "app is not running (crash?)"; adb logcat -d | grep -A30 "FATAL EXCEPTION" | tail -60; exit 1; }; }
 clear_field() { adb shell input keyevent KEYCODE_MOVE_END; adb shell input keyevent $(printf 'KEYCODE_DEL %.0s' $(seq 1 40)); }
+to_top() { for _ in 1 2 3 4; do adb shell input swipe 160 250 160 900 150; done; sleep 1; }
 type_text() { adb shell "input text '$(echo "$1" | sed "s/ /%s/g")'"; sleep 1; }
 
 adb shell am start -W -n app.benchjot/.MainActivity
@@ -65,7 +66,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Code 1"; type_text "print(6*7)"; adb shell input keyevent 4; sleep 2
   waitfor "Python" 10; shot 7-note
   tap "Run"; waitfor "^42" 120; alive; shot 8-ran
-  waitfor "Saved" 10
+  adb shell input keyevent 4; to_top; waitfor "Saved" 10
   tap "Preview"; sleep 2; shot 9-preview
   tap "Successful"; sleep 2
   tap "All notes"; waitfor "Smoke test note" 20; shot 10-list
