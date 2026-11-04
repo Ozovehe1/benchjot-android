@@ -93,7 +93,7 @@ fun LogoMark(size: Dp = 28.dp, color: Color = t.fg) {
 fun Logo(compact: Boolean = false, onClick: (() -> Unit)? = null) {
     Row(
         Modifier.heightIn(min = 48.dp).widthIn(min = 48.dp)
-            .then(if (onClick != null) Modifier.plainClick(onClick).semantics { contentDescription = "$APP_NAME home" } else Modifier)
+            .then(if (onClick != null) Modifier.plainClick(onClick = onClick).semantics { contentDescription = "$APP_NAME home" } else Modifier)
             .padding(horizontal = 0.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
