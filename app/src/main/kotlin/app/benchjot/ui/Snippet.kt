@@ -220,24 +220,21 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     }
 
     Column(Modifier.fillMaxWidth().topLine(t.line)) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                val mono = TextStyle(fontFamily = Type.mono, fontSize = 12.sp)
-                if (snippet.filename.isNotEmpty()) Text(snippet.filename, Modifier.weight(1f, fill = false), style = mono, color = t.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Box {
-                    TextBtn(languageConfig(language).label, { picking = true }, style = mono)
-                    DropdownMenu(expanded = picking, onDismissRequest = { picking = false }, containerColor = t.bg) {
-                        LANGUAGES.forEach { l ->
-                            DropdownMenuItem(text = { Text(l.label, style = mono, color = if (l.id == language) t.fg else t.muted) }, onClick = {
-                                picking = false
-                                language = l.id
-                                chosen = true
-                                saver.update(CodeValue(language, code.text))
-                            })
-                        }
+        SnippetHeader(snippet.filename, language = {
+            Box {
+                TextBtn(languageConfig(language).label, { picking = true }, style = headerMono)
+                DropdownMenu(expanded = picking, onDismissRequest = { picking = false }, containerColor = t.bg) {
+                    LANGUAGES.forEach { l ->
+                        DropdownMenuItem(text = { Text(l.label, style = headerMono, color = if (l.id == language) t.fg else t.muted) }, onClick = {
+                            picking = false
+                            language = l.id
+                            chosen = true
+                            saver.update(CodeValue(language, code.text))
+                        })
                     }
                 }
             }
+        }) {
             if (running) {
                 FilledBtn("Stop", { handle?.stop?.invoke() }, variant = ButtonVariant.Neutral)
             } else {
@@ -280,9 +277,30 @@ private fun remove(snippet: Snippet, saver: Autosaver<*>, handle: RunHandle?) {
     }
 }
 
-/** Plain monospace output under a code block: stdout, stderr (muted), the error, then the status line. */
+private val headerMono = TextStyle(fontFamily = Type.mono, fontSize = 12.sp)
+
+/**
+ * A code block's header row: file name and language on the left, actions (Run, Stop, ...) on the right.
+ * Shared by the editable block and the read-only preview (NotePreview.kt), as the web's snippet-header.tsx.
+ */
 @Composable
-private fun RunOutput(chunks: List<Chunk>, status: String, running: Boolean, result: RunResult?, stale: Boolean, note: String?, onClear: () -> Unit) {
+fun SnippetHeader(filename: String, language: @Composable () -> Unit, actions: (@Composable () -> Unit)? = null) {
+    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (filename.isNotEmpty()) Text(filename, Modifier.weight(1f, fill = false), style = headerMono, color = t.muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            language()
+        }
+        actions?.invoke()
+    }
+}
+
+/** The language as plain text in the header's type (read-only blocks). */
+@Composable
+fun LanguageLabel(language: String) = Text(languageConfig(language).label, style = headerMono, color = t.muted)
+
+/** Plain monospace output under a code block: stdout, stderr (muted), the error, then the status line. Without `onClear` it is read-only (no Copy or Clear). */
+@Composable
+fun RunOutput(chunks: List<Chunk>, status: String, running: Boolean, result: RunResult?, stale: Boolean = false, note: String? = null, onClear: (() -> Unit)? = null) {
     val clipboard = LocalClipboardManager.current
     val scope = rememberCoroutineScope()
     var copied by remember { mutableStateOf(false) }
@@ -304,7 +322,7 @@ private fun RunOutput(chunks: List<Chunk>, status: String, running: Boolean, res
                 runSummary(result, running, status) + if (stale) " · Output from an earlier version" else "",
                 Modifier.weight(1f), style = TextStyle(fontFamily = Type.mono, fontSize = 12.sp), color = t.faint,
             )
-            if (!running) {
+            if (!running && onClear != null) {
                 Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                     if (text.isNotEmpty()) TextBtn(if (copied) "Copied" else "Copy", {
                         clipboard.setText(AnnotatedString(text)); copied = true

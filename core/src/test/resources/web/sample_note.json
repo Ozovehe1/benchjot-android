@@ -1,0 +1,25 @@
+{
+  "entry": {
+    "title": "Exp 3: dropout 0.1 vs 0.3",
+    "notes": "Lower dropout should help on the small set. Mean accuracy over three seeds:"
+  },
+  "snippets": [
+    {
+      "id": "sample-dropout",
+      "filename": "dropout.py",
+      "language": "python",
+      "content": "acc = {0.1: [91.8, 92.4, 92.1],\n       0.3: [90.9, 90.7, 91.1]}\nfor p, r in acc.items():\n    print(p, round(sum(r) / len(r), 1))",
+      "last_run": {
+        "outcome": "ok",
+        "stdout": "0.1 92.1\n0.3 90.9\n",
+        "stderr": "",
+        "error_line": null,
+        "line": null,
+        "ms": 42,
+        "where": "browser",
+        "code_hash": "e5852ecfac5c2",
+        "ran_at": "2026-11-04T09:00:00.000Z"
+      }
+    }
+  ]
+}

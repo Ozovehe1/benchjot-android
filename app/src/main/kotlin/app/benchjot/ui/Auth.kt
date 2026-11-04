@@ -2,7 +2,6 @@ package app.benchjot.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -32,19 +32,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import app.benchjot.BuildConfig
 import app.benchjot.core.APP_DESCRIPTION
+import app.benchjot.core.SAMPLE_NOTES
+import app.benchjot.core.SAMPLE_SNIPPET
+import app.benchjot.core.SAMPLE_TITLE
 import app.benchjot.core.USERNAME_HINT
 import app.benchjot.core.isValidEmail
 import app.benchjot.core.isValidUsername
@@ -56,61 +56,20 @@ import kotlinx.coroutines.launch
 // Signed-out screens, as the web's src/app/page.tsx (landing), login/page.tsx and
 // components/choose-username.tsx. Same words, same order.
 
-/** The landing's example jotter entry: a note, a Python snippet, its output and a takeaway. */
-@Composable
-private fun EntryPreview() {
-    val shape = RoundedCornerShape(6.dp)
-    Column(Modifier.fillMaxWidth().border(1.dp, t.line, shape).padding(start = 14.dp, end = 14.dp, top = 10.dp, bottom = 12.dp)) {
-        Text("Project: tokenizer study", style = TextStyle(fontFamily = Type.mono, fontSize = 11.sp), color = t.faint)
-        Text("Exp 3 — dropout 0.1 vs 0.3", Modifier.padding(top = 4.dp), style = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.SemiBold), color = t.fg)
-        Text(
-            buildAnnotatedString {
-                withStyle(SpanStyle(fontWeight = FontWeight.Medium, color = t.fg)) { append("Hypothesis:") }
-                append(" lower dropout helps on the small set.")
-            },
-            Modifier.padding(top = 4.dp), style = TextStyle(fontSize = 13.sp, lineHeight = 1.375.em), color = t.muted,
-        )
-        val code = TextStyle(fontFamily = Type.mono, fontSize = 11.5.sp, lineHeight = 1.65.em)
-        Column(Modifier.padding(top = 10.dp).fillMaxWidth().border(1.dp, t.line, RoundedCornerShape(4.dp)).background(t.tint, RoundedCornerShape(4.dp))) {
-            Row(Modifier.fillMaxWidth().height(32.dp).bottomLine(t.line).padding(start = 10.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("dropout.py", style = TextStyle(fontSize = 11.sp, fontFamily = Type.mono), color = t.muted)
-                Box(Modifier.background(t.fg, RoundedCornerShape(2.dp)).padding(horizontal = 10.dp, vertical = 2.dp)) {
-                    Text("Run", style = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium), color = t.bg)
-                }
-            }
-            val kw = SpanStyle(color = t.hlKeyword, fontWeight = FontWeight.Medium)
-            val num = SpanStyle(color = t.hlNumber)
-            Text(
-                buildAnnotatedString {
-                    append("acc = {"); withStyle(num) { append("0.1") }; append(": ["); withStyle(num) { append("91.8") }; append(", ")
-                    withStyle(num) { append("92.4") }; append(", "); withStyle(num) { append("92.1") }; append("],\n")
-                    append("       "); withStyle(num) { append("0.3") }; append(": ["); withStyle(num) { append("90.9") }; append(", ")
-                    withStyle(num) { append("90.7") }; append(", "); withStyle(num) { append("91.1") }; append("]}\n")
-                    withStyle(kw) { append("for") }; append(" p, r "); withStyle(kw) { append("in") }; append(" acc.items():\n")
-                    append("    print(p, round(sum(r) / len(r), "); withStyle(num) { append("1") }; append("))")
-                },
-                Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 10.dp, vertical = 8.dp), style = code, color = t.fg, softWrap = false,
-            )
-            Text("0.1 92.1\n0.3 90.9", Modifier.fillMaxWidth().topLine(t.line).padding(horizontal = 10.dp, vertical = 8.dp), style = code, color = t.fg)
-        }
-        Text("0.1 wins by 1.2 pts, keep it.", Modifier.padding(top = 10.dp), style = TextStyle(fontSize = 13.sp, lineHeight = 1.375.em), color = t.fg)
-    }
-}
-
 @Composable
 fun LandingScreen(onSignUp: () -> Unit, onSignIn: () -> Unit) {
     val uri = LocalUriHandler.current
     val minHeight = LocalConfiguration.current.screenHeightDp.dp
     PageColumn(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), maxWidth = 440.dp) {
         Row(Modifier.height(56.dp), verticalAlignment = Alignment.CenterVertically) { Logo() }
-        Column(Modifier.fillMaxWidth().padding(bottom = 32.dp).height(androidx.compose.ui.unit.max(minHeight - 200.dp, 560.dp)), verticalArrangement = Arrangement.Center) {
+        Column(Modifier.fillMaxWidth().padding(bottom = 32.dp).heightIn(min = androidx.compose.ui.unit.max(minHeight - 200.dp, 560.dp)), verticalArrangement = Arrangement.Center) {
             Text(APP_DESCRIPTION, style = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.SemiBold, lineHeight = 1.15.em, letterSpacing = (-0.025).em), color = t.fg)
             Text(
                 "Write notes, keep snippets, organise them in projects, and run Python and JavaScript right on your phone.",
                 Modifier.padding(top = 12.dp), style = TextStyle(fontSize = 15.sp, lineHeight = 1.625.em), color = t.muted,
             )
             Gap(24.dp)
-            EntryPreview()
+            NotePreview(SAMPLE_TITLE, SAMPLE_NOTES, listOf(SAMPLE_SNIPPET))
             Gap(24.dp)
             FilledBtn("Create account", onSignUp, Modifier.fillMaxWidth())
             TextBtn("Sign in", onSignIn, Modifier.fillMaxWidth(), strong = true, center = true)
