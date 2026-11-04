@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -26,6 +26,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import app.benchjot.core.Gate
+import app.benchjot.core.afterDeleteRoute
+import app.benchjot.core.HOME_ROUTE
+import app.benchjot.core.nextGate
+import app.benchjot.core.projectRoute
 import app.benchjot.core.suggestUsername
 import app.benchjot.data.Backend
 import app.benchjot.data.Profile
@@ -61,11 +66,22 @@ class MainActivity : ComponentActivity() {
 /** Who is signed in decides the start screen, as the web's (app) layout and /welcome do. */
 @Composable
 private fun AppRoot() {
-    val status by Backend.session.collectAsState()
-    when (status) {
-        is SessionStatus.Authenticated, is SessionStatus.RefreshFailure -> SignedIn()
-        is SessionStatus.NotAuthenticated -> key("out") { SignedOut() }
-        else -> Unit // loading the saved session: just the background
+    // Gate, not the raw status: supabase-kt goes back to Initializing whenever the app is
+    // backgrounded, which used to drop the signed-in tree and reset the user to All notes.
+    val gate by produceState(Gate.Loading) {
+        Backend.session.collect { status ->
+            val signedIn = when (status) {
+                is SessionStatus.Authenticated, is SessionStatus.RefreshFailure -> true
+                is SessionStatus.NotAuthenticated -> false
+                else -> null
+            }
+            value = nextGate(value, signedIn)
+        }
+    }
+    when (gate) {
+        Gate.SignedIn -> SignedIn()
+        Gate.SignedOut -> key("out") { SignedOut() }
+        Gate.Loading -> Unit // loading the saved session: just the background
     }
 }
 
@@ -119,5 +135,12 @@ private fun List(nav: NavHostController, projectId: String?) = EntryListScreen(
 )
 
 fun NavHostController.home() {
-    if (!popBackStack("home", inclusive = false)) navigate("home")
+    if (!popBackStack(HOME_ROUTE, inclusive = false)) navigate(HOME_ROUTE)
 }
+
+/** A project's list, on top of home (the note's back link and where deleting a filed note lands). */
+fun NavHostController.project(id: String) = navigate(projectRoute(id)) { popUpTo(HOME_ROUTE) }
+
+/** After deleting a note: its project's list when it was filed in one, else All notes. */
+fun NavHostController.leaveDeletedNote(projectId: String?) =
+    afterDeleteRoute(projectId).let { if (it == HOME_ROUTE) home() else navigate(it) { popUpTo(HOME_ROUTE) } }

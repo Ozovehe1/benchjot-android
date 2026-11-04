@@ -59,6 +59,7 @@ import app.benchjot.core.downloadName
 import app.benchjot.core.fixableCount
 import app.benchjot.core.fromLastRun
 import app.benchjot.core.isLanguageId
+import app.benchjot.core.languageChosen
 import app.benchjot.core.languageConfig
 import app.benchjot.core.lineDiff
 import app.benchjot.core.outputText
@@ -96,7 +97,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     var language by remember(snippet.id) { mutableStateOf(initial) }
     val code = remember(snippet.id) { CodeState(snippet.content) }
     // A language counts as chosen once the user picks it, or once the block was saved with code in it.
-    var chosen by remember(snippet.id) { mutableStateOf(initial != "text" || snippet.content.isNotBlank()) }
+    var chosen by remember(snippet.id) { mutableStateOf(languageChosen(initial, snippet.content)) }
     var copied by remember { mutableStateOf(false) }
     var running by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("") }
@@ -136,7 +137,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
 
     fun edited() {
         touched = true
-        if (!chosen) language = detectLanguage(code.text) ?: "text"
+        if (!chosen) language = detectLanguage(code.text) ?: initial
         saver.update(CodeValue(language, code.text))
     }
 

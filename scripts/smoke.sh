@@ -17,14 +17,18 @@ dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb shell ca
 find() {
   python3 - "$1" "${2:-first}" "$(dump)" <<'PY'
 import re, sys
+import xml.etree.ElementTree as ET
 want, which, xml = sys.argv[1], sys.argv[2], sys.argv[3]
 hits = []
-for m in re.finditer(r'<node [^>]*>', xml):
-    n = m.group(0)
-    t = re.search(r' text="([^"]*)"', n).group(1); d = re.search(r' content-desc="([^"]*)"', n).group(1)
-    t = t.replace("&#10;", "\n")
+# A real XML parse: attribute values may hold '>' or quotes (the Python symbol row has '"').
+try:
+    nodes = ET.fromstring(xml[xml.index("<hierarchy"):]).iter("node")
+except (ValueError, ET.ParseError):
+    nodes = []
+for n in nodes:
+    t, d = n.get("text", ""), n.get("content-desc", "")
     if want in (t, d) or (want.startswith("^") and t.startswith(want[1:])):
-        x1, y1, x2, y2 = map(int, re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"', n).groups())
+        x1, y1, x2, y2 = map(int, re.match(r'\[(\d+),(\d+)\]\[(\d+),(\d+)\]', n.get("bounds", "")).groups())
         hits.append(f"{(x1 + x2) // 2} {(y1 + y2) // 2}")
 if hits: print(hits[0] if which == "first" else hits[-1])
 PY
@@ -56,7 +60,9 @@ back() { adb shell input keyevent 4; sleep 2; }
 focus() { adb shell dumpsys window | grep -E "mCurrentFocus" | head -1; }
 type_text() { adb shell "input text '$(echo "$1" | sed "s/ /%s/g")'"; sleep 1; }
 
-adb shell am start -W -n app.benchjot/.MainActivity
+# Start it the way the launcher icon does (MAIN/LAUNCHER), so the task's root intent matches the
+# relaunch after process death below; a bare -n start makes that relaunch stack a fresh activity on top.
+adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n app.benchjot/.MainActivity
 sleep 8; alive; shot 1-landing
 # The landing's example note is read-only: shown, with no text field on screen.
 landing="$(dump)"
@@ -122,10 +128,22 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Map"; waitfor "Sub-note" 20; waitfor "Map of 1 notes" 20; sleep 1; shot 10b-map
   tap "Map of 1 notes"; waitfor "Preview" 20; alive; shot 10c-map-opened
   tap "All notes"; waitfor "Smoke test note" 20
+  # A note in a project: leaving the app (process killed, task still in Recents) and coming back
+  # reopens that note; deleting it then stays in the project, not All notes.
+  seek "New project"; tap "New project"; waitfor "Project name" 10; type_text "Smoke project"; tap "OK"; waitfor "Smoke project" 20
+  tap "Smoke project"; waitfor "Rename" 20
+  tap "New note"; waitfor "Experiment note" 20; type_text "Filed note"; sleep 3
+  adb shell input keyevent KEYCODE_HOME; sleep 2; adb shell am kill app.benchjot; sleep 2
+  adb shell pidof app.benchjot >/dev/null && echo "process still alive after am kill" || echo "process killed while in Recents"
+  adb shell monkey -p app.benchjot -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 # = tapping the icon / the Recents card
+  waitfor "Preview" 60; waitfor "Filed note" 20; alive; shot 11b-restored
+  to_bottom; tap "Delete note"; waitfor "OK" 10; tap "OK"
+  waitfor "Rename" 20; waitfor "Smoke project" 10; alive; shot 11c-deleted-in-project
+  tap "Delete"; waitfor "OK" 10; tap "OK"; waitfor "New project" 20; to_top
   tap "Search"; type_text "hypothesis"; sleep 3; waitfor "Smoke test note" 10; shot 11-search
   adb shell input keyevent 4; sleep 1
   tap "Settings"; waitfor "@${BJ_USER}" 10; shot 12-settings
-  tap "Sign out"; waitfor "Create account" 20; alive; shot 13-signed-out
+  tap "Sign out"; waitfor "Exp 3: dropout 0.1 vs 0.3" 20; seek "Create account"; alive; shot 13-signed-out # back on the landing; its buttons sit below the example note
 fi
 adb logcat -d | grep -q "FATAL EXCEPTION" && { echo "crash in logcat"; adb logcat -d | grep -A30 "FATAL EXCEPTION" | head -60; exit 1; } || true
 echo "smoke: ok"

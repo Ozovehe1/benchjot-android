@@ -62,6 +62,8 @@ import app.benchjot.core.searchTerms
 import app.benchjot.data.Accounts
 import app.benchjot.data.Backend
 import app.benchjot.home
+import app.benchjot.leaveDeletedNote
+import app.benchjot.project
 import kotlinx.coroutines.launch
 
 /** Placeholder and accessible name of the note body (the user's wording). */
@@ -79,7 +81,7 @@ fun NoteScreen(id: String, pro: Boolean, nav: NavHostController) {
     val (done, entry) = loaded
     val project = projects.value?.firstOrNull { it.id == entry?.projectId }
     val back: Pair<String, () -> Unit> =
-        if (project != null) project.name to { nav.navigate("project/${project.id}") { popUpTo("home") } } else "All notes" to { nav.home() }
+        if (project != null) project.name to { nav.project(project.id) } else "All notes" to { nav.home() }
     if (!done) {
         PageColumn { TopBar({ nav.home() }, back) }
         return
@@ -187,7 +189,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
             PageColumn(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
                 TopBar(
                     { scope.launch { registry.flushAll(); nav.home() } },
-                    back = project?.let { p -> p.name to { nav.navigate("project/${p.id}") { popUpTo("home") } } } ?: ("All notes" to { nav.home() }),
+                    back = project?.let { p -> p.name to { nav.project(p.id) } } ?: ("All notes" to { nav.home() }),
                 ) {
                     SaveIndicator(registry)
                     TextBtn(if (preview) "Edit" else "Preview", { preview = !preview })
@@ -307,7 +309,8 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
             confirmDelete = false
             if (ok) scope.launch {
                 registry.flushAll()
-                runCatching { Backend.deleteEntry(entry.id) }.onSuccess { nav.home() }
+                // A note filed in a project (sub-notes carry their own project id) returns to that project.
+                runCatching { Backend.deleteEntry(entry.id) }.onSuccess { nav.leaveDeletedNote(projectId) }
             }
         }
     }
