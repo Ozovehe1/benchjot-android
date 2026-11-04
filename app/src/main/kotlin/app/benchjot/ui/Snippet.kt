@@ -18,6 +18,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,7 @@ import app.benchjot.core.codeHash
 import app.benchjot.core.detectLanguage
 import app.benchjot.core.diffHunks
 import app.benchjot.core.downloadName
+import app.benchjot.core.fixableCount
 import app.benchjot.core.fromLastRun
 import app.benchjot.core.isLanguageId
 import app.benchjot.core.languageConfig
@@ -69,8 +71,8 @@ import app.benchjot.data.Accounts
 import app.benchjot.data.Backend
 import app.benchjot.data.WebApi
 import app.benchjot.run.DeviceRunner
-import app.benchjot.run.OutputBuffer
-import app.benchjot.run.RunHandle
+import app.benchjot.core.OutputBuffer
+import app.benchjot.core.RunHandle
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
@@ -109,6 +111,10 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     var handle by remember { mutableStateOf<RunHandle?>(null) }
     var confirmRemove by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
+    // Lint starts once the block is touched, so just reading a note never runs Ruff (as the web).
+    var touched by remember(snippet.id) { mutableStateOf(false) }
+    var fixable by remember(snippet.id) { mutableStateOf(0) }
+    val ruff = remember { DeviceRunner.ruff(context) }
 
     val saver = remember(snippet.id) {
         Autosaver(Backend.scope, CodeValue(initial, snippet.content), registry) { v -> Backend.updateSnippetCode(snippet.id, v.language, v.content) }
@@ -129,6 +135,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     }
 
     fun edited() {
+        touched = true
         if (!chosen) language = detectLanguage(code.text) ?: "text"
         saver.update(CodeValue(language, code.text))
     }
@@ -179,6 +186,21 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
             result = r
             running = false
             persist(toLastRun(buffer.chunks, r, if (onDevice) "browser" else "server", src))
+        }
+    }
+
+    // Ruff's count of auto-fixable issues, 700 ms after the last change (the web's lint delay).
+    LaunchedEffect(content, language, touched) {
+        if (language != "python" || !touched || !ruff.available) { fixable = 0; return@LaunchedEffect }
+        delay(700)
+        fixable = runCatching { fixableCount(ruff.check(content)) }.getOrDefault(0)
+    }
+
+    fun autofix() {
+        val before = code.text
+        scope.launch {
+            val fixed = runCatching { ruff.fixAll(before) }.getOrNull() ?: return@launch
+            if (fixed != before && code.text == before) { code.replaceAll(fixed); edited() }
         }
     }
 
@@ -242,6 +264,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
             })
             TextBtn("Download", { download(downloadName(snippet.filename, language, index), code.text) })
             if (lastError.isNotEmpty() && !running && fix == null) TextBtn(if (fixing) "Fixing…" else "Fix", ::proposeFix, enabled = !fixing)
+            if (language == "python" && fixable > 0) TextBtn("Autofix", ::autofix)
             Spacer(Modifier.weight(1f))
             TextBtn("Remove", { if (code.text.isNotBlank()) confirmRemove = true else remove(snippet, saver, handle) })
         }

@@ -33,6 +33,7 @@ import app.benchjot.ui.BenchjotTheme
 import app.benchjot.ui.EntryListScreen
 import app.benchjot.ui.LandingScreen
 import app.benchjot.ui.LoginScreen
+import app.benchjot.ui.NoteMapScreen
 import app.benchjot.ui.NoteScreen
 import app.benchjot.ui.SettingsScreen
 import app.benchjot.ui.WelcomeScreen
@@ -102,6 +103,7 @@ private fun SignedIn() {
         composable("project/{id}") { List(nav, it.arguments?.getString("id")) }
         composable("note/{id}") { NoteScreen(it.arguments?.getString("id").orEmpty(), pro, nav) }
         composable("settings") { SettingsScreen(username) { nav.home() } }
+        composable("map") { NoteMapScreen(onHome = { nav.home() }, onOpenNote = { nav.navigate("note/$it") }) }
     }
 }
 
@@ -112,6 +114,7 @@ private fun List(nav: NavHostController, projectId: String?) = EntryListScreen(
     onOpenProject = { nav.navigate("project/$it") },
     onHome = { nav.home() },
     onSettings = { nav.navigate("settings") },
+    onMap = { nav.navigate("map") },
     onProjectGone = { nav.home() },
 )
 

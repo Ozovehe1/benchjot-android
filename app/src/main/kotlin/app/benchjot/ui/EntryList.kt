@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -47,6 +48,7 @@ fun EntryListScreen(
     onHome: () -> Unit,
     onSettings: () -> Unit,
     onProjectGone: () -> Unit,
+    onMap: () -> Unit,
 ) {
     val scope = rememberCoroutineScope()
     var query by rememberSaveable { mutableStateOf("") }
@@ -91,6 +93,7 @@ fun EntryListScreen(
         item {
             PageColumn {
                 TopBar(onHome = onHome, back = if (projectId != null) "All notes" to onHome else null) {
+                    TextBtn("Map", onMap, Modifier.widthIn(min = 48.dp), center = true)
                     TextBtn("Settings", onSettings)
                 }
                 if (projectId != null) {

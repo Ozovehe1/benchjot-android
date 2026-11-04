@@ -20,5 +20,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Embedded Python runs in its own process so Stop can kill it (run/PythonService.kt). -->
+        <service
+            android:name=".run.PythonService"
+            android:exported="false"
+            android:process=":python" />
     </application>
 </manifest>

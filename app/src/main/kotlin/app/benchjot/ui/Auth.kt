@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -191,7 +195,8 @@ fun LoginScreen(startInSignUp: Boolean, onHome: () -> Unit) {
         Row(Modifier.height(64.dp), verticalAlignment = Alignment.CenterVertically) { Logo(onClick = onHome) }
         Gap((LocalConfiguration.current.screenHeightDp * 0.08f).dp + 32.dp)
         Text(if (signin) "Sign in" else "Create account", Modifier.padding(bottom = 24.dp), style = Type.h1, color = t.fg)
-        // Google sign-in comes later on Android; the web's "or" divider stays out until then.
+        GoogleButton(enabled = !loading, onError = { error = it })
+        Text("or", Modifier.fillMaxWidth().padding(top = 24.dp, bottom = 8.dp), style = Type.xs.copy(textAlign = TextAlign.Center), color = t.faint)
         if (!signin) UnderlineField(username, { username = it }, "Username", keyboard = noCaps)
         UnderlineField(
             identifier, { identifier = it }, if (signin) "Email or username" else "Email",
@@ -210,6 +215,46 @@ fun LoginScreen(startInSignUp: Boolean, onHome: () -> Unit) {
             { signin = !signin; error = null }, Modifier.fillMaxWidth().padding(top = 4.dp), center = true,
         )
         if (signin && canResend) TextBtn("Resend confirmation email", ::resend, Modifier.fillMaxWidth(), enabled = !loading, center = true)
+    }
+}
+
+/**
+ * Continue with Google, drawn as the Sign in with Google button the web renders
+ * (filled black in dark mode, outlined in light, Google's G). The session change
+ * takes the app in; a new account goes to the username picker first.
+ */
+@Composable
+private fun GoogleButton(enabled: Boolean, onError: (String) -> Unit) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope = rememberCoroutineScope()
+    var busy by remember { mutableStateOf(false) }
+    val dark = t.dark
+    val shape = RoundedCornerShape(4.dp)
+    Box(Modifier.fillMaxWidth().height(48.dp), contentAlignment = Alignment.Center) {
+        Row(
+            Modifier.fillMaxWidth().widthIn(max = 400.dp).height(40.dp)
+                .then(if (dark) Modifier.background(Color(0xFF131314), shape) else Modifier.background(Color.White, shape).border(1.dp, Color(0xFF747775), shape))
+                .plainClick(enabled = enabled && !busy) {
+                    busy = true
+                    scope.launch {
+                        when (val r = app.benchjot.data.GoogleSignIn.signIn(context)) {
+                            is app.benchjot.data.GoogleSignIn.Result.Failed -> onError(r.message)
+                            else -> Unit
+                        }
+                        busy = false
+                    }
+                }
+                .semantics(mergeDescendants = true) { contentDescription = "Continue with Google" },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            androidx.compose.foundation.Image(androidx.compose.ui.res.painterResource(app.benchjot.R.drawable.ic_google_g), contentDescription = null, Modifier.size(18.dp))
+            Text(
+                "Continue with Google", Modifier.padding(start = 10.dp),
+                style = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.25.sp),
+                color = if (dark) Color(0xFFE3E3E3) else Color(0xFF1F1F1F),
+            )
+        }
     }
 }
 
