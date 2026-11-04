@@ -44,7 +44,7 @@ sleep 8; alive; shot 1-landing
 tap "Sign in"; alive; shot 2-sign-in
 tap "Create an account"; alive; shot 3-create-account
 tap "Email"; type_text "not-an-email"; adb shell input keyevent 4; sleep 1; tap "Create account" last; alive
-waitfor "Enter a valid email." 5; shot 4-validation
+waitfor "Password needs at least 8 characters." 5; shot 4-validation
 adb shell "cmd uimode night yes" || true
 sleep 3; alive; shot 5-dark
 adb shell "cmd uimode night no" || true
