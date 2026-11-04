@@ -62,7 +62,7 @@ sleep 8; alive; shot 1-landing
 landing="$(dump)"
 echo "$landing" | grep -q 'Exp 3: dropout 0.1 vs 0.3' || { echo "::error::landing preview note not shown"; exit 1; }
 if echo "$landing" | grep -q 'class="android.widget.EditText"'; then echo "::error::landing preview has an editable field"; exit 1; fi
-tap "Sign in"; alive; shot 2-sign-in
+seek "Sign in"; tap "Sign in"; alive; shot 2-sign-in # below the example note on small screens
 # Continue with Google: the button must hand over to Android's Credential Manager.
 # (A real Google account can't be used by automation, so the sign-in itself isn't completed here.)
 adb logcat -c
