@@ -314,10 +314,13 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
 }
 
 /** Quiet status: "Saved" after a save, "Not saved" on failure, nothing otherwise. */
-/** The note body as rendered: the editor's Preview and the read-only landing preview (web: note-parts.tsx). */
+/**
+ * The note body as rendered: the editor's Preview and the read-only landing preview (web: note-parts.tsx).
+ * `reserve` keeps the editor's tap-to-type height; read-only views turn it off.
+ */
 @Composable
-fun RenderedBody(text: String, notes: List<NoteIndexItem> = emptyList(), onOpenNote: (String) -> Unit = {}) {
-    Box(Modifier.padding(top = 16.dp).heightIn(min = 96.dp)) {
+fun RenderedBody(text: String, notes: List<NoteIndexItem> = emptyList(), reserve: Boolean = true, onOpenNote: (String) -> Unit = {}) {
+    Box(Modifier.padding(top = 16.dp).then(if (reserve) Modifier.heightIn(min = 96.dp) else Modifier)) {
         if (text.isNotBlank()) NoteMarkdown(text, notes, onOpenNote)
         else Text("Nothing written.", style = Type.body, color = t.faint)
     }

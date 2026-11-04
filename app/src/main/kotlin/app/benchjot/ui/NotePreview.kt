@@ -23,7 +23,7 @@ import app.benchjot.core.fromLastRun
 fun NotePreview(title: String, notes: String, snippets: List<Snippet>, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth().border(1.dp, t.line, RoundedCornerShape(6.dp)).padding(start = 16.dp, end = 16.dp, bottom = 4.dp).semantics { contentDescription = "Example note" }) {
         Text(title, Modifier.fillMaxWidth().padding(top = 24.dp), style = Type.xl, color = t.fg)
-        RenderedBody(notes)
+        RenderedBody(notes, reserve = false)
         Column(Modifier.padding(top = 40.dp)) {
             snippets.forEachIndexed { i, s -> SnippetView(s, i) }
         }
