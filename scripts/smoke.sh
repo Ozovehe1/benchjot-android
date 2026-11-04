@@ -57,6 +57,12 @@ seek() {
   for _ in $(seq 1 "${2:-20}"); do [ -n "$(find "$1")" ] && return 0; swipe_up; sleep 1; done
   echo "timed out seeking: $1"; shot "timeout-$(echo "$1" | tr -cd 'a-zA-Z0-9')"; dump | head -c 4000; exit 1
 }
+# Scrolls up a fifth of the screen at a time until $1 is on screen: for a block's header row
+# (its Run button sits above the code, so a tall block's header is off screen after to_bottom).
+seek_up() {
+  for _ in $(seq 1 "${2:-10}"); do [ -n "$(find "$1")" ] && return 0; adb shell input swipe $((W / 2)) $((H * 2 / 5)) $((W / 2)) $((H * 3 / 5)) 300; sleep 1; done
+  echo "timed out seeking up: $1"; shot "timeout-up-$(echo "$1" | tr -cd 'a-zA-Z0-9')"; dump | head -c 4000; exit 1
+}
 back() { adb shell input keyevent 4; sleep 2; }
 focus() { adb shell dumpsys window | grep -E "mCurrentFocus" | head -1; }
 type_text() { adb shell "input text '$(echo "$1" | sed "s/ /%s/g")'"; sleep 1; }
@@ -128,7 +134,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   for line in "import matplotlib.pyplot as plt" "plt.plot([1,2,3],[3,1,2])" "plt.show()" "import plotly.express as px" "px.scatter(x=[1,2,3],y=[4,1,2]).show()"; do
     type_text "$line"; adb shell input keyevent 66
   done
-  back; to_bottom; tap "Run" last
+  back; to_bottom; seek_up "Run"; tap "Run" last
   seek "Open" 90; alive; shot 8g-outputs
   tap "Open"; waitfor "Download" 30; waitfor "^Figure" 10; shot 8h-figure-viewer
   tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; echo "figure download: ok"

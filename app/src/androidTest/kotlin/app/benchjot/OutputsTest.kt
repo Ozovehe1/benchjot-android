@@ -116,9 +116,12 @@ class OutputsTest {
         val x = scene.plot.l + ((2.0 - v.x0) / (v.x1 - v.x0)).toFloat() * scene.plot.w
         val y = scene.plot.b - ((0.6 - v.y0) / (v.y1 - v.y0)).toFloat() * scene.plot.h
         compose.onNodeWithTag("chart").performTouchInput { click(Offset(x, y)) }
+        // A tap is only a tap once the double-tap window has passed (detectTapGestures waits for a
+        // second tap on the test clock), so move that clock past it instead of relying on timing.
+        compose.mainClock.advanceTimeBy(2L * android.view.ViewConfiguration.getDoubleTapTimeout())
         compose.waitForIdle()
         val said = compose.onNodeWithTag("chart").fetchSemanticsNode().config[SemanticsProperties.StateDescription]
-        assertTrue("tooltip: $said", said.contains("0.6"))
+        assertTrue("tooltip '$said' after a tap at ($x, $y) in ${scene.plot}", said.contains("0.6"))
     }
 
     @Test fun everyChartDownloadFormatIsThatFileType() = runBlocking {

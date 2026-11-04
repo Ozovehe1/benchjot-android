@@ -123,6 +123,8 @@ chaquopy {
             install("seaborn")
             install("altair")
             install("jsonschema<4.18")
+            // pyparsing 3.3 deprecates the camelCase names matplotlib 3.8 calls, so every import printed warnings.
+            install("pyparsing<3.3")
         }
     }
 }
