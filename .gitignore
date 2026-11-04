@@ -7,6 +7,6 @@ local.properties
 captures/
 *.keystore
 !debug-ci.keystore
-# Ruff binaries: fetched by scripts/fetch-ruff.sh from scripts/ruff.lock
+# Ruff binaries: built by scripts/build-ruff-android.sh (CI caches them)
 app/src/main/jniLibs/*/libruff.so
 node_modules/

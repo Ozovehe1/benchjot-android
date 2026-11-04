@@ -21,7 +21,26 @@ permissions:
   contents: write # to publish the APK as a release
 
 jobs:
+  ruff:
+    # Ruff built from source for Android (bionic), cached per version and build script.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: cache
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/jniLibs
+          key: ruff-android-${{ hashFiles('scripts/ruff.lock', 'scripts/build-ruff-android.sh') }}
+      - name: Build Ruff for Android
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: bash scripts/build-ruff-android.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ruff-android
+          path: app/src/main/jniLibs
+
   build:
+    needs: ruff
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,32 +72,39 @@ jobs:
           git status --short
           git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
 
-      - name: Ruff binaries (pinned in scripts/ruff.lock)
-        run: |
-          bash scripts/fetch-ruff.sh host
-          bash scripts/fetch-ruff.sh app
+      - name: Ruff (official binary for the host tests; the Android build from the ruff job)
+        run: bash scripts/fetch-ruff.sh host
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ruff-android
+          path: app/src/main/jniLibs
 
       - name: Unit tests (core rules, JS engine, Ruff vs the web's WASM)
         run: ./gradlew --no-daemon :core:test :engine:test :app:testDebugUnitTest
 
-      - name: Build APKs (release, plus debug + instrumented tests for the emulator)
-        run: ./gradlew --no-daemon :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: "Build APKs (phones arm64-v8a; emulator x86_64 release, debug and instrumented tests)"
+        run: |
+          mkdir -p apks
+          ./gradlew --no-daemon -Pabi=arm64-v8a :app:assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk apks/app-release-arm64-v8a.apk
+          ./gradlew --no-daemon -Pabi=x86_64 :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest
+          cp app/build/outputs/apk/release/app-release.apk apks/app-release-x86_64.apk
+          cp app/build/outputs/apk/debug/app-debug.apk apks/app-debug-x86_64.apk
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk apks/
 
       - name: No WebView in the APK
-        run: bash scripts/check-no-webview.sh app/build/outputs/apk/release/app-release.apk
+        run: bash scripts/check-no-webview.sh apks/app-release-arm64-v8a.apk
 
       - name: APK size
         run: |
-          ls -l app/build/outputs/apk/release/app-release.apk | awk '{printf "release APK: %.1f MB\n", $5/1048576}' | tee -a "$GITHUB_STEP_SUMMARY"
-          unzip -l app/build/outputs/apk/release/app-release.apk | sort -k1 -n -r | head -15
+          for f in apks/app-release-*.apk; do ls -l "$f" | awk '{printf "%s: %.1f MB\n", $9, $5/1048576}'; done | tee -a "$GITHUB_STEP_SUMMARY"
+          unzip -l apks/app-release-arm64-v8a.apk | sort -k1 -n -r | head -12
 
       - uses: actions/upload-artifact@v4
         with:
           name: benchjot-apk
-          path: |
-            app/build/outputs/apk/release/app-release.apk
-            app/build/outputs/apk/debug/app-debug.apk
-            app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+          path: apks/
 
   smoke:
     needs: build
@@ -107,7 +133,7 @@ jobs:
           target: google_apis
           disable-animations: true
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
-          script: bash scripts/instrumented.sh apks && bash scripts/smoke.sh apks/release/app-release.apk
+          script: bash scripts/emulator-checks.sh apks
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -130,8 +156,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="build-${GITHUB_RUN_NUMBER}"
-          cp apks/release/app-release.apk benchjot.apk
+          cp apks/app-release-arm64-v8a.apk benchjot.apk
           gh release create "$TAG" benchjot.apk \
             --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
-            --notes "Built from ${GITHUB_SHA::7}. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
+            --notes "Built from ${GITHUB_SHA::7}. For 64-bit ARM phones (arm64-v8a, nearly every phone since 2017). Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
             --latest

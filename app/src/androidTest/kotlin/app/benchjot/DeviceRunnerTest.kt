@@ -11,6 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -93,7 +98,12 @@ class DeviceRunnerTest {
     @Test fun ruff_runsOnAndroid() = runBlocking {
         val ruff = DeviceRunner.ruff(context)
         assertTrue("libruff.so is not in ${context.applicationInfo.nativeLibraryDir}", ruff.available)
-        assertEquals(2, fixableCount(ruff.check("import os\nimport sys\nprint(1)\n")))
-        assertEquals("print(1)\n", ruff.fixAll("import os\nimport sys\nprint(1)\n"))
+        // Same answers as the web's WASM Ruff on the shared samples (engine/src/test/resources/web/ruff.json).
+        val fixture = Json.parseToJsonElement(javaClass.getResource("/web/ruff.json")!!.readText()).jsonObject
+        for (sample in fixture["samples"]!!.jsonArray.map { it.jsonObject }) {
+            val code = sample["code"]!!.jsonPrimitive.content
+            assertEquals("fixable in: $code", sample["fixable"]!!.jsonPrimitive.int, fixableCount(ruff.check(code)))
+            assertEquals("fixed: $code", sample["fixed"]!!.jsonPrimitive.content, ruff.fixAll(code))
+        }
     }
 }

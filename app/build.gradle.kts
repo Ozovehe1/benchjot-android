@@ -28,7 +28,9 @@ android {
         buildConfigField("String", "WEB_URL", "\"${cfg("webUrl")}\"")
         buildConfigField("String", "GOOGLE_SERVER_CLIENT_ID", "\"${cfg("googleServerClientId")}\"")
         // Phones (arm64) and the CI emulator (x86_64). Python and Ruff are native, one copy per ABI.
-        ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
+        // Phones are arm64-v8a, the CI emulator x86_64. Python and Ruff are native, so CI builds
+        // one APK per ABI (-Pabi=arm64-v8a / -Pabi=x86_64); a plain build carries both.
+        ndk { abiFilters += (providers.gradleProperty("abi").orNull?.split(",") ?: listOf("arm64-v8a", "x86_64")) }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -50,6 +52,9 @@ android {
             signingConfig = signingConfigs.getByName("sideload")
         }
     }
+
+    // The instrumented Ruff test checks the device binary against the web fixture the JVM tests use.
+    sourceSets["androidTest"].resources.srcDir("../engine/src/test/resources")
 
     buildFeatures {
         compose = true
@@ -103,11 +108,11 @@ chaquopy {
     }
 }
 
-// The Ruff binaries the APK bundles (scripts/fetch-ruff.sh app); a build without them would ship no Autofix.
+// The Ruff binaries the APK bundles (scripts/build-ruff-android.sh); a build without them would ship no Autofix.
 tasks.named("preBuild") {
     doFirst {
-        for (abi in listOf("arm64-v8a", "x86_64")) {
-            check(file("src/main/jniLibs/$abi/libruff.so").exists()) { "Missing Ruff for $abi: run scripts/fetch-ruff.sh app" }
+        for (abi in android.defaultConfig.ndk.abiFilters) {
+            check(file("src/main/jniLibs/$abi/libruff.so").exists()) { "Missing Ruff for $abi: run scripts/build-ruff-android.sh" }
         }
     }
 }

@@ -46,6 +46,7 @@ class PythonService : Service() {
             }
             Python.getInstance().getModule("bj_runner").callAttr("run", code, emit)
         } catch (e: Throwable) {
+            android.util.Log.e("PythonService", "run failed", e)
             emit.error(e.toString())
         } finally {
             emit.close()

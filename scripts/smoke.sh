@@ -8,6 +8,7 @@
 set -euo pipefail
 APK=${1:-benchjot.apk}
 mkdir -p smoke
+trap 'adb logcat -d > smoke/logcat-smoke.txt 2>/dev/null' EXIT
 adb install -r "$APK"
 adb logcat -c
 shot() { adb exec-out screencap -p > "smoke/$1.png"; }

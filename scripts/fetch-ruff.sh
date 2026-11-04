@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Downloads the pinned Ruff binaries (scripts/ruff.lock), checking their sha256.
-#   scripts/fetch-ruff.sh app    -> app/src/main/jniLibs/{arm64-v8a,x86_64}/libruff.so (bundled in the APK)
-#   scripts/fetch-ruff.sh host   -> build/ruff-host/ruff for this machine (engine tests)
-# Not committed: 20 MB binaries stay out of git; the lock file is the source of truth.
+# Downloads the official Ruff binary (scripts/ruff.lock, sha256-checked) for this
+# machine: build/ruff-host/ruff, which the engine tests run to compare against the
+# web's WASM Ruff. (The APK's Ruff is built for Android: scripts/build-ruff-android.sh.)
+#   scripts/fetch-ruff.sh host
 set -euo pipefail
 cd "$(dirname "$0")/.."
 lock() { grep "^$1=" scripts/ruff.lock | cut -d= -f2; }
@@ -21,10 +21,7 @@ fetch() { # arch dest
   echo "ruff $VERSION ($arch) -> $dest"
 }
 case "${1:-}" in
-  app)
-    fetch aarch64 app/src/main/jniLibs/arm64-v8a/libruff.so
-    fetch x86_64 app/src/main/jniLibs/x86_64/libruff.so ;;
   host)
     case "$(uname -m)" in aarch64|arm64) fetch aarch64 build/ruff-host/ruff ;; x86_64) fetch x86_64 build/ruff-host/ruff ;; *) echo "no Ruff binary for $(uname -m)"; exit 1 ;; esac ;;
-  *) echo "usage: $0 app|host"; exit 2 ;;
+  *) echo "usage: $0 host"; exit 2 ;;
 esac

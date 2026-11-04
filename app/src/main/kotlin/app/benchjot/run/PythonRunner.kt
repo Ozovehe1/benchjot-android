@@ -88,8 +88,10 @@ object PythonRunner {
             fun elapsed() = if (started == 0L) 0L else System.currentTimeMillis() - started
             try {
                 val c = bind(context)
-                val messenger = withTimeoutOrNull(30_000) { c.messenger.await() }
-                    ?: return@async RunResult(RunOutcome.Error, RunError("Python didn't start.", null), 0)
+                val connected = withTimeoutOrNull(30_000) { c.messenger.await() ?: NO_BINDING }
+                if (connected == null) { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (no answer in 30 s).", null), 0) }
+                val messenger = (connected as? Messenger)
+                    ?: run { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (the service refused to bind).", null), 0) }
                 messenger.send(Message.obtain(null, PyProtocol.RUN, id, 0).apply {
                     data = Bundle().apply { putString(PyProtocol.CODE, code) }
                     replyTo = replies
@@ -122,6 +124,7 @@ object PythonRunner {
         return RunHandle(done) { inbox.trySend(stop) }
     }
 
+    private val NO_BINDING = Any()
     private const val STOP = -1
     private const val GONE = -2
 }
