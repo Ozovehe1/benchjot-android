@@ -136,7 +136,10 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   done
   back; to_bottom; seek_up "Run"; tap "Run" last
   seek "Open" 90; alive; shot 8g-outputs
-  tap "Open"; waitfor "Download" 30; waitfor "^Figure" 10; shot 8h-figure-viewer
+  tap "Open"; waitfor "Download" 30
+  # Whichever output's Open was on screen, step back to the first (the figure).
+  for _ in 1 2 3; do [ -n "$(find "Prev")" ] || break; tap "Prev"; done
+  waitfor "^Figure" 10; shot 8h-figure-viewer
   tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; echo "figure download: ok"
   tap "Next"; waitfor "^Plotly chart" 20; sleep 2; shot 8i-chart-viewer
   tap "PNG"; waitfor "PDF" 10; tap "PDF"; tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; alive; shot 8j-chart-pdf; echo "chart pdf download: ok"
