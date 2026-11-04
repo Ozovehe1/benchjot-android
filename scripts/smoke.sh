@@ -143,7 +143,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Search"; type_text "hypothesis"; sleep 3; waitfor "Smoke test note" 10; shot 11-search
   adb shell input keyevent 4; sleep 1
   tap "Settings"; waitfor "@${BJ_USER}" 10; shot 12-settings
-  tap "Sign out"; waitfor "Create account" 20; alive; shot 13-signed-out
+  tap "Sign out"; waitfor "Exp 3: dropout 0.1 vs 0.3" 20; seek "Create account"; alive; shot 13-signed-out # back on the landing; its buttons sit below the example note
 fi
 adb logcat -d | grep -q "FATAL EXCEPTION" && { echo "crash in logcat"; adb logcat -d | grep -A30 "FATAL EXCEPTION" | head -60; exit 1; } || true
 echo "smoke: ok"
