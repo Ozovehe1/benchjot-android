@@ -124,6 +124,17 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "All notes"; waitfor "Smoke test note" 20
   tap "Search"; type_text "hypothesis"; sleep 3; waitfor "Smoke test note" 10; shot 11-search
   adb shell input keyevent 4; sleep 1
+  # A note in a project: leaving the app (process killed, task still in Recents) and coming back
+  # reopens that note; deleting it then stays in the project, not All notes.
+  tap "New project"; waitfor "Project name" 10; type_text "Smoke project"; tap "OK"; waitfor "Smoke project" 20
+  tap "Smoke project"; waitfor "Rename" 20
+  tap "New note"; waitfor "Experiment note" 20; type_text "Filed note"; sleep 3
+  adb shell input keyevent KEYCODE_HOME; sleep 2; adb shell am kill app.benchjot; sleep 2
+  adb shell monkey -p app.benchjot -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+  waitfor "Preview" 60; waitfor "Filed note" 20; alive; shot 11b-restored
+  to_bottom; tap "Delete note"; waitfor "OK" 10; tap "OK"
+  waitfor "Rename" 20; waitfor "Smoke project" 10; alive; shot 11c-deleted-in-project
+  tap "Delete"; waitfor "OK" 10; tap "OK"; waitfor "New project" 20
   tap "Settings"; waitfor "@${BJ_USER}" 10; shot 12-settings
   tap "Sign out"; waitfor "Create account" 20; alive; shot 13-signed-out
 fi

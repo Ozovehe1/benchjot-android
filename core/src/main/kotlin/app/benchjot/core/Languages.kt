@@ -72,8 +72,15 @@ val LANGUAGES: List<Language> = listOf(
         keys = listOf()),
 )
 
-/** New, empty code blocks start as plain text and pick a language from what is typed. */
-const val DEFAULT_LANGUAGE = "text"
+/** New code blocks start as Python; an empty one still switches to a language detected from what is typed. */
+const val DEFAULT_LANGUAGE = "python"
+
+/**
+ * Whether a block's language is settled on open: it has code, or the user picked a language
+ * other than the default (or plain text, the old default). Mirrors the web's languageChosen.
+ */
+fun languageChosen(language: String, content: String): Boolean =
+    content.isNotBlank() || (language != DEFAULT_LANGUAGE && language != "text")
 
 fun languageConfig(id: String): Language = LANGUAGES.firstOrNull { it.id == id } ?: LANGUAGES.last()
 fun isLanguageId(id: String): Boolean = LANGUAGES.any { it.id == id }

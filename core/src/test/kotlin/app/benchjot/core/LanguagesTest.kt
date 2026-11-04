@@ -28,6 +28,14 @@ class LanguagesTest {
         assertEquals(web["default"]!!.jsonPrimitive.content, DEFAULT_LANGUAGE)
     }
 
+    @Test fun newBlocksDefaultToPython() {
+        assertEquals("python", DEFAULT_LANGUAGE)
+        org.junit.Assert.assertFalse(languageChosen("python", ""))
+        org.junit.Assert.assertFalse(languageChosen("text", "  "))
+        org.junit.Assert.assertTrue(languageChosen("javascript", ""))
+        org.junit.Assert.assertTrue(languageChosen("python", "print(1)"))
+    }
+
     @Test fun filenames() {
         assertEquals("r", languageFromFilename("plot.R"))
         assertEquals("matlab", languageFromFilename("f.m"))
