@@ -6,6 +6,7 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import app.benchjot.BuildConfig
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -31,6 +32,7 @@ object GoogleSignIn {
     }
 
     private const val DIDNT_FINISH = "Google sign-in didn't finish. Try again."
+    private const val NO_ACCOUNT = "No Google account on this phone. Add one in Settings, or use email."
 
     private fun sha256Hex(text: String) = MessageDigest.getInstance("SHA-256").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }
 
@@ -43,6 +45,8 @@ object GoogleSignIn {
             CredentialManager.create(activity).getCredential(activity, request).credential
         } catch (_: GetCredentialCancellationException) {
             return Result.Cancelled
+        } catch (_: NoCredentialException) {
+            return Result.Failed(NO_ACCOUNT)
         } catch (e: GetCredentialException) {
             return Result.Failed(e.errorMessage?.toString()?.takeIf { it.isNotBlank() } ?: DIDNT_FINISH)
         }
