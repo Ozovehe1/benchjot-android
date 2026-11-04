@@ -66,7 +66,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Code 1"; type_text "print(6*7)"; adb shell input keyevent 4; sleep 2
   waitfor "Python" 10; shot 7-note
   tap "Run"; waitfor "^42" 120; alive; shot 8-ran
-  adb shell input keyevent 4; to_top; waitfor "Saved" 10
+  to_top; waitfor "Saved" 10
   tap "Preview"; sleep 2; shot 9-preview
   tap "Successful"; sleep 2
   tap "All notes"; waitfor "Smoke test note" 20; shot 10-list
