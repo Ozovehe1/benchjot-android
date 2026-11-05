@@ -176,11 +176,17 @@ private fun Preview(item: OutputItem, files: OutputFiles) {
         }
         else -> BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             val img = rememberOutputImage(item, files, 1600)
-            if (img == null) Box(Modifier.fillMaxWidth().height(160.dp))
+            // While it loads, hold the height it will take (the run records its size), so the page
+            // doesn't grow under the reader, nor under a scroll position restored on coming back.
+            if (img == null) Box(Modifier.fillMaxWidth().height(imagePlaceholderHeight(maxWidth.value, item.width, item.height).dp))
             else Image(img, item.title.ifEmpty { outputLabel(item) }, Modifier.fillMaxWidth().heightIn(max = 480.dp), contentScale = ContentScale.Fit)
         }
     }
 }
+
+/** The inline image's height in dp before it has loaded: its own aspect at the column's width, capped as the image is (480). */
+fun imagePlaceholderHeight(widthDp: Float, w: Int, h: Int): Float =
+    if (w > 0 && h > 0) minOf(widthDp * h / w, 480f) else 160f
 
 /** The outputs under a code block, in the order the code made them; `onOpen` null until they are saved. */
 @Composable

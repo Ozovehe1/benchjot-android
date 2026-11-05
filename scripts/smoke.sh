@@ -127,6 +127,8 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   waitfor "^while True: pass" 10
   [ -z "$(find "^import os")" ] || { echo "::error::Autofix left the unused import"; shot timeout-autofix; exit 1; }
   shot 8f-autofixed; echo "ruff autofix: ok"
+  # The note's text saved ("Saved" shows until the note screen is left: the viewer below replaces it).
+  to_top; waitfor "Saved" 10
   # Rich outputs: a matplotlib figure and a Plotly chart under the block, saved to Storage; each
   # opens on its own screen and downloads (PNG, then the chart as PDF) into Downloads/Benchjot.
   to_bottom; tap "Add code"; seek "Code 5"
@@ -143,8 +145,13 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; echo "figure download: ok"
   tap "Next"; waitfor "^Plotly chart" 20; sleep 2; shot 8i-chart-viewer
   tap "PNG"; waitfor "PDF" 10; tap "PDF"; tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; alive; shot 8j-chart-pdf; echo "chart pdf download: ok"
-  tap "Back to note"; waitfor "Code 5" 20
-  to_top; waitfor "Saved" 10
+  # Back on the same note at the same spot (Note.kt rememberRestoredScrollState): the outputs' Open
+  # is on screen again without scrolling, and the top of the note (its Outcome row) is not.
+  tap "Back to note"; waitfor "Open" 20; sleep 2
+  [ -n "$(find "Open")" ] && [ -z "$(find "Outcome")" ] || { echo "::error::Back to note did not return to the same place in the note"; shot back-to-note; dump | head -c 3000; exit 1; }
+  shot 8k-back-same-spot; echo "back to note at the same spot: ok"
+  to_top; [ -n "$(find "Preview")" ] || to_top # the note is taller now (two figures under Code 5)
+  waitfor "Preview" 10
   tap "Preview"; waitfor "E=mc^2" 10; shot 9-preview-math
   tap "Successful"; sleep 2
   tap "All notes"; waitfor "Smoke test note" 20; shot 10-list

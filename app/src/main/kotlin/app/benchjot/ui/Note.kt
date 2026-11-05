@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -186,7 +185,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
 
     CompositionLocalProvider(LocalCodeKeys provides keys) {
         Box(Modifier.fillMaxSize()) {
-            PageColumn(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 96.dp)) {
+            PageColumn(Modifier.fillMaxSize().verticalScroll(rememberRestoredScrollState(entry.id)).padding(bottom = 96.dp)) {
                 TopBar(
                     { scope.launch { registry.flushAll(); nav.home() } },
                     back = project?.let { p -> p.name to { nav.project(p.id) } } ?: ("All notes" to { nav.home() }),
