@@ -43,9 +43,10 @@ WORK=${PY_SCI_WORK:-/tmp/py-sci}/$ABI
 PLAT=android_${API}_${ABI//-/_}
 case $ABI in
   # OpenBLAS targets as Chaquopy's chaquopy-openblas recipe (ARMv6 kernels: armeabi-v7a doesn't promise VFPv3-D32).
+  # long double: 64-bit on 32-bit ARM; IEEE quad (128-bit) on arm64 and on Android's x86_64 (not x87's 80 bits as on Linux).
   armeabi-v7a) HOST=arm-linux-androideabi; CPU_FAMILY=arm;    CPU=armv7;  LDBL=IEEE_DOUBLE_LE;             OB_ARGS="TARGET=ARMV6 ARM_SOFTFP_ABI=1"; RT_ARCH=arm ;;
   arm64-v8a)   HOST=aarch64-linux-android; CPU_FAMILY=aarch64; CPU=armv8; LDBL=IEEE_QUAD_LE;               OB_ARGS="TARGET=ARMV8"; RT_ARCH=aarch64 ;;
-  x86_64)      HOST=x86_64-linux-android;  CPU_FAMILY=x86_64; CPU=x86_64; LDBL=INTEL_EXTENDED_16_BYTES_LE; OB_ARGS="TARGET=NEHALEM"; RT_ARCH=x86_64 ;;
+  x86_64)      HOST=x86_64-linux-android;  CPU_FAMILY=x86_64; CPU=x86_64; LDBL=IEEE_QUAD_LE;               OB_ARGS="TARGET=NEHALEM"; RT_ARCH=x86_64 ;;
   *) echo "unknown ABI $ABI"; exit 1 ;;
 esac
 command -v "python$PY" >/dev/null || { echo "python$PY must be on PATH"; exit 1; }
@@ -272,6 +273,15 @@ p = sys.argv[1]; s = open(p).read()
 old = "#if __has_include(<pthread.h>) && defined(__linux__) && defined(_GNU_SOURCE)"
 assert s.count(old) == 3, "ducc0 threading.cc changed; review this patch"
 open(p, "w").write(s.replace(old, old + " && !defined(__ANDROID__)"))
+PY
+        # Boost.Math takes every x86 long double for x87's 80 bits; Android's x86_64 one is IEEE quad, so its
+        # x86 branch must not match there (Boost's generic 128-bit branch does).
+        "python$PY" - "$SRC/subprojects/boost_math/math/include/boost/math/special_functions/detail/fp_traits.hpp" <<'PY'
+import sys
+p = sys.argv[1]; s = open(p).read()
+old = "#elif defined(__i386) || defined(__i386__) || defined(_M_IX86) \\\n    || defined(__amd64) || defined(__amd64__)  || defined(_M_AMD64) \\\n    || defined(__x86_64) || defined(__x86_64__) || defined(_M_X64)\n"
+assert s.count(old) == 1, "boost fp_traits.hpp changed; review this patch"
+open(p, "w").write(s.replace(old, "#elif (LDBL_MANT_DIG == 64) && (" + old[len("#elif "):-1] + ")\n"))
 PY
         ;;
       pandas)
