@@ -96,3 +96,14 @@ fun <T : NoteRef> backlinksTo(id: String, links: List<SourcedLink>, notes: List<
     val from = links.filter { it.source != id && resolveLink(it.link, notes)?.id == id }.map { it.source }.toSet()
     return notes.filter { it.id in from }
 }
+
+/** URL schemes a link in a note body may open (the web's OPENABLE_SCHEMES, src/lib/safe-next.ts). */
+val OPENABLE_SCHEMES = listOf("http", "https", "mailto")
+private val SCHEME = Regex("^([a-zA-Z][a-zA-Z0-9+.-]*):")
+private val CONTROL = Regex("[\\u0000-\\u001f\\u007f]")
+
+/** An http, https or mailto link (any case, surrounding spaces ignored); javascript:, intent:, file:, content: and the rest never open. The web's isOpenableLink (openable_links.json fixture). */
+fun isOpenableLink(url: String): Boolean {
+    val scheme = SCHEME.find(url.trim())?.groupValues?.get(1)?.lowercase() ?: return false
+    return !CONTROL.containsMatchIn(url) && scheme in OPENABLE_SCHEMES
+}

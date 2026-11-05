@@ -29,6 +29,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
@@ -47,6 +48,7 @@ import app.benchjot.core.Entry
 import app.benchjot.core.NoteIndexItem
 import app.benchjot.core.OUTCOME_CHOICES
 import app.benchjot.core.Outcome
+import app.benchjot.core.applyFormat
 import app.benchjot.core.SaveRegistry
 import app.benchjot.core.SaveState
 import app.benchjot.core.ancestors
@@ -102,6 +104,8 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     val keys = remember { CodeKeysController() }
     var title by remember(entry.id) { mutableStateOf(entry.title) }
     var body by remember(entry.id) { mutableStateOf(TextFieldValue(entry.notes)) }
+    // The format bar shows only while the body is being edited.
+    var bodyFocused by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf(false) }
     var projectId by remember(entry.id) { mutableStateOf(entry.projectId) }
     var parentId by remember(entry.id) { mutableStateOf(entry.parentId) }
@@ -252,7 +256,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                         onValueChange = { body = it },
                         textStyle = TextStyle(fontSize = 15.sp, lineHeight = 28.sp, color = t.fg),
                         cursorBrush = SolidColor(t.fg),
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp).heightIn(min = 96.dp).focusRequester(bodyFocus).semantics { contentDescription = NOTE_LABEL },
+                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp).heightIn(min = 96.dp).focusRequester(bodyFocus).onFocusChanged { bodyFocused = it.isFocused }.semantics { contentDescription = NOTE_LABEL },
                         decorationBox = { inner -> Box { if (body.text.isEmpty()) Text(NOTE_LABEL, style = TextStyle(fontSize = 15.sp, lineHeight = 28.sp), color = t.faint); inner() } },
                     )
                 }
@@ -284,7 +288,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                 TextBtn("Delete note", { confirmDelete = true }, Modifier.padding(top = 48.dp))
             }
 
-            // Pinned above the keyboard: [[ suggestions while typing a link, or the code symbol row.
+            // Pinned above the keyboard: [[ suggestions while typing a link, the body's format bar, or the code symbol row.
             Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
                 if (suggestions.isNotEmpty() && typing != null) {
                     Column(Modifier.fillMaxWidth().topLine(t.line).then(Modifier.semantics { contentDescription = "Link suggestions" })) {
@@ -297,6 +301,11 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                             }
                         }
                         PageColumn { TextBtn("Close", { dismissed = typing.start }, style = Type.xs) }
+                    }
+                } else if (bodyFocused && !preview) {
+                    FormatBar { f ->
+                        val e = applyFormat(body.text, body.selection.min, body.selection.max, f)
+                        body = TextFieldValue(e.text, TextRange(e.start, e.end))
                     }
                 } else {
                     keys.target?.let { CodeKeysRow(it) }

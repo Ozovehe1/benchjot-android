@@ -19,6 +19,13 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalContext
+import app.benchjot.core.SAMPLE_ASSETS
+import app.benchjot.ui.OutputFiles
+import app.benchjot.ui.OutputViewer
+import app.benchjot.ui.loadSampleNote
+import app.benchjot.ui.SampleNoteTag
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -90,8 +97,19 @@ private fun AppRoot() {
 @Composable
 private fun SignedOut() {
     val nav = rememberNavController()
+    val context = LocalContext.current
+    val sample = remember { loadSampleNote(context) }
+    val files = remember { OutputFiles.Asset(context.assets, SAMPLE_ASSETS) }
     NavHost(nav, startDestination = "landing") {
-        composable("landing") { LandingScreen(onSignUp = { nav.navigate("login?mode=signup") }, onSignIn = { nav.navigate("login") }) }
+        composable("landing") {
+            LandingScreen(sample, onSignUp = { nav.navigate("login?mode=signup") }, onSignIn = { nav.navigate("login") }, onOpenOutput = { nav.navigate("example/$it") })
+        }
+        // The example note's outputs, read-only from the APK (the web's /example/out/{n}).
+        composable("example/{n}", arguments = listOf(navArgument("n") { type = NavType.IntType })) {
+            val s = sample.snippets.single()
+            var index by rememberSaveable { mutableStateOf(it.arguments!!.getInt("n")) }
+            OutputViewer(s.lastRun?.outputs?.items.orEmpty(), index, files, s.filename, onBack = { nav.popBackStack() }, onHome = { nav.popBackStack("landing", false) }, onStep = { index = it }, badge = { SampleNoteTag() })
+        }
         composable("login?mode={mode}", arguments = listOf(navArgument("mode") { type = NavType.StringType; nullable = true; defaultValue = null })) {
             LoginScreen(startInSignUp = it.arguments?.getString("mode") == "signup", onHome = { nav.popBackStack("landing", false) })
         }

@@ -98,6 +98,24 @@ class _Session:
 
 
 # --------------------------------------------------------------------- emitters
+def _bbox_extra(fig):
+    """savefig arguments that keep 3D axis labels inside a tight crop.
+
+    matplotlib before 3.9 leaves Axes3D axis labels out of the tight bbox, so a z label
+    (and sometimes x / y) is cut at the edge. Count every 3D axis label explicitly; 2D-only
+    figures get no extra arguments, so their files stay byte-identical."""
+    try:
+        axes3d = [ax for ax in fig.axes if hasattr(ax, "zaxis")]
+        if not axes3d:
+            return {}
+        extra = list(fig.get_default_bbox_extra_artists())
+        for ax in axes3d:
+            extra += [a.label for a in (ax.xaxis, ax.yaxis, ax.zaxis) if a.label.get_text()]
+        return {"bbox_extra_artists": extra, "pad_inches": 0.15}
+    except Exception:
+        return {}
+
+
 def _figure(fig, source="matplotlib"):
     s = _session
     if s is None or id(fig) in s.emitted:
@@ -106,10 +124,11 @@ def _figure(fig, source="matplotlib"):
     import io
 
     files = {}
+    extra = _bbox_extra(fig)
     for fmt in ("png", "svg", "pdf"):
         buf = io.BytesIO()
         try:
-            fig.savefig(buf, format=fmt, dpi=FIG_DPI, bbox_inches="tight")
+            fig.savefig(buf, format=fmt, dpi=FIG_DPI, bbox_inches="tight", **extra)
         except Exception as e:  # a backend without that format: keep the others
             if fmt == "png":
                 raise

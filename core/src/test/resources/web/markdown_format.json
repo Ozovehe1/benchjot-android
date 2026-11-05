@@ -1,0 +1,327 @@
+[
+  {
+    "input": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    },
+    "format": "bold",
+    "output": {
+      "text": "a **b** c",
+      "start": 4,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "a **b** c",
+      "start": 4,
+      "end": 5
+    },
+    "format": "bold",
+    "output": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "a **b** c",
+      "start": 2,
+      "end": 7
+    },
+    "format": "bold",
+    "output": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "ab",
+      "start": 2,
+      "end": 2
+    },
+    "format": "bold",
+    "output": {
+      "text": "ab****",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "ab****",
+      "start": 4,
+      "end": 4
+    },
+    "format": "bold",
+    "output": {
+      "text": "ab",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "word",
+      "start": 0,
+      "end": 4
+    },
+    "format": "italic",
+    "output": {
+      "text": "_word_",
+      "start": 1,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "_word_",
+      "start": 1,
+      "end": 5
+    },
+    "format": "italic",
+    "output": {
+      "text": "word",
+      "start": 0,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "x y z",
+      "start": 2,
+      "end": 3
+    },
+    "format": "code",
+    "output": {
+      "text": "x `y` z",
+      "start": 3,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "x `y` z",
+      "start": 3,
+      "end": 4
+    },
+    "format": "code",
+    "output": {
+      "text": "x y z",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "e = mc^2",
+      "start": 4,
+      "end": 8
+    },
+    "format": "math",
+    "output": {
+      "text": "e = $mc^2$",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "input": {
+      "text": "e = $mc^2$",
+      "start": 5,
+      "end": 9
+    },
+    "format": "math",
+    "output": {
+      "text": "e = mc^2",
+      "start": 4,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "Title",
+      "start": 2,
+      "end": 2
+    },
+    "format": "heading",
+    "output": {
+      "text": "# Title",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "# Title",
+      "start": 4,
+      "end": 4
+    },
+    "format": "heading",
+    "output": {
+      "text": "Title",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "one\ntwo",
+      "start": 4,
+      "end": 4
+    },
+    "format": "heading",
+    "output": {
+      "text": "one\n# two",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "",
+      "start": 0,
+      "end": 0
+    },
+    "format": "heading",
+    "output": {
+      "text": "# ",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n- b",
+      "start": 2,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "- a\n- b",
+      "start": 2,
+      "end": 7
+    },
+    "format": "list",
+    "output": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "a\n\nb",
+      "start": 0,
+      "end": 4
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n\n- b",
+      "start": 2,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "- a\nb",
+      "start": 4,
+      "end": 5
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n- b",
+      "start": 6,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "see docs",
+      "start": 4,
+      "end": 8
+    },
+    "format": "link",
+    "output": {
+      "text": "see [docs](url)",
+      "start": 11,
+      "end": 14
+    }
+  },
+  {
+    "input": {
+      "text": "see [docs](url)",
+      "start": 4,
+      "end": 15
+    },
+    "format": "link",
+    "output": {
+      "text": "see docs",
+      "start": 4,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "see [docs](url) now",
+      "start": 5,
+      "end": 9
+    },
+    "format": "link",
+    "output": {
+      "text": "see docs now",
+      "start": 4,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "go ",
+      "start": 3,
+      "end": 3
+    },
+    "format": "link",
+    "output": {
+      "text": "go [](url)",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "\nnext",
+      "start": 0,
+      "end": 0
+    },
+    "format": "list",
+    "output": {
+      "text": "- \nnext",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "**",
+      "start": 2,
+      "end": 2
+    },
+    "format": "bold",
+    "output": {
+      "text": "******",
+      "start": 4,
+      "end": 4
+    }
+  }
+]

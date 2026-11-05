@@ -13,3 +13,4 @@ node_modules/
 # Python bytecode (a host python compiling the app's sources leaves it; Chaquopy compiles its own)
 __pycache__/
 *.pyc
+apks/

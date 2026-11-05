@@ -1,0 +1,80 @@
+{
+  "entry": {
+    "title": "Digits: logistic regression vs random forest",
+    "notes": "**Goal** Pick a baseline for the 8×8 handwritten digits set (1,797 images, 10 classes).\n\n**Setup** Stratified 75/25 split, seed 0, pixels scaled to 0–1. Logistic regression vs a 200-tree random forest.\n\n**Result** The forest wins: 0.987 test accuracy vs 0.969. Both find 8 the hardest digit (F1 0.966 vs 0.905). Keep the forest as the baseline.",
+    "outcome": "success"
+  },
+  "snippets": [
+    {
+      "id": "sample-digits",
+      "filename": "digits.py",
+      "language": "python",
+      "content": "import matplotlib.pyplot as plt, pandas as pd, plotly.graph_objects as go\nfrom sklearn.datasets import load_digits\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.linear_model import LogisticRegression\nfrom sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, f1_score\nfrom sklearn.model_selection import train_test_split\n\nX, y = load_digits(return_X_y=True)\nX_tr, X_te, y_tr, y_te = train_test_split(X / 16, y, test_size=0.25, stratify=y, random_state=0)\nmodels = {\"logreg\": LogisticRegression(max_iter=2000), \"forest\": RandomForestClassifier(200, random_state=0)}\npred = {n: m.fit(X_tr, y_tr).predict(X_te) for n, m in models.items()}\nscores = {n: {\"accuracy\": accuracy_score(y_te, p), \"macro_f1\": f1_score(y_te, p, average=\"macro\")} for n, p in pred.items()}\nfor n, s in scores.items():\n    print(f\"{n:7} acc {s['accuracy']:.3f}\")\n\ndisplay(pd.DataFrame(scores).T.rename_axis(\"model\").round(3))\nConfusionMatrixDisplay.from_predictions(y_te, pred[\"forest\"], cmap=\"Greys\", colorbar=False)\nplt.title(\"forest: test confusion\")\nplt.show()\nfig = go.Figure([go.Bar(x=list(range(10)), y=f1_score(y_te, p, average=None).round(3), name=n) for n, p in pred.items()])\nfig.update_layout(title=\"F1 per digit\", xaxis_title=\"digit\", yaxis_title=\"F1\", barmode=\"group\")\nfig.show()\n",
+      "last_run": {
+        "outcome": "ok",
+        "stdout": "logreg  acc 0.969\nforest  acc 0.987\n",
+        "stderr": "",
+        "error_line": null,
+        "line": null,
+        "ms": 4258,
+        "where": "server",
+        "code_hash": "11c280bf9f5a35",
+        "ran_at": "2026-11-05T14:58:04.000Z",
+        "outputs": {
+          "version": 1,
+          "items": [
+            {
+              "kind": "table",
+              "index_columns": 1,
+              "columns": [
+                "model",
+                "accuracy",
+                "macro_f1"
+              ],
+              "rows": [
+                [
+                  "logreg",
+                  0.969,
+                  0.969
+                ],
+                [
+                  "forest",
+                  0.987,
+                  0.987
+                ]
+              ],
+              "total_rows": 2,
+              "total_columns": 2,
+              "files": {
+                "csv": "0.csv"
+              }
+            },
+            {
+              "kind": "image",
+              "source": "matplotlib",
+              "width": 641,
+              "height": 680,
+              "title": "forest: test confusion",
+              "files": {
+                "png": "1.png",
+                "svg": "1.svg",
+                "pdf": "1.pdf"
+              }
+            },
+            {
+              "kind": "chart",
+              "lib": "plotly",
+              "version": "7.1.0",
+              "title": "F1 per digit",
+              "files": {
+                "json": "2.json"
+              }
+            }
+          ],
+          "notes": [],
+          "dir": "00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002"
+        }
+      }
+    }
+  ]
+}

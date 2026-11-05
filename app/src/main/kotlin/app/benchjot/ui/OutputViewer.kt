@@ -222,6 +222,8 @@ fun OutputViewer(
     onBack: () -> Unit,
     onHome: () -> Unit,
     onStep: (Int) -> Unit,
+    badge: (@Composable () -> Unit)? = null,
+    backLabel: String = "Back to note",
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current.density
@@ -239,7 +241,7 @@ fun OutputViewer(
     }
     Screen {
         PageColumn(Modifier.fillMaxSize()) {
-            TopBar(onHome, back = "Back to note" to onBack) {
+            TopBar(onHome, back = backLabel to onBack) {
                 if (items.size > 1) {
                     if (index > 0) TextBtn("Prev", { onStep(index - 1) })
                     Text("${index + 1} / ${items.size}", style = mono12, color = t.faint)
@@ -248,6 +250,7 @@ fun OutputViewer(
             }
             if (item == null) { Muted("This output isn’t here any more. Run the code again to make it."); return@PageColumn }
             val label = outputLabel(item) + if (!item.isTable && item.title.isNotEmpty()) " · ${item.title}" else ""
+            badge?.let { Box(Modifier.padding(bottom = 8.dp)) { it() } }
             Text(label, Modifier.padding(bottom = 8.dp), style = mono12, color = t.faint, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val chart = if (item.isChart) rememberChart(item, files) else null
             Box(Modifier.weight(1f).fillMaxWidth()) {
@@ -329,5 +332,5 @@ fun OutputScreen(noteId: String, snippetId: String, start: Int, onBack: () -> Un
         return
     }
     val files = remember(saved) { OutputFiles.Saved(saved) }
-    OutputViewer(saved.items, index, files, snippet?.filename.orEmpty().ifEmpty { "output" }, onBack, onHome) { index = it }
+    OutputViewer(saved.items, index, files, snippet?.filename.orEmpty().ifEmpty { "output" }, onBack, onHome, onStep = { index = it })
 }

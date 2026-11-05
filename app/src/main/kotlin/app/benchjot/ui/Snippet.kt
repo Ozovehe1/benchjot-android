@@ -288,7 +288,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
             }
         }
 
-        CodeEditor(code, language, "Code ${index + 1}", errorLine = if (stale) null else result?.error?.line, onChange = ::edited)
+        FoldedCode(code.text) { CodeEditor(code, language, "Code ${index + 1}", errorLine = if (stale) null else result?.error?.line, onChange = ::edited) }
 
         if (hasOutput) RunOutput(output, status, running, result, stale, saveError, onClear = ::clearOutput)
 

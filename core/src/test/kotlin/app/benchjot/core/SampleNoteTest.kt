@@ -1,30 +1,29 @@
 package app.benchjot.core
 
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import org.junit.Test
+import java.io.File
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class SampleNoteTest {
-    private val web = Fixtures.json("sample_note.json").jsonObject
-    private val json = Json { ignoreUnknownKeys = true }
+    // The app's own asset (copied from the web by scripts/web-fixtures.mjs; CI fails on drift).
+    private val dir = File("../app/src/main/assets/$SAMPLE_ASSETS")
+    private val note = parseSampleNote(File(dir, "note.json").readText())
 
     @Test
-    fun sameNoteAsTheWebLanding() {
-        val entry = web.getValue("entry").jsonObject
-        assertEquals(entry.getValue("title").jsonPrimitive.content, SAMPLE_TITLE)
-        assertEquals(entry.getValue("notes").jsonPrimitive.content, SAMPLE_NOTES)
-        val s = web.getValue("snippets").jsonArray.single().jsonObject
-        assertEquals(s.getValue("filename").jsonPrimitive.content, SAMPLE_SNIPPET.filename)
-        assertEquals(s.getValue("language").jsonPrimitive.content, SAMPLE_SNIPPET.language)
-        assertEquals(s.getValue("content").jsonPrimitive.content, SAMPLE_SNIPPET.content)
-        assertEquals(json.decodeFromJsonElement(LastRun.serializer(), s.getValue("last_run")), SAMPLE_SNIPPET.lastRun)
+    fun theWebLandingsNote() {
+        assertEquals("success", note.entry.outcome)
+        val s = note.snippets.single()
+        assertEquals("python", s.language)
+        assertEquals(codeHash(s.content), s.lastRun!!.codeHash)
+        val outputs = s.lastRun!!.outputs!!
+        assertEquals(listOf("table", "image", "chart"), outputs.items.map { it.kind })
+        assertEquals("plotly", outputs.items[2].lib)
     }
 
     @Test
-    fun savedRunIsForThisCode() {
-        assertEquals(codeHash(SAMPLE_SNIPPET.content), SAMPLE_SNIPPET.lastRun!!.codeHash)
+    fun everyOutputFileIsBundled() {
+        val names = note.snippets.single().lastRun!!.outputs!!.items.flatMap { it.files.values }
+        for (n in names) assertTrue(n, File(dir, n).isFile)
     }
 }

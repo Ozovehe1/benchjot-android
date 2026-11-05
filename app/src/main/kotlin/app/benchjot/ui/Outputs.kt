@@ -43,6 +43,7 @@ import app.benchjot.core.chart.ChartResult
 import app.benchjot.core.chart.mapChart
 import app.benchjot.core.displayFile
 import app.benchjot.core.outputLabel
+import app.benchjot.core.outputPath
 import app.benchjot.data.LocalOutputs
 import app.benchjot.data.OutputStore
 import com.caverock.androidsvg.SVG
@@ -51,7 +52,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonPrimitive
 
 // Figures, tables and charts under a code block (the web's run-outputs.tsx), from the live run's
-// files on the phone or the stored run in Storage. Each opens on its own screen (OutputViewer.kt).
+// files on the phone, the stored run in Storage, or the landing's bundled example. Each opens on its own screen (OutputViewer.kt).
 
 /** Where an output's files come from: the run that just finished, or the saved run. */
 sealed interface OutputFiles {
@@ -61,6 +62,10 @@ sealed interface OutputFiles {
     }
     data class Saved(val saved: SavedOutputs) : OutputFiles {
         override suspend fun bytes(name: String) = OutputStore.bytes(saved, name)
+    }
+    /** Bundled in the APK (the landing's example note): assets/{dir}/{name}. */
+    data class Asset(val assets: android.content.res.AssetManager, val dir: String) : OutputFiles {
+        override suspend fun bytes(name: String) = withContext(Dispatchers.IO) { assets.open(outputPath(dir, name)).use { it.readBytes() } }
     }
 }
 

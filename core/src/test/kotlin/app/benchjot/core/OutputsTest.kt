@@ -63,4 +63,12 @@ class OutputsTest {
     fun rejectsPathsOutsideTheRunFolder() {
         checkManifest(Manifest(items = listOf(OutputItem(kind = "image", files = mapOf("png" to "../x.png")))))
     }
+
+    @Test
+    fun outputFileNamesAreNeverPaths() {
+        assertEquals("3.png", checkedOutputFileName("3.png"))
+        for (bad in listOf("../note.json", "../../shared_prefs/x.xml", "/etc/passwd", "a/1.png", "1.png/..", "..", "", "1.PNG", "1.png\u0000")) {
+            try { checkedOutputFileName(bad); org.junit.Assert.fail("accepted $bad") } catch (_: ValidationError) {}
+        }
+    }
 }

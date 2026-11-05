@@ -73,8 +73,13 @@ adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.L
 sleep 8; alive; shot 1-landing
 # The landing's example note is read-only: shown, with no text field on screen.
 landing="$(dump)"
-echo "$landing" | grep -q 'Exp 3: dropout 0.1 vs 0.3' || { echo "::error::landing preview note not shown"; exit 1; }
+echo "$landing" | grep -q 'Digits: logistic regression vs random forest' || { echo "::error::landing preview note not shown"; exit 1; }
 if echo "$landing" | grep -q 'class="android.widget.EditText"'; then echo "::error::landing preview has an editable field"; exit 1; fi
+# Its outputs (table, figure, chart, bundled in the APK) open read-only in the viewer, and Back returns.
+seek "Open"; tap "Open"; waitfor "Back to note" 20; alive; shot 1b-example-output
+[ -n "$(find "Sample note")" ] || { echo "::error::sample output viewer is not tagged Sample note"; exit 1; }
+[ -n "$(find "Download")" ] || { echo "::error::example output viewer has no Download"; exit 1; }
+tap "Back to note"; waitfor "Open" 20; alive
 seek "Sign in"; tap "Sign in"; alive; shot 2-sign-in # below the example note on small screens
 # Continue with Google: the button must hand over to Android's Credential Manager.
 # (A real Google account can't be used by automation, so the sign-in itself isn't completed here.)
@@ -174,7 +179,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Search"; type_text "hypothesis"; sleep 3; waitfor "Smoke test note" 10; shot 11-search
   adb shell input keyevent 4; sleep 1
   tap "Settings"; waitfor "@${BJ_USER}" 10; shot 12-settings
-  tap "Sign out"; waitfor "Exp 3: dropout 0.1 vs 0.3" 20; seek "Create account"; alive; shot 13-signed-out # back on the landing; its buttons sit below the example note
+  tap "Sign out"; waitfor "Digits: logistic regression vs random forest" 20; seek "Create account"; alive; shot 13-signed-out # back on the landing; its buttons sit below the example note
 fi
 # Only the app's own crashes fail the smoke (the uiautomator dump tool can NPE on a screen that is changing).
 adb logcat -d > smoke/logcat-smoke.txt

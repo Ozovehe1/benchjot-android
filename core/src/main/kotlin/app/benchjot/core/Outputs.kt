@@ -61,13 +61,15 @@ fun checkManifest(m: Manifest): Manifest {
     for (item in m.items) {
         if (item.kind !in setOf("image", "table", "chart")) throw ValidationError("Unknown output kind ${item.kind}")
         if (item.isChart && item.lib !in setOf("plotly", "vega-lite", "bokeh")) throw ValidationError("Unknown chart library ${item.lib}")
-        for ((fmt, name) in item.files) if (!FILE_NAME.matches(name) || fmt.length > 5) throw ValidationError("Bad output file name")
+        for ((fmt, name) in item.files) if (fmt.length > 5) throw ValidationError("Bad output file name") else checkedOutputFileName(name)
     }
     return m
 }
 
 fun outputDir(userId: String, snippetId: String, runId: String) = "$userId/$snippetId/$runId".also { require(DIR.matches(it)) { "Bad output folder" } }
-fun outputPath(dir: String, name: String) = "$dir/$name"
+/** An output file name as the contract allows it ("3.png"): never a path (no "/", "..", or anything else). Throws ValidationError. */
+fun checkedOutputFileName(name: String): String = name.also { if (!FILE_NAME.matches(it)) throw ValidationError("Bad output file name") }
+fun outputPath(dir: String, name: String) = "$dir/${checkedOutputFileName(name)}"
 fun outputPaths(o: SavedOutputs): List<String> = o.items.flatMap { it.files.values }.map { outputPath(o.dir, it) }
 
 /** The file to show: a raster first (cheapest to decode on a phone), else SVG. */

@@ -48,6 +48,7 @@ import app.benchjot.core.extractMath
 import app.benchjot.core.mathPieceAt
 import app.benchjot.core.parseLinks
 import app.benchjot.core.resolveLink
+import app.benchjot.core.isOpenableLink
 import com.mikepenz.markdown.compose.LocalMarkdownTypography
 import com.mikepenz.markdown.compose.components.markdownComponents
 import com.mikepenz.markdown.m3.Markdown
@@ -92,7 +93,10 @@ fun NoteMarkdown(text: String, notes: List<NoteIndexItem>, onOpenNote: (String) 
     val handler = remember(system, onOpenNote) {
         object : UriHandler {
             override fun openUri(uri: String) {
-                if (uri.startsWith(NOTE_SCHEME)) onOpenNote(uri.removePrefix(NOTE_SCHEME)) else runCatching { system.openUri(uri) }
+                when {
+                    uri.startsWith(NOTE_SCHEME) -> onOpenNote(uri.removePrefix(NOTE_SCHEME))
+                    isOpenableLink(uri) -> runCatching { system.openUri(uri) } // http, https, mailto only
+                }
             }
         }
     }

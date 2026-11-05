@@ -169,8 +169,8 @@ jobs:
           node --experimental-strip-types scripts/web-fixtures.mjs /tmp/web
           node --experimental-strip-types scripts/web-engines.mjs /tmp/web
           git status --short
-          git add -N core/src/test/resources/web
-          git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine app/src/main/python/bj_capture.py || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
+          git add -N core/src/test/resources/web app/src/main/assets/sample
+          git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine app/src/main/python/bj_capture.py app/src/main/assets/sample || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
 
       - name: Ruff (official binary for the host tests; the Android build from the ruff job)
         run: bash scripts/fetch-ruff.sh host
@@ -300,3 +300,10 @@ jobs:
             --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
             --notes "Built from ${GITHUB_SHA::7}. One APK for 64-bit and 32-bit ARM phones (arm64-v8a and armeabi-v7a), Python 3.13 with numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, Pillow, Plotly, Altair and Bokeh on both; figures, tables and charts open on their own screen and download as PNG, JPG, WebP, SVG, PDF, CSV or JSON. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
             --latest
+      - name: The web's APK link reaches this release (benchjot.apk, full release, latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GitHub can take a few seconds to point releases/latest at a new release.
+          for i in 1 2 3 4 5 6; do bash scripts/check-release.sh "build-${GITHUB_RUN_NUMBER}" && exit 0; sleep 10; done
+          exit 1

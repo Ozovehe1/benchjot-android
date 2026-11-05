@@ -1,0 +1,90 @@
+[
+  {
+    "url": "https://example.com",
+    "open": true
+  },
+  {
+    "url": "http://example.com/a?b=1#c",
+    "open": true
+  },
+  {
+    "url": "HTTPS://EXAMPLE.COM",
+    "open": true
+  },
+  {
+    "url": " https://example.com ",
+    "open": true
+  },
+  {
+    "url": "mailto:someone@example.com",
+    "open": true
+  },
+  {
+    "url": "javascript:alert(1)",
+    "open": false
+  },
+  {
+    "url": "JavaScript:alert(1)",
+    "open": false
+  },
+  {
+    "url": " javascript:alert(1)",
+    "open": false
+  },
+  {
+    "url": "java\tscript:alert(1)",
+    "open": false
+  },
+  {
+    "url": "https://exa\nmple.com",
+    "open": false
+  },
+  {
+    "url": "data:text/html,<script>alert(1)</script>",
+    "open": false
+  },
+  {
+    "url": "vbscript:msgbox(1)",
+    "open": false
+  },
+  {
+    "url": "file:///etc/passwd",
+    "open": false
+  },
+  {
+    "url": "intent://scan/#Intent;scheme=zxing;end",
+    "open": false
+  },
+  {
+    "url": "content://app.benchjot.files/x",
+    "open": false
+  },
+  {
+    "url": "tel:+123",
+    "open": false
+  },
+  {
+    "url": "ftp://example.com",
+    "open": false
+  },
+  {
+    "url": "//evil.com",
+    "open": false
+  },
+  {
+    "url": "/n/abc",
+    "open": false
+  },
+  {
+    "url": "docs/page",
+    "open": false
+  },
+  {
+    "url": "#fn-1",
+    "open": false
+  },
+  {
+    "url": "",
+    "open": false
+  }
+]

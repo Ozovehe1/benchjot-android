@@ -4,7 +4,7 @@
 // node >= 22.6:  node --experimental-strip-types scripts/web-fixtures.mjs <path-to-web-checkout>
 // CI runs it against a fresh checkout of Ozovehe1/benchjot and fails on any diff,
 // so a rule changed on the web can't silently drift from the app.
-import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -48,14 +48,43 @@ const detect = [
   "x <- c(1, 2, 3)", "echo hello world", "name: x\nversion: 2", "# Title\n\nSome text", "hello", "def f(x):\n    return x",
 ];
 write("detect.json", detect.map((code) => ({ code, language: detectLanguage(code) })));
-// The signed-out landing's example note (title, body, one code block with its saved run)
+// The signed-out landing's example note (title, body, outcome, one code block with its saved
+// run) and its output files, bundled into the app's assets as the web serves them from public/.
 const sample = await load("src/lib/sample-note.ts");
-write("sample_note.json", { entry: sample.SAMPLE_ENTRY, snippets: sample.SAMPLE_SNIPPETS });
+const sampleAssets = resolve(import.meta.dirname, "../app/src/main/assets/sample");
+rmSync(sampleAssets, { recursive: true, force: true });
+mkdirSync(sampleAssets, { recursive: true });
+writeFileSync(join(sampleAssets, "note.json"), JSON.stringify({ entry: sample.SAMPLE_ENTRY, snippets: sample.SAMPLE_SNIPPETS }, null, 2) + "\n");
+for (const [name, url] of Object.entries(sample.SAMPLE_OUTPUT_URLS)) copyFileSync(join(web, "public", url), join(sampleAssets, name));
+
+// List dates: the shared cases with the web's own answers (core listDateLocal must match)
+const { listDateLocal } = await load("src/lib/format.ts");
+const { LIST_DATE_CASES } = await load("tests/fixtures/list-date.ts");
+write("list_date.json", LIST_DATE_CASES.map(([name, then, now]) => ({ name, then, now, date: listDateLocal(then, now) })));
+
+// Long code folds: the shared cases with the web's own answers (core CodeFold.kt must match)
+const fold = await load("src/lib/code-fold.ts");
+const { CODE_FOLD_CASES } = await load("tests/fixtures/code-fold.ts");
+write("code_fold.json", { fold_lines: fold.FOLD_LINES, cases: CODE_FOLD_CASES.map((code) => ({ code, lines: fold.lineCount(code), folds: fold.folds(code), closed: fold.foldLabel(code, false), open: fold.foldLabel(code, true) })) });
+
+// The note body's format bar: the shared cases with the web's own answers (core MarkdownFormat.kt),
+// and the buttons in the web's order.
+const markdownFormat = await load("src/lib/markdown-format.ts");
+const { MARKDOWN_FORMAT_CASES, parseCase } = await load("tests/fixtures/markdown-format.ts");
+write("markdown_format.json", MARKDOWN_FORMAT_CASES.map(([input, format]) => {
+  const i = parseCase(input);
+  return { input: i, format, output: markdownFormat.applyFormat(i.text, i.start, i.end, format) };
+}));
+write("markdown_format_buttons.json", markdownFormat.MARKDOWN_FORMATS);
+
+// Which links in a note body open (http, https, mailto): the web's own answers (core isOpenableLink).
+const { isOpenableLink } = await load("src/lib/safe-next.ts");
+const { OPENABLE_LINK_CASES } = await load("tests/fixtures/openable-links.ts");
+write("openable_links.json", OPENABLE_LINK_CASES.map((url) => ({ url, open: isOpenableLink(url) })));
 
 // Rich run outputs: the capture fixtures (manifests + chart specs made by the web's
 // scripts/output-fixtures.py) for the chart renderer's mapping tests, and the web's own
 // download formats and labels for each, which core/Outputs.kt must match.
-import { cpSync, readdirSync, rmSync } from "node:fs";
 const outputsSrc = join(web, "tests/fixtures/outputs");
 rmSync(join(out, "outputs"), { recursive: true, force: true });
 cpSync(outputsSrc, join(out, "outputs"), { recursive: true });

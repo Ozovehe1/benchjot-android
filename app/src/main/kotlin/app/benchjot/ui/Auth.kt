@@ -42,9 +42,8 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import app.benchjot.BuildConfig
 import app.benchjot.core.APP_DESCRIPTION
-import app.benchjot.core.SAMPLE_NOTES
-import app.benchjot.core.SAMPLE_SNIPPET
-import app.benchjot.core.SAMPLE_TITLE
+import app.benchjot.core.SAMPLE_ASSETS
+import app.benchjot.core.SampleNote
 import app.benchjot.core.USERNAME_HINT
 import app.benchjot.core.isValidEmail
 import app.benchjot.core.isValidUsername
@@ -57,11 +56,18 @@ import kotlinx.coroutines.launch
 // components/choose-username.tsx. Same words, same order.
 
 @Composable
-fun LandingScreen(onSignUp: () -> Unit, onSignIn: () -> Unit) {
+fun LandingScreen(sample: SampleNote, onSignUp: () -> Unit, onSignIn: () -> Unit, onOpenOutput: (Int) -> Unit) {
     val uri = LocalUriHandler.current
+    val assets = androidx.compose.ui.platform.LocalContext.current.assets
+    val files = remember(assets) { OutputFiles.Asset(assets, SAMPLE_ASSETS) }
+    val scroll = rememberRestoredScrollState("landing")
     val minHeight = LocalConfiguration.current.screenHeightDp.dp
-    PageColumn(Modifier.fillMaxSize().verticalScroll(rememberScrollState()), maxWidth = 440.dp) {
-        Row(Modifier.height(56.dp), verticalAlignment = Alignment.CenterVertically) { Logo() }
+    PageColumn(Modifier.fillMaxSize().verticalScroll(scroll), maxWidth = 440.dp) {
+        // Header: logo left, Sign in right (the web's landing header).
+        Row(Modifier.fillMaxWidth().height(56.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+            Logo()
+            TextBtn("Sign in", onSignIn, strong = true)
+        }
         Column(Modifier.fillMaxWidth().padding(bottom = 32.dp).heightIn(min = androidx.compose.ui.unit.max(minHeight - 200.dp, 560.dp)), verticalArrangement = Arrangement.Center) {
             Text(APP_DESCRIPTION, style = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.SemiBold, lineHeight = 1.15.em, letterSpacing = (-0.025).em), color = t.fg)
             Text(
@@ -69,7 +75,7 @@ fun LandingScreen(onSignUp: () -> Unit, onSignIn: () -> Unit) {
                 Modifier.padding(top = 12.dp), style = TextStyle(fontSize = 15.sp, lineHeight = 1.625.em), color = t.muted,
             )
             Gap(24.dp)
-            NotePreview(SAMPLE_TITLE, SAMPLE_NOTES, listOf(SAMPLE_SNIPPET))
+            NotePreview(sample.entry.title, sample.entry.notes, sample.entry.outcome, sample.snippets, files, onOpenOutput)
             Gap(24.dp)
             FilledBtn("Create account", onSignUp, Modifier.fillMaxWidth())
             TextBtn("Sign in", onSignIn, Modifier.fillMaxWidth(), strong = true, center = true)

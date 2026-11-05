@@ -3,6 +3,8 @@ package app.benchjot.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +25,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
@@ -145,6 +148,9 @@ fun CodeEditor(state: CodeState, language: String, label: String, errorLine: Int
     val transform = remember(language, errorLine, tones) { Highlighter(language, tones, errorLine, tk.fg.copy(alpha = 0.07f)) }
     val indent = languageConfig(language).indent
     val target = remember(language, state) { CodeKeysTarget(language, { s -> state.insert(if (s == "Tab") indent else s); onChange() }, { state.undo(); onChange() }) }
+    // Lines don't wrap: the block scrolls sideways (the web's editor, without line wrapping).
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+    val width = maxWidth
     BasicTextField(
         value = state.field,
         onValueChange = { v -> val before = state.text; state.change(v, indent); if (state.text != before) onChange() },
@@ -152,7 +158,7 @@ fun CodeEditor(state: CodeState, language: String, label: String, errorLine: Int
         cursorBrush = SolidColor(t.fg),
         visualTransformation = transform,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false),
-        modifier = Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(vertical = 8.dp)
+        modifier = Modifier.horizontalScroll(rememberScrollState()).widthIn(min = width).heightIn(min = 72.dp).padding(vertical = 8.dp)
             .semantics { contentDescription = label }
             .onFocusChanged { f -> if (f.isFocused) keys.target = target else if (keys.target === target) keys.target = null },
         decorationBox = { inner ->
@@ -162,6 +168,7 @@ fun CodeEditor(state: CodeState, language: String, label: String, errorLine: Int
             }
         },
     )
+    }
 }
 
 /** Read-only code in the editor's type, colours and padding (the landing preview). Not editable or focusable. */
@@ -170,8 +177,8 @@ fun StaticCode(code: String, language: String, label: String) {
     val tones = rememberCodeTones()
     Text(
         remember(code, language, tones) { highlighted(code, language, tones) },
-        Modifier.fillMaxWidth().heightIn(min = 72.dp).padding(vertical = 8.dp).semantics { contentDescription = label },
-        style = Type.code, color = t.fg,
+        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).heightIn(min = 72.dp).padding(vertical = 8.dp).semantics { contentDescription = label },
+        style = Type.code, color = t.fg, softWrap = false,
     )
 }
 
@@ -190,5 +197,29 @@ fun CodeKeysRow(target: CodeKeysTarget, modifier: Modifier = Modifier) {
                 Text(if (k == "Tab") "tab" else k, style = TextStyle(fontFamily = Type.mono, fontSize = 15.sp), color = t.fg)
             }
         }
+    }
+}
+
+/**
+ * The shared frame of a code block's code (editor and read-only alike; the web's folded-code.tsx):
+ * over FOLD_LINES lines it shows folded to that height with a fade and a 48dp toggle.
+ * Focusing the editor unfolds it, so the cursor is never hidden.
+ */
+@Composable
+fun FoldedCode(code: String, content: @Composable () -> Unit) {
+    var open by androidx.compose.runtime.saveable.rememberSaveable { androidx.compose.runtime.mutableStateOf(false) }
+    val fold = app.benchjot.core.folds(code)
+    val closed = fold && !open
+    val line = with(androidx.compose.ui.platform.LocalDensity.current) { (Type.code.fontSize * 1.65f).toDp() }
+    val folded = line * app.benchjot.core.FOLD_LINES + 8.dp
+    Column(Modifier.fillMaxWidth().onFocusChanged { if (it.hasFocus && fold) open = true }) {
+        Box(Modifier.fillMaxWidth().then(if (closed) Modifier.heightIn(max = folded).clipToBounds() else Modifier)) {
+            content()
+            if (closed) Box(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().height(64.dp)
+                    .background(androidx.compose.ui.graphics.Brush.verticalGradient(listOf(t.bg.copy(alpha = 0f), t.bg))),
+            )
+        }
+        if (fold) TextBtn(app.benchjot.core.foldLabel(code, open), { open = !open }, style = Type.xs)
     }
 }

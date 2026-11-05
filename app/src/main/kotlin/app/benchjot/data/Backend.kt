@@ -2,6 +2,7 @@ package app.benchjot.data
 
 import app.benchjot.BuildConfig
 import app.benchjot.core.Entry
+import app.benchjot.core.allRows
 import app.benchjot.core.EntryListItem
 import app.benchjot.core.LastRun
 import app.benchjot.core.Limits
@@ -112,20 +113,23 @@ object Backend {
     /** Which notes a list shows: one project's, only unfiled ones, or all; optionally one outcome. */
     data class Scope(val projectId: String? = null, val unfiled: Boolean = false, val outcome: OutcomeFilter = OutcomeFilter.All)
 
-    suspend fun entries(query: String, scope: Scope): List<EntryListItem> =
+    suspend fun entries(query: String, scope: Scope): List<EntryListItem> = allRows { from, to ->
         client.postgrest.rpc("search_entries", buildJsonObject {
             putJsonArray("terms") { searchTerms(query).forEach { add(it) } }
             put("p_project", scope.projectId)
             put("p_unfiled", scope.unfiled)
             put("p_outcome", scope.outcome.param)
-        }).decodeList<EntryListItem>()
+        }) { range(from, to) }.decodeList<EntryListItem>()
+    }
 
     suspend fun entry(id: String): Entry? =
         client.from("entries").select { filter { eq("id", id) } }.decodeSingleOrNull<Entry>()
 
     /** Every note (id, title, parent), most recently edited first. */
     suspend fun noteIndex(): List<NoteIndexItem> =
-        client.from("entries").select(Columns.list("id", "title", "parent_id")) { order("updated_at", Order.DESCENDING) }.decodeList<NoteIndexItem>()
+        allRows { from, to ->
+            client.from("entries").select(Columns.list("id", "title", "parent_id")) { order("updated_at", Order.DESCENDING); order("id", Order.ASCENDING); range(from, to) }.decodeList<NoteIndexItem>()
+        }
 
     /** Every [[link]] in the user's notes, derived from the bodies by note_links(). */
     suspend fun noteLinks(): List<SourcedLink> =

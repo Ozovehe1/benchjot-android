@@ -5,6 +5,7 @@ import app.benchjot.core.Manifest
 import app.benchjot.core.OUTPUTS_BUCKET
 import app.benchjot.core.SavedOutputs
 import app.benchjot.core.checkManifest
+import app.benchjot.core.checkedOutputFileName
 import app.benchjot.core.outputDir
 import app.benchjot.core.outputPath
 import app.benchjot.core.outputPaths
@@ -24,7 +25,7 @@ import kotlinx.coroutines.withContext
 
 /** A run's outputs before upload: the manifest bj_capture wrote and the folder holding its files. */
 class LocalOutputs(val manifest: Manifest, val dir: File) {
-    fun file(name: String) = File(dir, name)
+    fun file(name: String) = File(dir, checkedOutputFileName(name))
 
     companion object {
         /** Reads `dir`/manifest.json if the run made any outputs. */

@@ -1,0 +1,47 @@
+{
+  "fold_lines": 12,
+  "cases": [
+    {
+      "code": "",
+      "lines": 1,
+      "folds": false,
+      "closed": "Show all 1 lines",
+      "open": "Show less"
+    },
+    {
+      "code": "print(1)",
+      "lines": 1,
+      "folds": false,
+      "closed": "Show all 1 lines",
+      "open": "Show less"
+    },
+    {
+      "code": "x0 = 0\nx1 = 1\nx2 = 2\nx3 = 3\nx4 = 4\nx5 = 5\nx6 = 6\nx7 = 7\nx8 = 8\nx9 = 9\nx10 = 10\nx11 = 11",
+      "lines": 12,
+      "folds": false,
+      "closed": "Show all 12 lines",
+      "open": "Show less"
+    },
+    {
+      "code": "x0 = 0\nx1 = 1\nx2 = 2\nx3 = 3\nx4 = 4\nx5 = 5\nx6 = 6\nx7 = 7\nx8 = 8\nx9 = 9\nx10 = 10\nx11 = 11\n",
+      "lines": 12,
+      "folds": false,
+      "closed": "Show all 12 lines",
+      "open": "Show less"
+    },
+    {
+      "code": "x0 = 0\nx1 = 1\nx2 = 2\nx3 = 3\nx4 = 4\nx5 = 5\nx6 = 6\nx7 = 7\nx8 = 8\nx9 = 9\nx10 = 10\nx11 = 11\nx12 = 12",
+      "lines": 13,
+      "folds": true,
+      "closed": "Show all 13 lines",
+      "open": "Show less"
+    },
+    {
+      "code": "x0 = 0\nx1 = 1\nx2 = 2\nx3 = 3\nx4 = 4\nx5 = 5\nx6 = 6\nx7 = 7\nx8 = 8\nx9 = 9\nx10 = 10\nx11 = 11\nx12 = 12\nx13 = 13\nx14 = 14\nx15 = 15\nx16 = 16\nx17 = 17\nx18 = 18\nx19 = 19\nx20 = 20\nx21 = 21\nx22 = 22\nx23 = 23\nx24 = 24\nx25 = 25\nx26 = 26\nx27 = 27\nx28 = 28\nx29 = 29\nx30 = 30\nx31 = 31\nx32 = 32\nx33 = 33\nx34 = 34\nx35 = 35\nx36 = 36\nx37 = 37\nx38 = 38\nx39 = 39",
+      "lines": 40,
+      "folds": true,
+      "closed": "Show all 40 lines",
+      "open": "Show less"
+    }
+  ]
+}
