@@ -9,11 +9,21 @@ manifest.json, exactly as in the browser; the app uploads them after the run.
 done() and error(text).
 """
 import builtins
+import faulthandler
 import os
 import sys
 import traceback
 
-import bj_capture
+# OpenMP (LLVM libomp, used by scikit-learn): on Linux it pins every thread it starts, the
+# calling one included, to the CPU set it saw at start-up, and aborts the process if that call
+# fails (__kmp_affinity_bind_init_mask -> sched_setaffinity, abort_on_error; android/ndk#1180).
+# Android moves an app between cpusets (foreground, background) while it runs, so the saved set
+# can become invalid (EINVAL) and the first parallel region kills Python: seen as SIGABRT in
+# KMeans on armeabi-v7a. Pinning buys nothing on a phone; switch it off before libomp reads its
+# settings (at its first use, after this). A user's own KMP_AFFINITY still wins.
+os.environ.setdefault("KMP_AFFINITY", "disabled")
+
+import bj_capture  # noqa: E402 (after the OpenMP setting above)
 
 
 class _Stream:
@@ -58,7 +68,22 @@ class _NoStdin:
         return False
 
 
-def run(code, emit, out_dir, work_dir):
+def capture_native_stderr(path):
+    """Native code reports a crash on fd 2 (CPython's fatal errors, OpenMP, C asserts), which Android
+    discards. Send fd 2 to `path`, a file that outlives this process, and dump the Python traceback of
+    every thread there on a fatal signal (SIGABRT, SIGSEGV...); the app shows the file's tail when the
+    Python process dies. Truncated per run, so it holds only this run's messages."""
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        os.dup2(fd, 2)
+    finally:
+        os.close(fd)
+    faulthandler.enable(file=2, all_threads=True)
+
+
+def run(code, emit, out_dir, work_dir, native_stderr=None):
+    if native_stderr:
+        capture_native_stderr(native_stderr)
     out, err = _Stream(emit, "stdout"), _Stream(emit, "stderr")
     saved = sys.stdout, sys.stderr, sys.stdin
     sys.stdout, sys.stderr, sys.stdin = out, err, _NoStdin()

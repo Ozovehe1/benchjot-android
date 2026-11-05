@@ -93,6 +93,7 @@ object PythonRunner {
                 if (connected == null) { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (no answer in 30 s).", null), 0) }
                 val messenger = (connected as? Messenger)
                     ?: run { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (the service refused to bind).", null), 0) }
+                PyProtocol.nativeStderr(context).delete() // an earlier run's; this run writes its own
                 messenger.send(Message.obtain(null, PyProtocol.RUN, id, 0).apply {
                     data = Bundle().apply {
                         putString(PyProtocol.CODE, code)
@@ -108,7 +109,7 @@ object PythonRunner {
                     }
                     when (msg.what) {
                         STOP -> { kill(context); return@async RunResult(RunOutcome.Stopped, null, elapsed()) }
-                        GONE -> return@async RunResult(RunOutcome.Error, RunError("Python stopped unexpectedly.", null), elapsed())
+                        GONE -> return@async RunResult(RunOutcome.Error, RunError(stoppedUnexpectedly(PyProtocol.crashReport(context)), null), elapsed())
                         PyProtocol.STATUS -> events.onStatus(msg.data.getString(PyProtocol.TEXT).orEmpty())
                         PyProtocol.START -> { started = System.currentTimeMillis(); events.onStatus(""); events.onStart() }
                         PyProtocol.OUT -> events.onOutput(
@@ -127,6 +128,10 @@ object PythonRunner {
         }
         return RunHandle(done) { inbox.trySend(stop) }
     }
+
+    /** The error of a run whose process died by itself, with what native code said before it went. */
+    internal fun stoppedUnexpectedly(report: String) =
+        if (report.isEmpty()) "Python stopped unexpectedly." else "Python stopped unexpectedly:\n$report"
 
     private val NO_BINDING = Any()
     private const val STOP = -1

@@ -46,7 +46,7 @@ class PythonService : Service() {
                 Python.start(AndroidPlatform(applicationContext))
             }
             val work = java.io.File(filesDir, "python-home").path
-            Python.getInstance().getModule("bj_runner").callAttr("run", code, emit, outDir, work)
+            Python.getInstance().getModule("bj_runner").callAttr("run", code, emit, outDir, work, PyProtocol.nativeStderr(this).path)
         } catch (e: Throwable) {
             android.util.Log.e("PythonService", "run failed", e)
             emit.error(e.toString())
@@ -111,4 +111,12 @@ internal object PyProtocol {
     const val PID_KEY = "pid"
     /** Where bj_capture writes the run's figures, tables and charts (the app reads them after the run). */
     const val OUT_DIR = "out_dir"
+
+    /** The Python process's native stderr (fd 2) and faulthandler's tracebacks, one run's worth: what a
+     *  native crash said, read by the app when the process dies (PythonRunner). */
+    fun nativeStderr(context: android.content.Context) = java.io.File(context.cacheDir, "python-native-stderr.txt")
+
+    /** The tail of [nativeStderr], for the error of a run whose process died; empty if it said nothing. */
+    fun crashReport(context: android.content.Context, maxChars: Int = 4000): String =
+        runCatching { nativeStderr(context).readText() }.getOrDefault("").trim().takeLast(maxChars)
 }

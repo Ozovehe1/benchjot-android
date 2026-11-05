@@ -176,5 +176,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   tap "Settings"; waitfor "@${BJ_USER}" 10; shot 12-settings
   tap "Sign out"; waitfor "Exp 3: dropout 0.1 vs 0.3" 20; seek "Create account"; alive; shot 13-signed-out # back on the landing; its buttons sit below the example note
 fi
-adb logcat -d | grep -q "FATAL EXCEPTION" && { echo "crash in logcat"; adb logcat -d | grep -A30 "FATAL EXCEPTION" | head -60; exit 1; } || true
+# Only the app's own crashes fail the smoke (the uiautomator dump tool can NPE on a screen that is changing).
+adb logcat -d > smoke/logcat-smoke.txt
+bash scripts/app-crashes.sh smoke/logcat-smoke.txt > smoke/app-crashes.txt || { echo "app crash in logcat"; head -80 smoke/app-crashes.txt; exit 1; }
 echo "smoke: ok"

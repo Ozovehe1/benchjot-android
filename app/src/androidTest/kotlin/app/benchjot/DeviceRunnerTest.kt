@@ -90,6 +90,22 @@ class DeviceRunnerTest {
         assertEquals("fresh\n", again.out)
     }
 
+    // A native crash (here abort()) kills the Python process; the run's error carries what native code
+    // wrote to fd 2 and faulthandler's traceback of the line, and the next run starts a fresh process.
+    // Under the emulator's ARM translation (armeabi-v7a on x86_64) ndk_translation leaves SIGABRT to the
+    // host's crash handler, so the guest's faulthandler never runs there (seen locally under the same
+    // Android 11 ndk_translation); fd 2's text is what the user gets in that case.
+    @Test fun python_nativeCrashSaysWhatHappened() {
+        val r = run("python", "import os\nos.write(2, b'native says bye\\n')\nos.abort()")
+        assertEquals(RunOutcome.Error, r.result.outcome)
+        val text = r.result.error!!.text
+        assertTrue(text, text.startsWith("Python stopped unexpectedly:\n") && "native says bye" in text)
+        val appAbi = java.io.File(context.applicationInfo.nativeLibraryDir).name // arm64, arm, x86_64
+        val translated = android.os.Build.SUPPORTED_ABIS[0].startsWith("x86") && !appAbi.startsWith("x86")
+        if (!translated) assertTrue(text, "Fatal Python error: Aborted" in text && "File \"<exec>\", line 3" in text)
+        assertEquals("fresh\n", run("python", "print('fresh')").out)
+    }
+
     @Test fun python_timeLimit() {
         val r = run("python", "print('go', flush=True)\nwhile True: pass", timeoutMs = 2_000)
         assertEquals(RunOutcome.Timeout, r.result.outcome)

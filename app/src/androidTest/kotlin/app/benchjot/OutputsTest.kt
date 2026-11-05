@@ -70,6 +70,8 @@ class OutputsTest {
     }
 
     // SciPy (Fortran-free build, LAPACK from OpenBLAS's C LAPACK) and scikit-learn, on each ABI CI runs.
+    // KMeans runs an OpenMP parallel region: with libomp's thread pinning on, it aborted on armeabi-v7a
+    // (bj_runner turns KMP_AFFINITY off).
     @Test fun scipyAndScikitLearnRun() {
         val (r, out) = runPython(
             """
@@ -89,11 +91,12 @@ class OutputsTest {
             km = KMeans(n_clusters=2, n_init=3, random_state=0).fit(np.array([[0.0], [0.1], [10.0], [10.1]]))
             print("kmeans", sorted(np.round(km.cluster_centers_.ravel(), 2).tolist()))
             print("numpy", np.__version__.split(".")[0])
+            import os; print("omp affinity", os.environ.get("KMP_AFFINITY"))
             """.trimIndent(),
         )
-        assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
+        assertEquals("${r.error?.text}\n--- output before it stopped ---\n$out", RunOutcome.Ok, r.outcome)
         assertEquals(
-            "solve [2.0, 3.0]\neig [1.382, 3.618]\ngamma 24.0\nmin 2.0\nnorm 0.5\nfit 3.0 1.0\nkmeans [0.05, 10.05]\nnumpy 2\n",
+            "solve [2.0, 3.0]\neig [1.382, 3.618]\ngamma 24.0\nmin 2.0\nnorm 0.5\nfit 3.0 1.0\nkmeans [0.05, 10.05]\nnumpy 2\nomp affinity disabled\n",
             out,
         )
     }

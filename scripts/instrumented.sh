@@ -21,6 +21,10 @@ grep -vE '^INSTRUMENTATION_STATUS(_CODE)?: (class|current|id|numtests|stream=$)'
 adb logcat -d > smoke/logcat-instrumented.txt
 echo "--- logcat: crashes, Python, Ruff ---"
 grep -E "FATAL|AndroidRuntime|PythonService|chaquopy|python|SIGSYS|seccomp|libruff" smoke/logcat-instrumented.txt | grep -v "^--" | head -80
+echo "--- the app's crashes (python_nativeCrashSaysWhatHappened aborts once on purpose) ---"
+bash scripts/app-crashes.sh smoke/logcat-instrumented.txt | head -120 || true
+# Native crashes' full tombstones (abort message, every thread, memory map), for the artifact.
+adb shell 'for f in /data/tombstones/tombstone_[0-9][0-9]; do [ -f "$f" ] && echo "=== $f" && cat "$f"; done' > smoke/tombstones.txt 2>&1 || true
 echo "--- kernel log: seccomp ---"
 adb shell dmesg 2>/dev/null | grep -iE "seccomp|audit.*1326|SIGSYS" | tail -20 || true
 adb uninstall app.benchjot.test >/dev/null 2>&1 || true
