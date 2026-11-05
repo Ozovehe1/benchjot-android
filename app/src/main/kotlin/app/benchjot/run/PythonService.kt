@@ -49,7 +49,8 @@ class PythonService : Service() {
             Python.getInstance().getModule("bj_runner").callAttr("run", code, emit, outDir, work, PyProtocol.nativeStderr(this).path)
         } catch (e: Throwable) {
             android.util.Log.e("PythonService", "run failed", e)
-            emit.error(e.toString())
+            // bj_runner reports the user's own errors itself; this is Python failing to start or the bridge.
+            emit.error(app.benchjot.core.messageFor(app.benchjot.core.ErrorKind.Unknown, "runner_start"))
         } finally {
             emit.close()
         }

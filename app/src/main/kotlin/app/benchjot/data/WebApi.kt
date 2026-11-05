@@ -3,6 +3,7 @@ package app.benchjot.data
 import app.benchjot.BuildConfig
 import app.benchjot.core.FixAnswer
 import app.benchjot.core.FixRequest
+import app.benchjot.core.FriendlyException
 import app.benchjot.core.ServerRunResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -36,7 +37,7 @@ object WebApi {
     }
 
     private suspend fun <B, T> post(path: String, body: B, inSer: KSerializer<B>, outSer: KSerializer<T>): T {
-        val token = Backend.accessToken() ?: throw DataError("Sign in first")
+        val token = Backend.accessToken() ?: throw DataError("Sign in first", status = 401)
         val res = http.post(BuildConfig.WEB_URL + path) {
             header(HttpHeaders.Authorization, "Bearer $token")
             contentType(ContentType.Application.Json)
@@ -44,8 +45,14 @@ object WebApi {
         }
         val text = res.bodyAsText()
         if (!res.status.isSuccess()) {
-            val message = runCatching { Backend.json.parseToJsonElement(text).jsonObject["error"]?.jsonPrimitive?.content }.getOrNull()
-            throw DataError(message ?: "Request failed (${res.status.value})")
+            // {error: text for the user, code: kind or "notice" (the route's own text), retryAfter: seconds}
+            val o = runCatching { Backend.json.parseToJsonElement(text).jsonObject }.getOrNull()
+            val error = runCatching { o?.get("error")?.jsonPrimitive?.content }.getOrNull()
+            val code = runCatching { o?.get("code")?.jsonPrimitive?.content }.getOrNull()
+            if (code == "notice" && !error.isNullOrBlank()) throw FriendlyException(error)
+            val retryAfter = runCatching { o?.get("retryAfter")?.jsonPrimitive?.content?.toDouble() }.getOrNull()
+                ?: res.headers["retry-after"]?.toDoubleOrNull()
+            throw DataError("$path answered ${res.status.value}", status = res.status.value, code = code, retryAfter = retryAfter)
         }
         return Backend.json.decodeFromString(outSer, text)
     }

@@ -132,7 +132,7 @@ fun LoginScreen(startInSignUp: Boolean, onHome: () -> Unit) {
                     }
                 }
             } catch (e: Exception) {
-                fail(Accounts.message(e))
+                fail(Accounts.message(e, if (signin) "sign_in" else "sign_up"))
             }
         }
     }
@@ -148,7 +148,7 @@ fun LoginScreen(startInSignUp: Boolean, onHome: () -> Unit) {
                 error = null
                 sent = em
             } catch (e: Exception) {
-                fail(Accounts.message(e))
+                fail(Accounts.message(e, "resend"))
             }
         }
     }
@@ -240,7 +240,7 @@ fun WelcomeScreen(suggestion: String, onDone: () -> Unit) {
                 Accounts.setUsername(wanted)
                 onDone()
             } catch (e: Exception) {
-                error = Accounts.message(e)
+                error = Accounts.message(e, "username")
             } finally {
                 saving = false
             }

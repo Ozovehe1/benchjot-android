@@ -1,0 +1,259 @@
+{
+  "text": {
+    "offline": "You seem to be offline. Check your connection and try again.",
+    "timeout": "This is taking too long. Try again in a moment.",
+    "rate_limited": "Too many requests right now. Try again in {wait}.",
+    "session": "Your session has ended. Sign in again to continue.",
+    "permission": "You don’t have access to this.",
+    "too_large": "That’s too large. Try something smaller.",
+    "conflict": "That’s already taken. Try a different one.",
+    "not_found": "This couldn’t be found. It may have been deleted.",
+    "server": "Something went wrong on our side. Try again in a moment.",
+    "unknown": "Something went wrong. Try again."
+  },
+  "retry": "Try again.",
+  "actions": {
+    "save_note": "Couldn’t save your note.",
+    "save_output": "Couldn’t save the output.",
+    "save_figures": "Couldn’t save the figures.",
+    "load_figures": "Couldn’t load the figures.",
+    "load": "Couldn’t load this.",
+    "load_notes": "Couldn’t load your notes.",
+    "outcome": "Couldn’t save the outcome.",
+    "parent": "Couldn’t set the parent note.",
+    "move": "Couldn’t move the note.",
+    "project": "Couldn’t update the project.",
+    "upload": "Couldn’t add the file.",
+    "download": "Couldn’t prepare the file.",
+    "sign_in": "Couldn’t sign you in.",
+    "sign_up": "Couldn’t create your account.",
+    "resend": "Couldn’t resend the link.",
+    "username": "Couldn’t save your username.",
+    "fix": "Fix couldn’t finish.",
+    "run_server": "The server run couldn’t finish.",
+    "runner_start": "The runner couldn’t start."
+  },
+  "overrides": {
+    "fix": {
+      "rate_limited": "Fix has hit its limit for now. Try again in {wait}.",
+      "too_large": "This code is too long for Fix. Try a smaller part."
+    },
+    "run_server": {
+      "rate_limited": "Server runs have hit their limit for now. Try again in {wait}."
+    },
+    "sign_in": {
+      "rate_limited": "Too many attempts. Try again in {wait}."
+    },
+    "username": {
+      "conflict": "That username is taken. Try another."
+    },
+    "sign_up": {
+      "conflict": "An account with this email already exists. Sign in instead."
+    }
+  },
+  "cases": [
+    {
+      "name": "offline (browser)",
+      "facts": {
+        "code": "network",
+        "message": "TypeError: Failed to fetch"
+      },
+      "action": "save_note",
+      "kind": "offline",
+      "expected": "offline",
+      "text": "Couldn’t save your note. You seem to be offline. Check your connection and try again."
+    },
+    {
+      "name": "offline (android)",
+      "facts": {
+        "message": "Unable to resolve host \"x.supabase.co\": No address associated with hostname"
+      },
+      "action": null,
+      "kind": "offline",
+      "expected": "offline",
+      "text": "You seem to be offline. Check your connection and try again."
+    },
+    {
+      "name": "timeout",
+      "facts": {
+        "code": "timeout"
+      },
+      "action": "load_notes",
+      "kind": "timeout",
+      "expected": "timeout",
+      "text": "Couldn’t load your notes. This is taking too long. Try again in a moment."
+    },
+    {
+      "name": "groq 429 with retry-after",
+      "facts": {
+        "status": 429,
+        "code": "rate_limited",
+        "retryAfter": 90
+      },
+      "action": "fix",
+      "kind": "rate_limited",
+      "expected": "rate_limited",
+      "text": "Fix has hit its limit for now. Try again in 2 minutes."
+    },
+    {
+      "name": "groq tokens per day",
+      "facts": {
+        "message": "Rate limit reached for model `openai/gpt-oss-120b` on tokens per day (TPD): Limit 200000, Used 199000. Please try again in 7m12.5s."
+      },
+      "action": "fix",
+      "kind": "rate_limited",
+      "expected": "rate_limited",
+      "text": "Fix has hit its limit for now. Try again in 8 minutes."
+    },
+    {
+      "name": "groq quota exhausted",
+      "facts": {
+        "status": 400,
+        "message": "You exceeded your current quota, please check your plan and billing details."
+      },
+      "action": "fix",
+      "kind": "rate_limited",
+      "expected": "rate_limited",
+      "text": "Fix has hit its limit for now. Try again in a few minutes."
+    },
+    {
+      "name": "login lockout",
+      "facts": {
+        "code": "PT429",
+        "message": "Too many attempts. Try again in a few minutes."
+      },
+      "action": "sign_in",
+      "kind": "rate_limited",
+      "expected": "rate_limited",
+      "text": "Too many attempts. Try again in a few minutes."
+    },
+    {
+      "name": "server run limit",
+      "facts": {
+        "status": 429
+      },
+      "action": "run_server",
+      "kind": "rate_limited",
+      "expected": "rate_limited",
+      "text": "Server runs have hit their limit for now. Try again in a few minutes."
+    },
+    {
+      "name": "jwt expired",
+      "facts": {
+        "code": "PGRST303",
+        "message": "JWT expired"
+      },
+      "action": "save_note",
+      "kind": "session",
+      "expected": "session",
+      "text": "Couldn’t save your note. Your session has ended. Sign in again to continue."
+    },
+    {
+      "name": "refresh failed",
+      "facts": {
+        "status": 400,
+        "code": "refresh_token_not_found",
+        "message": "Invalid Refresh Token: Refresh Token Not Found"
+      },
+      "action": null,
+      "kind": "session",
+      "expected": "session",
+      "text": "Your session has ended. Sign in again to continue."
+    },
+    {
+      "name": "rls",
+      "facts": {
+        "code": "42501",
+        "message": "new row violates row-level security policy for table \"entries\""
+      },
+      "action": "move",
+      "kind": "permission",
+      "expected": "permission",
+      "text": "Couldn’t move the note. You don’t have access to this."
+    },
+    {
+      "name": "unique violation",
+      "facts": {
+        "code": "23505",
+        "message": "duplicate key value violates unique constraint \"profiles_username_key\""
+      },
+      "action": "username",
+      "kind": "conflict",
+      "expected": "conflict",
+      "text": "That username is taken. Try another."
+    },
+    {
+      "name": "email taken",
+      "facts": {
+        "status": 422,
+        "code": "user_already_exists",
+        "message": "User already registered"
+      },
+      "action": "sign_up",
+      "kind": "conflict",
+      "expected": "conflict",
+      "text": "An account with this email already exists. Sign in instead."
+    },
+    {
+      "name": "413",
+      "facts": {
+        "status": 413,
+        "message": "The object exceeded the maximum allowed size"
+      },
+      "action": "save_figures",
+      "kind": "too_large",
+      "expected": "too_large",
+      "text": "Couldn’t save the figures. That’s too large. Try something smaller."
+    },
+    {
+      "name": "not found",
+      "facts": {
+        "code": "PGRST116",
+        "message": "JSON object requested, multiple (or no) rows returned"
+      },
+      "action": "outcome",
+      "kind": "not_found",
+      "expected": "not_found",
+      "text": "Couldn’t save the outcome. This couldn’t be found. It may have been deleted."
+    },
+    {
+      "name": "fix answer cut off",
+      "facts": {
+        "status": 413,
+        "code": "too_large"
+      },
+      "action": "fix",
+      "kind": "too_large",
+      "expected": "too_large",
+      "text": "This code is too long for Fix. Try a smaller part."
+    },
+    {
+      "name": "5xx",
+      "facts": {
+        "status": 502
+      },
+      "action": "fix",
+      "kind": "server",
+      "expected": "server",
+      "text": "Fix couldn’t finish. Something went wrong on our side. Try again in a moment."
+    },
+    {
+      "name": "unknown",
+      "facts": {
+        "message": "Something odd: undefined"
+      },
+      "action": "upload",
+      "kind": "unknown",
+      "expected": "unknown",
+      "text": "Couldn’t add the file. Try again."
+    },
+    {
+      "name": "unknown, no action",
+      "facts": {},
+      "action": null,
+      "kind": "unknown",
+      "expected": "unknown",
+      "text": "Something went wrong. Try again."
+    }
+  ]
+}

@@ -134,7 +134,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     val project = projects.value?.firstOrNull { it.id == projectId }
 
     val saver = remember(entry.id) {
-        Autosaver(Backend.scope, NoteText(entry.title, entry.notes), registry) { v ->
+        Autosaver(Backend.scope, NoteText(entry.title, entry.notes), registry, describe = { Accounts.message(it, "save_note") }) { v ->
             Backend.updateEntry(entry.id) { title(v.title); notes(v.notes) }
         }
     }
@@ -153,7 +153,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
         outcome = next
         outcomeError = null
         scope.launch {
-            try { Backend.updateEntry(entry.id) { outcome(next?.value) } } catch (e: Exception) { outcome = previous; outcomeError = Accounts.message(e) }
+            try { Backend.updateEntry(entry.id) { outcome(next?.value) } } catch (e: Exception) { outcome = previous; outcomeError = Accounts.message(e, "outcome") }
         }
     }
 
@@ -163,7 +163,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
         parentId = next
         parentError = null
         scope.launch {
-            try { Backend.updateEntry(entry.id) { parentId(next) } } catch (e: Exception) { parentId = previous; parentError = Accounts.message(e) }
+            try { Backend.updateEntry(entry.id) { parentId(next) } } catch (e: Exception) { parentId = previous; parentError = Accounts.message(e, "parent") }
         }
     }
 
@@ -172,13 +172,13 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
         projectId = next
         moveError = null
         scope.launch {
-            try { Backend.updateEntry(entry.id) { projectId(next) } } catch (e: Exception) { projectId = previous; moveError = Accounts.message(e) }
+            try { Backend.updateEntry(entry.id) { projectId(next) } } catch (e: Exception) { projectId = previous; moveError = Accounts.message(e, "move") }
         }
     }
 
     val count = snippets.value?.size ?: 0
     val upload = rememberFilePicker(onError = { uploadError = it }) { files ->
-        scope.launch { try { Backend.createSnippets(entry.id, count, files) } catch (e: Exception) { uploadError = Accounts.message(e) } }
+        scope.launch { try { Backend.createSnippets(entry.id, count, files) } catch (e: Exception) { uploadError = Accounts.message(e, "upload") } }
     }
 
     // [[ link autocomplete, pinned above the keyboard.
@@ -269,7 +269,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                         }
                     }
                     Row(Modifier.fillMaxWidth().topLine(t.line), horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                        TextBtn("Add code", { scope.launch { runCatching { Backend.createEmptySnippet(entry.id, count) }.onFailure { uploadError = Accounts.message(it) } } })
+                        TextBtn("Add code", { scope.launch { runCatching { Backend.createEmptySnippet(entry.id, count) }.onFailure { uploadError = Accounts.message(it, "upload") } } })
                         TextBtn("Upload file", upload)
                     }
                     ErrorLine(uploadError)

@@ -125,7 +125,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     val ruff = remember { DeviceRunner.ruff(context) }
 
     val saver = remember(snippet.id) {
-        Autosaver(Backend.scope, CodeValue(initial, snippet.content), registry) { v -> Backend.updateSnippetCode(snippet.id, v.language, v.content) }
+        Autosaver(Backend.scope, CodeValue(initial, snippet.content), registry, describe = { Accounts.message(it, "save_note") }) { v -> Backend.updateSnippetCode(snippet.id, v.language, v.content) }
     }
     DisposableEffect(saver) { onDispose { Backend.scope.launch { saver.flush(); registry.remove(saver) } } }
 
@@ -138,7 +138,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     fun persist(run: LastRun?) {
         saveError = null
         Backend.scope.launch {
-            try { Backend.saveLastRun(snippet.id, run) } catch (e: Exception) { saveError = "Output not saved: ${Accounts.message(e)}" }
+            try { Backend.saveLastRun(snippet.id, run) } catch (e: Exception) { saveError = Accounts.message(e, "save_output") }
         }
     }
 
@@ -155,7 +155,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
         Backend.scope.launch {
             var uploaded: SavedOutputs? = null
             if (local != null) {
-                try { uploaded = OutputStore.upload(snippet.id, local) } catch (e: Exception) { saveError = "Figures not saved: ${Accounts.message(e)}" }
+                try { uploaded = OutputStore.upload(snippet.id, local) } catch (e: Exception) { saveError = Accounts.message(e, "save_figures") }
             }
             try {
                 Backend.saveLastRun(snippet.id, toLastRun(chunks, r, where, src, outputs = uploaded))
@@ -163,7 +163,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
                 if (previous != null && previous.dir != uploaded?.dir) OutputStore.delete(previous)
                 if (uploaded != null) local?.dir?.deleteRecursively() // the cache holds a copy now
             } catch (e: Exception) {
-                saveError = "Output not saved: ${Accounts.message(e)}"
+                saveError = Accounts.message(e, "save_output")
                 OutputStore.delete(uploaded) // the live outputs stay on screen from their folder
             }
         }
@@ -199,13 +199,13 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
                     val (chunks, r) = toRunResult(response)
                     chunks.forEach { buffer.add(it.stream, it.text) }
                     response.outputs?.let { o ->
-                        serverOutputs = runCatching { LocalOutputs.fromServer(o, outDir) }.getOrElse { e -> saveError = "Figures couldn’t load: ${e.message}"; null }
+                        serverOutputs = runCatching { LocalOutputs.fromServer(o, outDir) }.getOrElse { e -> saveError = Accounts.message(e, "load_figures"); null }
                     }
                     r
                 } catch (e: kotlinx.coroutines.CancellationException) {
                     throw e
                 } catch (e: Exception) {
-                    RunResult(RunOutcome.Error, RunError(Accounts.message(e), null), System.currentTimeMillis() - started)
+                    RunResult(RunOutcome.Error, RunError(Accounts.message(e, "run_server"), null), System.currentTimeMillis() - started)
                 }
             }
             val stopped = CompletableDeferred<RunResult>()
@@ -254,7 +254,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
                 val a = WebApi.fix(FixRequest(language, before, lastError, outcome?.value))
                 Fix(before, a.code.replace("\r\n", "\n"), a.summary)
             } catch (e: Exception) {
-                Fix(before, before, Accounts.message(e))
+                Fix(before, before, Accounts.message(e, "fix"))
             } finally {
                 fixing = false
             }

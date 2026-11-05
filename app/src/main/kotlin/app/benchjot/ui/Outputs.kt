@@ -123,7 +123,7 @@ fun rememberChart(item: OutputItem, files: OutputFiles): LoadedChart {
                 }
             }
         } catch (e: Exception) {
-            LoadedChart.Fallback("this chart (${e.message ?: "couldn't load it"})", null)
+            LoadedChart.Fallback("this chart", null).also { android.util.Log.w("Benchjot", "chart failed", e) }
         }
     }
     return loaded

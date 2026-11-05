@@ -46,7 +46,8 @@ import kotlinx.serialization.json.add
 // Every write validates its input first (core Limits, the web's zod contracts).
 // Owner-only RLS on the server does the rest.
 
-class DataError(message: String) : Exception(message)
+/** A failed call; status/code/retryAfter feed the shared error table (Accounts.message), never shown raw. */
+class DataError(message: String, val status: Int? = null, val code: String? = null, val retryAfter: Double? = null) : Exception(message)
 
 @Serializable
 private data class IdRow(val id: String)
@@ -74,11 +75,11 @@ object Backend {
     val version: StateFlow<Int> = _version.asStateFlow()
     fun changed() { _version.value++ }
 
-    fun userId(): String = client.auth.currentUserOrNull()?.id ?: throw DataError("Sign in first")
+    fun userId(): String = client.auth.currentUserOrNull()?.id ?: throw DataError("Sign in first", status = 401)
     fun email(): String = client.auth.currentUserOrNull()?.email.orEmpty()
     fun accessToken(): String? = client.auth.currentSessionOrNull()?.accessToken
 
-    private fun requireRows(rows: List<IdRow>) { if (rows.isEmpty()) throw DataError("Not found") }
+    private fun requireRows(rows: List<IdRow>) { if (rows.isEmpty()) throw DataError("Not found", status = 404) }
 
     // ------------------------------------------------------------------ profile
     suspend fun profile(): Profile? =

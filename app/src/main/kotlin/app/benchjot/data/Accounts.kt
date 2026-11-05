@@ -4,6 +4,9 @@ import app.benchjot.BuildConfig
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
+import app.benchjot.core.ErrorFacts
+import app.benchjot.core.FriendlyException
+import app.benchjot.core.userText
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.serialization.json.JsonNull
@@ -47,7 +50,7 @@ object Accounts {
         when {
             text.contains("not_confirmed", true) || text.contains("not confirmed", true) -> SignIn.Unconfirmed
             text.contains("invalid_credentials", true) || text.contains("Invalid login credentials", true) -> SignIn.Wrong
-            else -> SignIn.Failed(message(e))
+            else -> SignIn.Failed(message(e, "sign_in"))
         }
     }
 
@@ -74,10 +77,22 @@ object Accounts {
 
     suspend fun signOut() = client.auth.signOut()
 
-    /** A short message for the user from any failure. */
-    fun message(e: Throwable): String = when (e) {
-        is RestException -> e.description?.takeIf { it.isNotBlank() } ?: e.error
-        is java.io.IOException -> "No connection. Check your internet and try again."
-        else -> e.message ?: "Something went wrong."
+    /**
+     * The one place an Android failure becomes text for the user: facts from the exception, then
+     * the shared table (core UserMessage.kt, same as the web). The raw error goes to Logcat only.
+     */
+    fun message(e: Throwable, action: String? = null): String {
+        val facts = facts(e)
+        if (facts.friendly == null) android.util.Log.w("Benchjot", "${action ?: "error"} failed", e)
+        return userText(facts, action)
+    }
+
+    fun facts(e: Throwable): ErrorFacts = when {
+        e is FriendlyException -> ErrorFacts(friendly = e.message)
+        e is DataError -> ErrorFacts(status = e.status, code = e.code, message = e.message, retryAfter = e.retryAfter)
+        e is RestException -> ErrorFacts(status = e.statusCode, message = "${e.error} ${e.description.orEmpty()}")
+        e::class.java.simpleName.contains("Timeout") -> ErrorFacts(code = "timeout", message = e.message)
+        e is java.io.IOException -> ErrorFacts(code = "network", message = e.message)
+        else -> ErrorFacts(message = e.message)
     }
 }

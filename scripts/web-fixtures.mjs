@@ -82,6 +82,14 @@ const { isOpenableLink } = await load("src/lib/safe-next.ts");
 const { OPENABLE_LINK_CASES } = await load("tests/fixtures/openable-links.ts");
 write("openable_links.json", OPENABLE_LINK_CASES.map((url) => ({ url, open: isOpenableLink(url) })));
 
+// Error messages: the shared table and the web's own answers on the shared cases (core UserMessage.kt).
+const um = await load("src/lib/user-message.ts");
+const { ERROR_CASES } = await load("tests/fixtures/error-messages.ts");
+write("error_messages.json", {
+  text: um.ERROR_TEXT, retry: um.RETRY_TEXT, actions: um.ACTION_TEXT, overrides: um.ACTION_OVERRIDES,
+  cases: ERROR_CASES.map(([name, facts, action, kind]) => ({ name, facts, action, kind: um.errorKind(facts), expected: kind, text: um.userText(facts, action ?? undefined) })),
+});
+
 // Rich run outputs: the capture fixtures (manifests + chart specs made by the web's
 // scripts/output-fixtures.py) for the chart renderer's mapping tests, and the web's own
 // download formats and labels for each, which core/Outputs.kt must match.

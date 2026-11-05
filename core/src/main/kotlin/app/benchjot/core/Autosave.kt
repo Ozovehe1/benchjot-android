@@ -52,6 +52,8 @@ class Autosaver<T>(
     baseline: T,
     private val registry: SaveRegistry? = null,
     private val delayMs: Long = 900,
+    /** The text shown for a failed save (the app passes its shared error table). */
+    private val describe: (Exception) -> String = { it.message ?: "Could not save" },
     private val save: suspend (T) -> Unit,
 ) {
     private val lock = Mutex()
@@ -93,7 +95,7 @@ class Autosaver<T>(
                     throw e
                 } catch (e: Exception) {
                     // After an error, wait for the next edit or flush.
-                    report(SaveState.Error, e.message ?: "Could not save")
+                    report(SaveState.Error, describe(e))
                     false
                 }
             }

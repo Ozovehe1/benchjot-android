@@ -291,7 +291,7 @@ fun OutputViewer(
                             val bytes = exportBytes(item, files, f, (chart as? LoadedChart.Ready)?.state, density)
                             then(bytes, outputDownloadName(base, index, f.format), MIME[f.format] ?: "application/octet-stream")
                         } catch (e: Exception) {
-                            message = e.message ?: "Couldn't prepare the file"
+                            message = app.benchjot.data.Accounts.message(e, "download")
                         } finally { busy = false }
                     }
                 }

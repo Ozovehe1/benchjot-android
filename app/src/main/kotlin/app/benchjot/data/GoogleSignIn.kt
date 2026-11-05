@@ -48,7 +48,8 @@ object GoogleSignIn {
         } catch (_: NoCredentialException) {
             return Result.Failed(NO_ACCOUNT)
         } catch (e: GetCredentialException) {
-            return Result.Failed(e.errorMessage?.toString()?.takeIf { it.isNotBlank() } ?: DIDNT_FINISH)
+            android.util.Log.w("Benchjot", "Google credential failed", e)
+            return Result.Failed(DIDNT_FINISH)
         }
         if (credential !is CustomCredential || credential.type != GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
             return Result.Failed(DIDNT_FINISH)
@@ -62,7 +63,7 @@ object GoogleSignIn {
             }
             Result.Ok
         } catch (e: Exception) {
-            Result.Failed(Accounts.message(e))
+            Result.Failed(Accounts.message(e, "sign_in"))
         }
     }
 }
