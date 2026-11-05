@@ -24,6 +24,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.serializer.KotlinXSerializer
+import io.github.jan.supabase.storage.Storage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -62,6 +63,7 @@ object Backend {
         defaultSerializer = KotlinXSerializer(json)
         install(Auth)
         install(Postgrest)
+        install(Storage)
     }
 
     val session: StateFlow<SessionStatus> get() = client.auth.sessionStatus

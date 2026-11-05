@@ -1,0 +1,18 @@
+{
+ "items": [
+  {
+   "files": {
+    "pdf": "0.pdf",
+    "png": "0.png",
+    "svg": "0.svg"
+   },
+   "height": 0,
+   "kind": "image",
+   "source": "matplotlib",
+   "title": "",
+   "width": 0
+  }
+ ],
+ "notes": [],
+ "version": 1
+}

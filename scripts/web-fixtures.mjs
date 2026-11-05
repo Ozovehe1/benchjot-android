@@ -51,4 +51,23 @@ write("detect.json", detect.map((code) => ({ code, language: detectLanguage(code
 // The signed-out landing's example note (title, body, one code block with its saved run)
 const sample = await load("src/lib/sample-note.ts");
 write("sample_note.json", { entry: sample.SAMPLE_ENTRY, snippets: sample.SAMPLE_SNIPPETS });
+
+// Rich run outputs: the capture fixtures (manifests + chart specs made by the web's
+// scripts/output-fixtures.py) for the chart renderer's mapping tests, and the web's own
+// download formats and labels for each, which core/Outputs.kt must match.
+import { cpSync, readdirSync, rmSync } from "node:fs";
+const outputsSrc = join(web, "tests/fixtures/outputs");
+rmSync(join(out, "outputs"), { recursive: true, force: true });
+cpSync(outputsSrc, join(out, "outputs"), { recursive: true });
+const outputs = await load("src/lib/run/outputs.ts");
+const formats = {};
+for (const c of readdirSync(outputsSrc).sort()) {
+  const m = JSON.parse(readFileSync(join(outputsSrc, c, "manifest.json"), "utf8"));
+  formats[c] = m.items.map((item) => ({ label: outputLabel(outputs, item), formats: outputs.downloadFormats(item) }));
+}
+function outputLabel(o, item) { return o.outputLabel(o.outputItem.parse(item)); }
+write("output_formats.json", formats);
+write("output_names.json", ["train.py", "", "my run (v2).py", "a.b.c"].flatMap((b) => [0, 4].map((i) => ({ base: b, index: i, name: outputs.downloadName(b, i, "png") }))));
+// The phone runs the same capture module as the browser and the server.
+copyFileSync(join(web, "public/workers/bj_capture.py"), resolve(import.meta.dirname, "../app/src/main/python/bj_capture.py"));
 console.log(`web fixtures written to ${out}`);

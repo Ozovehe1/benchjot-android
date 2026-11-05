@@ -3,7 +3,8 @@
 # landing -> sign in (Continue with Google opens Credential Manager) -> create
 # account screens by their accessible names, saving a screenshot of each to
 # smoke/. With a throwaway account (BJ_USER/BJ_PASS): sign in, write a note,
-# run Python/JS/TS on the device, Stop a runaway run, Ruff Autofix, math preview, the Map.
+# run Python/JS/TS on the device, Stop a runaway run, Ruff Autofix, figures and charts (own
+# screen, downloads), math preview, the Map.
 # Fails if the app crashes.
 set -euo pipefail
 APK=${1:-benchjot.apk}
@@ -55,6 +56,12 @@ to_bottom() { for _ in 1 2 3 4 5 6; do swipe_up; done; sleep 1; }
 seek() {
   for _ in $(seq 1 "${2:-20}"); do [ -n "$(find "$1")" ] && return 0; swipe_up; sleep 1; done
   echo "timed out seeking: $1"; shot "timeout-$(echo "$1" | tr -cd 'a-zA-Z0-9')"; dump | head -c 4000; exit 1
+}
+# Scrolls up a fifth of the screen at a time until $1 is on screen: for a block's header row
+# (its Run button sits above the code, so a tall block's header is off screen after to_bottom).
+seek_up() {
+  for _ in $(seq 1 "${2:-10}"); do [ -n "$(find "$1")" ] && return 0; adb shell input swipe $((W / 2)) $((H * 2 / 5)) $((W / 2)) $((H * 3 / 5)) 300; sleep 1; done
+  echo "timed out seeking up: $1"; shot "timeout-up-$(echo "$1" | tr -cd 'a-zA-Z0-9')"; dump | head -c 4000; exit 1
 }
 back() { adb shell input keyevent 4; sleep 2; }
 focus() { adb shell dumpsys window | grep -E "mCurrentFocus" | head -1; }
@@ -120,7 +127,31 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   waitfor "^while True: pass" 10
   [ -z "$(find "^import os")" ] || { echo "::error::Autofix left the unused import"; shot timeout-autofix; exit 1; }
   shot 8f-autofixed; echo "ruff autofix: ok"
+  # The note's text saved ("Saved" shows until the note screen is left: the viewer below replaces it).
   to_top; waitfor "Saved" 10
+  # Rich outputs: a matplotlib figure and a Plotly chart under the block, saved to Storage; each
+  # opens on its own screen and downloads (PNG, then the chart as PDF) into Downloads/Benchjot.
+  to_bottom; tap "Add code"; seek "Code 5"
+  tap "Code 5"
+  for line in "import matplotlib.pyplot as plt" "plt.plot([1,2,3],[3,1,2])" "plt.show()" "import plotly.express as px" "px.scatter(x=[1,2,3],y=[4,1,2]).show()"; do
+    type_text "$line"; adb shell input keyevent 66
+  done
+  back; to_bottom; seek_up "Run"; tap "Run" last
+  seek "Open" 90; alive; shot 8g-outputs
+  tap "Open"; waitfor "Download" 30
+  # Whichever output's Open was on screen, step back to the first (the figure).
+  for _ in 1 2 3; do [ -n "$(find "Prev")" ] || break; tap "Prev"; done
+  waitfor "^Figure" 10; shot 8h-figure-viewer
+  tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; echo "figure download: ok"
+  tap "Next"; waitfor "^Plotly chart" 20; sleep 2; shot 8i-chart-viewer
+  tap "PNG"; waitfor "PDF" 10; tap "PDF"; tap "Download"; waitfor "^Saved to Downloads/Benchjot/" 30; alive; shot 8j-chart-pdf; echo "chart pdf download: ok"
+  # Back on the same note at the same spot (Note.kt rememberRestoredScrollState): the outputs' Open
+  # is on screen again without scrolling, and the top of the note (its Outcome row) is not.
+  tap "Back to note"; waitfor "Open" 20; sleep 2
+  [ -n "$(find "Open")" ] && [ -z "$(find "Outcome")" ] || { echo "::error::Back to note did not return to the same place in the note"; shot back-to-note; dump | head -c 3000; exit 1; }
+  shot 8k-back-same-spot; echo "back to note at the same spot: ok"
+  to_top; [ -n "$(find "Preview")" ] || to_top # the note is taller now (two figures under Code 5)
+  waitfor "Preview" 10
   tap "Preview"; waitfor "E=mc^2" 10; shot 9-preview-math
   tap "Successful"; sleep 2
   tap "All notes"; waitfor "Smoke test note" 20; shot 10-list

@@ -1,0 +1,15 @@
+{
+ "items": [
+  {
+   "files": {
+    "json": "0.json"
+   },
+   "kind": "chart",
+   "lib": "plotly",
+   "title": "Curves",
+   "version": "7.1.0"
+  }
+ ],
+ "notes": [],
+ "version": 1
+}

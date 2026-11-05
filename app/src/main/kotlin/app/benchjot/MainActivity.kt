@@ -40,6 +40,8 @@ import app.benchjot.ui.LandingScreen
 import app.benchjot.ui.LoginScreen
 import app.benchjot.ui.NoteMapScreen
 import app.benchjot.ui.NoteScreen
+import app.benchjot.ui.OUTPUT_ROUTE
+import app.benchjot.ui.OutputScreen
 import app.benchjot.ui.SettingsScreen
 import app.benchjot.ui.WelcomeScreen
 import app.benchjot.ui.isDark
@@ -118,6 +120,10 @@ private fun SignedIn() {
         composable("home") { List(nav, null) }
         composable("project/{id}") { List(nav, it.arguments?.getString("id")) }
         composable("note/{id}") { NoteScreen(it.arguments?.getString("id").orEmpty(), pro, nav) }
+        composable(OUTPUT_ROUTE, arguments = listOf(navArgument("n") { type = NavType.IntType })) {
+            val a = it.arguments!!
+            OutputScreen(a.getString("note").orEmpty(), a.getString("snippet").orEmpty(), a.getInt("n"), onBack = { nav.popBackStack() }, onHome = { nav.home() })
+        }
         composable("settings") { SettingsScreen(username) { nav.home() } }
         composable("map") { NoteMapScreen(onHome = { nav.home() }, onOpenNote = { nav.navigate("note/$it") }) }
     }

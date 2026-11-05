@@ -40,13 +40,13 @@ jobs:
           path: app/src/main/jniLibs
 
   python-armv7:
-    # Python 3.13 + numpy for 32-bit ARM phones, which Chaquopy only publishes for 64-bit
+    # Python 3.13 + its native packages (scripts/python-armv7-packages.txt) for 32-bit ARM phones, which Chaquopy only publishes for 64-bit
     # (scripts/build-python-armv7.sh). Cached per Chaquopy version, Python version and script.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - id: key
-        run: echo "key=python-armv7-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-armv7.sh', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
+        run: echo "key=python-armv7-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-armv7.sh', 'scripts/python-armv7-packages.txt', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
       - id: cache
         uses: actions/cache@v4
         with:
@@ -61,7 +61,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - name: Build CPython, Chaquopy runtime and numpy for armeabi-v7a
+      - name: Build CPython, Chaquopy runtime and the native packages (numpy, matplotlib, pandas, pillow, ...) for armeabi-v7a
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq patchelf
@@ -104,10 +104,12 @@ jobs:
       - name: Web parity (fixtures, transpiler and Ruff match the web app's current code)
         run: |
           git clone --depth 1 https://github.com/Ozovehe1/benchjot.git /tmp/web
+          (cd /tmp/web && npm ci --ignore-scripts --no-audit --no-fund --silent) # the web modules import their own deps (zod)
           node --experimental-strip-types scripts/web-fixtures.mjs /tmp/web
           node --experimental-strip-types scripts/web-engines.mjs /tmp/web
           git status --short
-          git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
+          git add -N core/src/test/resources/web
+          git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine app/src/main/python/bj_capture.py || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
 
       - name: Ruff (official binary for the host tests; the Android build from the ruff job)
         run: bash scripts/fetch-ruff.sh host
@@ -235,5 +237,5 @@ jobs:
           cp apks/app-release-universal.apk benchjot.apk
           gh release create "$TAG" benchjot.apk \
             --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
-            --notes "Built from ${GITHUB_SHA::7}. One APK for 64-bit and 32-bit ARM phones (arm64-v8a and armeabi-v7a), Python 3.13 + numpy on both. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
+            --notes "Built from ${GITHUB_SHA::7}. One APK for 64-bit and 32-bit ARM phones (arm64-v8a and armeabi-v7a), Python 3.13 with numpy, pandas, matplotlib, seaborn, Pillow, Plotly, Altair and Bokeh on both; figures, tables and charts open on their own screen and download as PNG, JPG, WebP, SVG, PDF, CSV or JSON. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
             --latest

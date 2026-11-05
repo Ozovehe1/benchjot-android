@@ -89,6 +89,8 @@ dependencies {
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.auth)
     implementation(libs.supabase.postgrest)
+    implementation(libs.supabase.storage)
+    implementation(libs.androidsvg)
     implementation(libs.ktor.client.okhttp)
     implementation(libs.coroutines.android)
     implementation(libs.markdown.m3)
@@ -97,6 +99,9 @@ dependencies {
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.junit)
     androidTestImplementation(libs.coroutines.test)
+    androidTestImplementation(platform(libs.compose.bom))
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.test.manifest)
 }
 
 // Embedded CPython for on-device runs (PythonService). Packages are bundled at build
@@ -105,9 +110,21 @@ chaquopy {
     defaultConfig {
         version = "3.13"
         pip {
-            // numpy for armeabi-v7a is built by scripts/build-python-armv7.sh (Chaquopy's index has 64-bit only).
+            // Native packages for armeabi-v7a are built by scripts/build-python-armv7.sh (Chaquopy's
+            // index has cp313 for 64-bit only); the pins are the versions its recipes build, so both
+            // ABIs get the same ones (one list: scripts/python-armv7-packages.txt).
             options("--find-links", rootProject.file("build/python-armv7/wheels").path)
-            install("numpy")
+            rootProject.file("scripts/python-armv7-packages.txt").readLines().map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }
+                .forEach { val (name, version) = it.split(Regex("\\s+")); install("$name==$version") }
+            // Pure Python: plotting libraries the capture module knows. Bokeh < 3.4 because 3.4+ needs
+            // contourpy >= 1.2, newer than Chaquopy's recipe; jsonschema < 4.18 avoids rpds-py (Rust).
+            install("plotly")
+            install("bokeh<3.4")
+            install("seaborn")
+            install("altair")
+            install("jsonschema<4.18")
+            // pyparsing 3.3 deprecates the camelCase names matplotlib 3.8 calls, so every import printed warnings.
+            install("pyparsing<3.3")
         }
     }
 }

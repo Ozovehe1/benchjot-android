@@ -1,0 +1,54 @@
+{
+ "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json",
+ "config": {
+  "view": {
+   "continuousHeight": 300,
+   "continuousWidth": 300
+  }
+ },
+ "data": {
+  "name": "data-b2cd3b62139410d2f49ae914aa7ca85e"
+ },
+ "datasets": {
+  "data-b2cd3b62139410d2f49ae914aa7ca85e": [
+   {
+    "epoch": 1,
+    "loss": 0.9,
+    "val": 1.0
+   },
+   {
+    "epoch": 2,
+    "loss": 0.6,
+    "val": 0.7
+   },
+   {
+    "epoch": 3,
+    "loss": 0.45,
+    "val": 0.55
+   },
+   {
+    "epoch": 4,
+    "loss": 0.4,
+    "val": 0.52
+   },
+   {
+    "epoch": 5,
+    "loss": 0.38,
+    "val": 0.53
+   }
+  ]
+ },
+ "encoding": {
+  "x": {
+   "field": "epoch",
+   "type": "quantitative"
+  },
+  "y": {
+   "field": "loss",
+   "type": "quantitative"
+  }
+ },
+ "mark": {
+  "type": "area"
+ }
+}

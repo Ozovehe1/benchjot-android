@@ -29,14 +29,15 @@ class PythonService : Service() {
             val reply = msg.replyTo
             val id = msg.arg1
             val code = msg.data.getString(PyProtocol.CODE).orEmpty()
-            worker.execute { runOne(reply, id, code) }
+            val outDir = msg.data.getString(PyProtocol.OUT_DIR).orEmpty()
+            worker.execute { runOne(reply, id, code, outDir) }
         }
         true
     }
 
     override fun onBind(intent: Intent): IBinder = Messenger(incoming).binder
 
-    private fun runOne(reply: Messenger, id: Int, code: String) {
+    private fun runOne(reply: Messenger, id: Int, code: String, outDir: String) {
         val emit = Emitter(reply, id)
         emit.send(PyProtocol.PID) { putInt(PyProtocol.PID_KEY, Process.myPid()) }
         try {
@@ -44,7 +45,8 @@ class PythonService : Service() {
                 emit.status("Loading Python…")
                 Python.start(AndroidPlatform(applicationContext))
             }
-            Python.getInstance().getModule("bj_runner").callAttr("run", code, emit)
+            val work = java.io.File(filesDir, "python-home").path
+            Python.getInstance().getModule("bj_runner").callAttr("run", code, emit, outDir, work)
         } catch (e: Throwable) {
             android.util.Log.e("PythonService", "run failed", e)
             emit.error(e.toString())
@@ -107,4 +109,6 @@ internal object PyProtocol {
     const val TEXT = "text"
     const val STREAM = "stream"
     const val PID_KEY = "pid"
+    /** Where bj_capture writes the run's figures, tables and charts (the app reads them after the run). */
+    const val OUT_DIR = "out_dir"
 }

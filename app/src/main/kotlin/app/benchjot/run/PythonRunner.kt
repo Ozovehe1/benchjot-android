@@ -78,7 +78,8 @@ object PythonRunner {
         listeners.values.forEach { it.trySend(gone) }
     }
 
-    fun run(context: Context, scope: CoroutineScope, code: String, events: RunEvents, timeoutMs: Long = RUN_TIMEOUT_MS): RunHandle {
+    /** `outDir`: an empty folder bj_capture fills with the run's outputs and manifest.json. */
+    fun run(context: Context, scope: CoroutineScope, code: String, events: RunEvents, timeoutMs: Long = RUN_TIMEOUT_MS, outDir: java.io.File? = null): RunHandle {
         val id = nextId++
         val inbox = Channel<Message>(Channel.UNLIMITED)
         listeners[id] = inbox
@@ -93,7 +94,10 @@ object PythonRunner {
                 val messenger = (connected as? Messenger)
                     ?: run { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (the service refused to bind).", null), 0) }
                 messenger.send(Message.obtain(null, PyProtocol.RUN, id, 0).apply {
-                    data = Bundle().apply { putString(PyProtocol.CODE, code) }
+                    data = Bundle().apply {
+                        putString(PyProtocol.CODE, code)
+                        putString(PyProtocol.OUT_DIR, (outDir ?: java.io.File(context.cacheDir, "py-out/$id")).path)
+                    }
                     replyTo = replies
                 })
                 while (true) {
