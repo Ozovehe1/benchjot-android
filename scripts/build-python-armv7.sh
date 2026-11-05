@@ -7,8 +7,8 @@
 #      `target` artifact for armeabi-v7a.
 #   2. Chaquopy's runtime (chaquopy.so, libchaquopy_java.so) for that Python, from
 #      the same Chaquopy tag's Cython sources.
-#   3. The native packages (numpy, contourpy, kiwisolver, pillow, matplotlib, pandas,
-#      markupsafe, pyyaml, tornado: scripts/python-armv7-packages.txt) as cp313
+#   3. The native packages that don't link NumPy (kiwisolver, pillow, markupsafe, pyyaml,
+#      tornado: scripts/python-armv7-packages.txt) as cp313
 #      armeabi-v7a wheels, with Chaquopy's build-wheel recipes (the same recipe and
 #      version its index has for cp313 arm64/x86_64).
 #   4. The Chaquopy Gradle plugin with armeabi-v7a allowed for Python 3.13: its only
@@ -99,7 +99,7 @@ mkdir -p "$SRC/maven/com/chaquo/python/target"   # where build-wheel.py looks
 rm -rf "$SRC/maven/com/chaquo/python/target/$TVER"; cp -r "$OWN" "$SRC/maven/com/chaquo/python/target/$TVER"
 # build-wheel.py links lib<name>.so to each library under its other names, and both
 # libpython3.so and libpython3.13.so map to libpython.so, so it fails on the second.
-# numpy links libpython3.13.so; the stable-ABI stub only goes into the app's copy.
+# Extensions link libpython3.13.so; the stable-ABI stub only goes into the app's copy.
 zip -q -d "$SRC/maven/com/chaquo/python/target/$TVER/target-$TVER-$ABI.zip" "jniLibs/$ABI/libpython3.so"
 endlog
 
@@ -136,19 +136,17 @@ done
 endlog
 
 # 3. Native packages ------------------------------------------------------------
-# Each package in scripts/python-armv7-packages.txt (numpy, matplotlib, pandas, pillow, ...),
-# in that order, with Chaquopy's build-wheel recipe for the same version its index has for
-# cp313 arm64/x86_64. A recipe's host requirements are its earlier wheels (numpy) or
-# Chaquopy's prebuilt C libraries for armeabi-v7a (freetype, libpng, ...), put in dist/.
+# Each package in scripts/python-armv7-packages.txt (kiwisolver, pillow, ...), in that order,
+# with Chaquopy's build-wheel recipe for the same version its index has for cp313 arm64/x86_64.
+# A recipe's host requirements are Chaquopy's prebuilt C libraries for armeabi-v7a (freetype,
+# libjpeg, ...), put in dist/. The NumPy stack is scripts/build-python-sci.sh.
 PYPI=$SRC/server/pypi
 "$VENV/bin/pip" install -q -r "$PYPI/requirements.txt"
 host_wheel() { # <dist name> <wheel file> : a prebuilt armeabi-v7a library from Chaquopy's index
   mkdir -p "$PYPI/dist/$1"
   [ -f "$PYPI/dist/$1/$2" ] || curl -fsSL --retry 5 -o "$PYPI/dist/$1/$2" "https://chaquo.com/pypi-13.1/$1/$2"
 }
-host_wheel chaquopy-openblas chaquopy_openblas-0.2.20-5-py3-none-android_16_armeabi_v7a.whl # numpy
-host_wheel chaquopy-freetype chaquopy_freetype-2.9.1-2-py3-none-android_16_armeabi_v7a.whl  # pillow, matplotlib
-host_wheel chaquopy-libpng chaquopy_libpng-1.6.34-1-py3-none-android_16_armeabi_v7a.whl      # matplotlib
+host_wheel chaquopy-freetype chaquopy_freetype-2.9.1-2-py3-none-android_16_armeabi_v7a.whl  # pillow
 host_wheel chaquopy-libjpeg chaquopy_libjpeg-1.5.3-1-py3-none-android_16_armeabi_v7a.whl     # pillow
 host_wheel chaquopy-libyaml chaquopy_libyaml-0.2.5-0-py3-none-android_24_armeabi_v7a.whl     # pyyaml
 grep -vE '^\s*(#|$)' scripts/python-armv7-packages.txt | while read -r NAME VERSION; do

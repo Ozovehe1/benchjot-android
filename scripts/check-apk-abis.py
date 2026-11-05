@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Fails unless the APK carries every native engine for each given ABI, built for it:
-Python (libpython, Chaquopy's runtime), the native Python packages (numpy, matplotlib,
-pandas, pillow, ...: one extension module each), QuickJS and Ruff, each checked by its
+Python (libpython, Chaquopy's runtime), the native Python packages (numpy, scipy, scikit-learn,
+matplotlib, pandas, pillow, ...: one extension module each, and the shared OpenBLAS, libc++ and
+libomp), QuickJS and Ruff, each checked by its
 ELF header (32/64-bit and machine), not just by its path.
 
     scripts/check-apk-abis.py app.apk arm64-v8a armeabi-v7a
@@ -19,9 +20,16 @@ ELF = {  # abi: (ELF class, e_machine)
 }
 
 
-# One compiled module per native package the app bundles (scripts/python-armv7-packages.txt).
+# One compiled module per native package the app bundles (scripts/python-armv7-packages.txt,
+# scripts/python-sci-packages.txt).
 NATIVE = {
-    "numpy": r"numpy/core/_multiarray_umath[^/]*\.so$",
+    "numpy": r"numpy/_core/_multiarray_umath[^/]*\.so$",
+    "openblas": r"chaquopy/lib/libopenblas\.so$",
+    # The one C++ and one OpenMP runtime the native modules share (scripts/build-python-sci.sh).
+    "libc++": r"chaquopy/lib/libc\+\+_shared\.so$",
+    "libomp": r"chaquopy/lib/libomp\.so$",
+    "scipy": r"scipy/special/_ufuncs[^/]*\.so$",
+    "scikit-learn": r"sklearn/utils/_cython_blas[^/]*\.so$",
     "contourpy": r"contourpy/_contourpy[^/]*\.so$",
     "kiwisolver": r"kiwisolver/_cext[^/]*\.so$",
     "pillow": r"PIL/_imaging\.[^/]*so$",

@@ -62,11 +62,40 @@ class OutputsTest {
 
     @Test fun plottingLibrariesImport() {
         val (r, out) = runPython(
-            "import matplotlib, pandas, PIL, plotly, bokeh, seaborn, altair\n" +
-                "print(' '.join(m.__name__ for m in (matplotlib, pandas, PIL, plotly, bokeh, seaborn, altair)))",
+            "import matplotlib, pandas, PIL, plotly, bokeh, seaborn, altair, scipy, sklearn\n" +
+                "print(' '.join(m.__name__ for m in (matplotlib, pandas, PIL, plotly, bokeh, seaborn, altair, scipy, sklearn)))",
         )
         assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
-        assertEquals("matplotlib pandas PIL plotly bokeh seaborn altair\n", out)
+        assertEquals("matplotlib pandas PIL plotly bokeh seaborn altair scipy sklearn\n", out)
+    }
+
+    // SciPy (Fortran-free build, LAPACK from OpenBLAS's C LAPACK) and scikit-learn, on each ABI CI runs.
+    @Test fun scipyAndScikitLearnRun() {
+        val (r, out) = runPython(
+            """
+            import numpy as np, scipy, sklearn
+            from scipy import linalg, special, optimize, stats
+            from sklearn.linear_model import LinearRegression
+            from sklearn.cluster import KMeans
+            a = np.array([[3.0, 1.0], [1.0, 2.0]])
+            print("solve", np.round(linalg.solve(a, [9.0, 8.0]), 6).tolist())
+            print("eig", np.round(np.sort(linalg.eigvalsh(a)), 4).tolist())
+            print("gamma", round(float(special.gamma(5.0)), 6))
+            print("min", round(float(optimize.minimize_scalar(lambda x: (x - 2) ** 2).x), 4))
+            print("norm", round(float(stats.norm.cdf(0.0)), 4))
+            x = np.arange(10.0).reshape(-1, 1)
+            m = LinearRegression().fit(x, 3 * x.ravel() + 1)
+            print("fit", round(float(m.coef_[0]), 6), round(float(m.intercept_), 6))
+            km = KMeans(n_clusters=2, n_init=3, random_state=0).fit(np.array([[0.0], [0.1], [10.0], [10.1]]))
+            print("kmeans", sorted(np.round(km.cluster_centers_.ravel(), 2).tolist()))
+            print("numpy", np.__version__.split(".")[0])
+            """.trimIndent(),
+        )
+        assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
+        assertEquals(
+            "solve [2.0, 3.0]\neig [1.382, 3.618]\ngamma 24.0\nmin 2.0\nnorm 0.5\nfit 3.0 1.0\nkmeans [0.05, 10.05]\nnumpy 2\n",
+            out,
+        )
     }
 
     @Test fun captureWritesEveryKindOfOutput() {

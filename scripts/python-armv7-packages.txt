@@ -1,12 +1,9 @@
-# Native Python packages the app bundles, as "<name> <version>": Chaquopy's index has them for
-# cp313 arm64-v8a / x86_64; scripts/build-python-armv7.sh builds the same versions for
-# armeabi-v7a with Chaquopy's own recipes. app/build.gradle.kts installs exactly these.
-numpy 1.26.2
-contourpy 1.0.7
+# Native Python packages the app bundles that don't link NumPy, as "<name> <version>": Chaquopy's
+# index has them for cp313 arm64-v8a / x86_64; scripts/build-python-armv7.sh builds the same
+# versions for armeabi-v7a with Chaquopy's own recipes. app/build.gradle.kts installs exactly
+# these. The NumPy stack is scripts/python-sci-packages.txt (every ABI, from source).
 kiwisolver 1.4.7
 pillow 11.0.0
-matplotlib 3.8.4
-pandas 2.1.3
 markupsafe 3.0.3
 pyyaml 6.0.3
 tornado 6.5.2

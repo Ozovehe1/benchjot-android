@@ -114,16 +114,20 @@ chaquopy {
             // index has cp313 for 64-bit only); the pins are the versions its recipes build, so both
             // ABIs get the same ones (one list: scripts/python-armv7-packages.txt).
             options("--find-links", rootProject.file("build/python-armv7/wheels").path)
-            rootProject.file("scripts/python-armv7-packages.txt").readLines().map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }
-                .forEach { val (name, version) = it.split(Regex("\\s+")); install("$name==$version") }
-            // Pure Python: plotting libraries the capture module knows. Bokeh < 3.4 because 3.4+ needs
-            // contourpy >= 1.2, newer than Chaquopy's recipe; jsonschema < 4.18 avoids rpds-py (Rust).
+            // The NumPy-2 scientific stack (numpy ... scipy, scikit-learn), built for every ABI by
+            // scripts/build-python-sci.sh; its OpenBLAS ships as the benchjot-openblas wheel.
+            options("--find-links", rootProject.file("build/python-sci/wheels").path)
+            fun pins(list: String) = rootProject.file(list).readLines().map { it.substringBefore('#').trim() }.filter { it.isNotEmpty() }
+                .map { val (name, version) = it.split(Regex("\\s+")); "${if (name == "openblas") "benchjot-openblas" else name}==$version" }
+            (pins("scripts/python-armv7-packages.txt") + pins("scripts/python-sci-packages.txt")).forEach { install(it) }
+            // Pure Python: plotting libraries the capture module knows. Bokeh < 3.4 (kept from when
+            // contourpy was Chaquopy's 1.0.7; 3.4+ is now possible); jsonschema < 4.18 avoids rpds-py (Rust).
             install("plotly")
             install("bokeh<3.4")
             install("seaborn")
             install("altair")
             install("jsonschema<4.18")
-            // pyparsing 3.3 deprecates the camelCase names matplotlib 3.8 calls, so every import printed warnings.
+            // pyparsing 3.3 deprecates camelCase names older matplotlib calls (imports printed warnings).
             install("pyparsing<3.3")
         }
     }

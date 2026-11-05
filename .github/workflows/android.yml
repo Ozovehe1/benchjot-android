@@ -19,6 +19,7 @@ concurrency:
 
 permissions:
   contents: write # to publish the APK as a release
+  actions: read # scripts/restore-artifact.sh: build caches from earlier runs
 
 jobs:
   ruff:
@@ -41,38 +42,92 @@ jobs:
 
   python-armv7:
     # Python 3.13 + its native packages (scripts/python-armv7-packages.txt) for 32-bit ARM phones, which Chaquopy only publishes for 64-bit
-    # (scripts/build-python-armv7.sh). Cached per Chaquopy version, Python version and script.
+    # (scripts/build-python-armv7.sh). Cached per Python version and inputs as an artifact named by its key, which
+    # every branch and main can restore (scripts/restore-artifact.sh), so a merge doesn't rebuild it.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - id: key
         run: echo "key=python-armv7-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-armv7.sh', 'scripts/python-armv7-packages.txt', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
       - id: cache
-        uses: actions/cache@v4
-        with:
-          path: build/python-armv7
-          key: ${{ steps.key.outputs.key }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/restore-artifact.sh "${{ steps.key.outputs.key }}" build/python-armv7 >> "$GITHUB_OUTPUT"
       - uses: actions/setup-python@v5
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.hit != 'true'
         with:
           python-version: "3.13"
       - uses: actions/setup-java@v4
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.hit != 'true'
         with:
           distribution: temurin
           java-version: 17
-      - name: Build CPython, Chaquopy runtime and the native packages (numpy, matplotlib, pandas, pillow, ...) for armeabi-v7a
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Build CPython, Chaquopy runtime and the native packages that don't link NumPy (pillow, kiwisolver, ...) for armeabi-v7a
+        if: steps.cache.outputs.hit != 'true'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq patchelf
           bash scripts/build-python-armv7.sh
+      - uses: actions/upload-artifact@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          name: ${{ steps.key.outputs.key }}
+          path: build/python-armv7
+          retention-days: 90
       - uses: actions/upload-artifact@v4
         with:
           name: python-armv7
           path: build/python-armv7
 
+  python-sci:
+    # The NumPy-2 scientific stack (scripts/python-sci-packages.txt: OpenBLAS, numpy, contourpy, matplotlib,
+    # pandas, scipy, scikit-learn) cross-built for each ABI the app ships (scripts/build-python-sci.sh).
+    # Cached per ABI and inputs the same way as python-armv7.
+    needs: python-armv7
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+      - id: key
+        run: echo "key=python-sci-${{ matrix.abi }}-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-sci.sh', 'scripts/python-sci-packages.txt', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
+      - id: cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/restore-artifact.sh "${{ steps.key.outputs.key }}" build/python-sci/${{ matrix.abi }} >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          name: python-armv7
+          path: build/python-armv7
+      - uses: actions/setup-python@v5
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-java@v4 # sdkmanager installs the NDK
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Cross-build OpenBLAS, numpy, contourpy, matplotlib, pandas, scipy and scikit-learn
+        if: steps.cache.outputs.hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq patchelf pkg-config
+          bash scripts/build-python-sci.sh ${{ matrix.abi }}
+      - uses: actions/upload-artifact@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          name: ${{ steps.key.outputs.key }}
+          path: build/python-sci/${{ matrix.abi }}/*.whl
+          retention-days: 90
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-sci-${{ matrix.abi }}
+          path: build/python-sci/${{ matrix.abi }}/*.whl
+
   build:
-    needs: [ruff, python-armv7]
+    needs: [ruff, python-armv7, python-sci]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -81,6 +136,12 @@ jobs:
         with:
           name: python-armv7
           path: build/python-armv7
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: python-sci-*
+          path: build/python-sci/wheels
+          merge-multiple: true
 
       - uses: actions/setup-java@v4
         with:
@@ -237,5 +298,5 @@ jobs:
           cp apks/app-release-universal.apk benchjot.apk
           gh release create "$TAG" benchjot.apk \
             --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
-            --notes "Built from ${GITHUB_SHA::7}. One APK for 64-bit and 32-bit ARM phones (arm64-v8a and armeabi-v7a), Python 3.13 with numpy, pandas, matplotlib, seaborn, Pillow, Plotly, Altair and Bokeh on both; figures, tables and charts open on their own screen and download as PNG, JPG, WebP, SVG, PDF, CSV or JSON. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
+            --notes "Built from ${GITHUB_SHA::7}. One APK for 64-bit and 32-bit ARM phones (arm64-v8a and armeabi-v7a), Python 3.13 with numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, Pillow, Plotly, Altair and Bokeh on both; figures, tables and charts open on their own screen and download as PNG, JPG, WebP, SVG, PDF, CSV or JSON. Install benchjot.apk on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
             --latest
