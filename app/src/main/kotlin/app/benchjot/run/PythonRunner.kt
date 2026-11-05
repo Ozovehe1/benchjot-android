@@ -32,7 +32,7 @@ import kotlinx.coroutines.withTimeoutOrNull
  * process. Everything here runs on the main thread.
  */
 object PythonRunner {
-    private class Conn(val connection: ServiceConnection, val messenger: CompletableDeferred<Messenger?>) {
+    private class Conn(val context: Context, val connection: ServiceConnection, val messenger: CompletableDeferred<Messenger?>) {
         var pid = 0
     }
 
@@ -53,7 +53,7 @@ object PythonRunner {
             override fun onBindingDied(name: ComponentName?) = died(this)
             override fun onNullBinding(name: ComponentName?) { ready.complete(null) }
         }
-        Conn(c, ready).also {
+        Conn(context.applicationContext, c, ready).also {
             conn = it
             if (!context.applicationContext.bindService(Intent(context, PythonService::class.java), c, Context.BIND_AUTO_CREATE)) ready.complete(null)
         }
@@ -64,6 +64,10 @@ object PythonRunner {
         val current = conn ?: return
         if (current.connection !== c) return
         conn = null
+        // Unbind the dead connection too. Left bound, Android restarts the service for it and keeps it
+        // alive past the next Stop / time limit (kill() unbinds only its own connection), so the run after
+        // that was handed the killed process and failed with "Python stopped unexpectedly".
+        runCatching { current.context.unbindService(c) }
         val gone = Message.obtain(null, GONE)
         listeners.values.forEach { it.trySend(gone) }
     }
@@ -88,36 +92,51 @@ object PythonRunner {
             var started = 0L
             fun elapsed() = if (started == 0L) 0L else System.currentTimeMillis() - started
             try {
-                val c = bind(context)
-                val connected = withTimeoutOrNull(30_000) { c.messenger.await() ?: NO_BINDING }
-                if (connected == null) { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (no answer in 30 s).", null), 0) }
-                val messenger = (connected as? Messenger)
-                    ?: run { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (the service refused to bind).", null), 0) }
-                PyProtocol.nativeStderr(context).delete() // an earlier run's; this run writes its own
-                messenger.send(Message.obtain(null, PyProtocol.RUN, id, 0).apply {
-                    data = Bundle().apply {
-                        putString(PyProtocol.CODE, code)
-                        putString(PyProtocol.OUT_DIR, (outDir ?: java.io.File(context.cacheDir, "py-out/$id")).path)
-                    }
-                    replyTo = replies
-                })
+                // A process that dies before this run's code starts ran none of it (one a Stop or the time limit
+                // just killed can still be on its way out when the next run binds): run it once more, fresh.
+                var attempt = 0
                 while (true) {
-                    val msg = if (started == 0L) inbox.receive() else {
-                        val left = started + timeoutMs - System.currentTimeMillis()
-                        withTimeoutOrNull(left.coerceAtLeast(1)) { inbox.receive() }
-                            ?: run { kill(context); return@async RunResult(RunOutcome.Timeout, null, elapsed()) }
+                    attempt++
+                    val c = bind(context)
+                    val connected = withTimeoutOrNull(30_000) { c.messenger.await() ?: NO_BINDING }
+                    if (connected == null) { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (no answer in 30 s).", null), 0) }
+                    val messenger = (connected as? Messenger)
+                        ?: run { kill(context); return@async RunResult(RunOutcome.Error, RunError("Python didn't start (the service refused to bind).", null), 0) }
+                    PyProtocol.nativeStderr(context).delete() // an earlier run's; this run writes its own
+                    val sent = runCatching {
+                        messenger.send(Message.obtain(null, PyProtocol.RUN, id, 0).apply {
+                            data = Bundle().apply {
+                                putString(PyProtocol.CODE, code)
+                                putString(PyProtocol.OUT_DIR, (outDir ?: java.io.File(context.cacheDir, "py-out/$id")).path)
+                            }
+                            replyTo = replies
+                        })
+                    }.isSuccess
+                    if (!sent) kill(context) // a dead process's binder: drop it (its GONE lands in the inbox)
+                    receive@ while (true) {
+                        val msg = if (started == 0L) inbox.receive() else {
+                            val left = started + timeoutMs - System.currentTimeMillis()
+                            withTimeoutOrNull(left.coerceAtLeast(1)) { inbox.receive() }
+                                ?: run { kill(context); return@async RunResult(RunOutcome.Timeout, null, elapsed()) }
+                        }
+                        when (msg.what) {
+                            STOP -> { kill(context); return@async RunResult(RunOutcome.Stopped, null, elapsed()) }
+                            GONE -> if (started == 0L && attempt == 1) break@receive
+                                else return@async RunResult(RunOutcome.Error, RunError(stoppedUnexpectedly(PyProtocol.crashReport(context)), null), elapsed())
+                            PyProtocol.STATUS -> events.onStatus(msg.data.getString(PyProtocol.TEXT).orEmpty())
+                            PyProtocol.START -> { started = System.currentTimeMillis(); events.onStatus(""); events.onStart() }
+                            PyProtocol.OUT -> events.onOutput(
+                                if (msg.data.getString(PyProtocol.STREAM) == "stderr") Stream.Stderr else Stream.Stdout,
+                                msg.data.getString(PyProtocol.TEXT).orEmpty(),
+                            )
+                            PyProtocol.DONE -> return@async RunResult(RunOutcome.Ok, null, elapsed())
+                            PyProtocol.ERROR -> return@async RunResult(RunOutcome.Error, deviceError("python", msg.data.getString(PyProtocol.TEXT).orEmpty()), elapsed())
+                        }
                     }
-                    when (msg.what) {
-                        STOP -> { kill(context); return@async RunResult(RunOutcome.Stopped, null, elapsed()) }
-                        GONE -> return@async RunResult(RunOutcome.Error, RunError(stoppedUnexpectedly(PyProtocol.crashReport(context)), null), elapsed())
-                        PyProtocol.STATUS -> events.onStatus(msg.data.getString(PyProtocol.TEXT).orEmpty())
-                        PyProtocol.START -> { started = System.currentTimeMillis(); events.onStatus(""); events.onStart() }
-                        PyProtocol.OUT -> events.onOutput(
-                            if (msg.data.getString(PyProtocol.STREAM) == "stderr") Stream.Stderr else Stream.Stdout,
-                            msg.data.getString(PyProtocol.TEXT).orEmpty(),
-                        )
-                        PyProtocol.DONE -> return@async RunResult(RunOutcome.Ok, null, elapsed())
-                        PyProtocol.ERROR -> return@async RunResult(RunOutcome.Error, deviceError("python", msg.data.getString(PyProtocol.TEXT).orEmpty()), elapsed())
+                    // The dead attempt's leftovers; a Stop pressed meanwhile still stops.
+                    while (true) {
+                        val left = inbox.tryReceive().getOrNull() ?: break
+                        if (left.what == STOP) return@async RunResult(RunOutcome.Stopped, null, 0)
                     }
                 }
                 @Suppress("UNREACHABLE_CODE")

@@ -110,6 +110,8 @@ class DeviceRunnerTest {
         val r = run("python", "print('go', flush=True)\nwhile True: pass", timeoutMs = 2_000)
         assertEquals(RunOutcome.Timeout, r.result.outcome)
         assertEquals("go\n", r.out)
+        // Straight after the kill, and after the crash test's process death: the next run gets a live process.
+        assertEquals("fresh\n", run("python", "print('fresh')").out)
     }
 
     @Test fun javascript_andTypescript() {
