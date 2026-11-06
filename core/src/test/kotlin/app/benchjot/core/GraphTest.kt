@@ -18,11 +18,10 @@ class GraphTest {
     private val nodes = fx["nodes"]!!.jsonArray.map { it.jsonObject }.map { NoteIndexItem(it.s("id")!!, it.s("title")!!, it.s("parent_id")) }
     private val links = fx["links"]!!.jsonArray.map { it.jsonObject }.map { SourcedLink(it.s("source")!!, it.s("label")!!, it.s("id")) }
 
+    // graph.json predates directed edges: the same pairs, in the same order and direction (map_model.json covers `mutual`).
     @Test fun edgesMatchTheWeb() {
-        val want = fx["edges"]!!.jsonArray.map { it.jsonObject }.map {
-            GraphEdge(it.s("source")!!, it.s("target")!!, if (it.s("kind") == "parent") EdgeKind.Parent else EdgeKind.Link)
-        }
-        assertEquals(want, buildEdges(nodes, links))
+        val want = fx["edges"]!!.jsonArray.map { it.jsonObject }.map { Triple(it.s("source")!!, it.s("target")!!, EdgeKind.of(it.s("kind")!!)) }
+        assertEquals(want, buildEdges(nodes, links).map { Triple(it.source, it.target, it.kind) })
     }
 
     @Test fun layoutIsCloseToTheWebsAndDeterministic() {
@@ -33,6 +32,11 @@ class GraphTest {
         val worst = placed.maxOf { p -> web[p.id]!!.let { (x, y) -> hypot(p.x - x, p.y - y) } }
         println("map layout: worst distance from the web's d3 positions = %.2f".format(worst))
         assertTrue("worst $worst", worst < 0.01) // a line-for-line port: d3's positions (fixture rounded to 3 places)
+        // Around: the same layout, shifted so the focus sits at the origin
+        val focus = placed[3]
+        val shifted = layoutGraph(nodes, edges, focus.id)
+        assertEquals(0.0, shifted[3].x, 0.0); assertEquals(0.0, shifted[3].y, 0.0)
+        for ((a, b) in placed.zip(shifted)) { assertEquals(a.x - focus.x, b.x, 1e-9); assertEquals(a.y - focus.y, b.y, 1e-9) }
         // no two dots on top of each other (collide radius 30)
         for (a in placed) for (b in placed) if (a !== b) assertTrue(hypot(a.x - b.x, a.y - b.y) > 20)
     }

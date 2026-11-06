@@ -5,37 +5,8 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
 
-// The note map: notes as nodes, links and parent -> child as edges. Mirrors the
-// web's src/lib/graph.ts (edges, d3-force layout) and src/lib/pan-zoom.ts.
-
-enum class EdgeKind { Link, Parent }
-
-data class GraphEdge(val source: String, val target: String, val kind: EdgeKind)
-
-/**
- * Edges between existing notes: one per parent -> child, and one per linked pair
- * (either direction, duplicates and self-links dropped). A pair that is both
- * parent/child and linked keeps only the parent edge.
- */
-fun <T : TreeNode> buildEdges(nodes: List<T>, links: List<SourcedLink>): List<GraphEdge> {
-    val ids = nodes.mapTo(HashSet()) { it.id }
-    fun pair(a: String, b: String) = if (a < b) "$a $b" else "$b $a"
-    val seen = HashSet<String>()
-    val edges = mutableListOf<GraphEdge>()
-    for (n in nodes) {
-        val p = n.parentId ?: continue
-        if (p !in ids) continue
-        seen += pair(p, n.id)
-        edges += GraphEdge(p, n.id, EdgeKind.Parent)
-    }
-    for (l in links) {
-        val target = resolveLink(l.link, nodes)?.id ?: continue
-        if (target == l.source || l.source !in ids) continue
-        if (!seen.add(pair(l.source, target))) continue
-        edges += GraphEdge(l.source, target, EdgeKind.Link)
-    }
-    return edges
-}
+// The note map's layout and pan/zoom. Mirrors the web's src/lib/graph.ts (d3-force
+// layout) and src/lib/pan-zoom.ts. The graph itself (nodes, edges, lenses) is MapModel.kt.
 
 data class PlacedNode(val id: String, val title: String, val x: Double, val y: Double)
 
@@ -45,13 +16,16 @@ data class PlacedNode(val id: String, val title: String, val x: Double, val y: D
  * link distance 80, many-body -220 with d3's Barnes–Hut quadtree, x/y 0.06,
  * collide 30, 300 ticks from d3's phyllotaxis start and seeded jiggle), so the
  * map lays out like the web's; GraphTest checks it against d3's own output.
+ * With `focus` (the Around lens), positions are shifted so the focus sits at (0,0).
  */
-fun <T : NoteRef> layoutGraph(nodes: List<T>, edges: List<GraphEdge>): List<PlacedNode> {
+fun <T : NoteRef> layoutGraph(nodes: List<T>, edges: List<GraphEdge>, focus: String? = null): List<PlacedNode> {
     val sim = ForceLayout(nodes.size)
     val index = nodes.withIndex().associate { (i, node) -> node.id to i }
     val links = edges.mapNotNull { e -> val s = index[e.source]; val t = index[e.target]; if (s == null || t == null) null else s to t }
     sim.run(links, ticks = 300)
-    return nodes.mapIndexed { i, node -> PlacedNode(node.id, node.title, sim.x[i], sim.y[i]) }
+    val placed = nodes.mapIndexed { i, node -> PlacedNode(node.id, node.title, sim.x[i], sim.y[i]) }
+    val f = focus?.let { id -> placed.firstOrNull { it.id == id } } ?: return placed
+    return placed.map { it.copy(x = it.x - f.x, y = it.y - f.y) }
 }
 
 /** d3-force's simulation and the four forces the web uses, line for line. */
