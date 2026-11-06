@@ -50,6 +50,7 @@ val ACTION_TEXT: Map<String, String> = mapOf(
     "resend" to "Couldn’t resend the link.",
     "username" to "Couldn’t save your username.",
     "fix" to "Fix couldn’t finish.",
+    "helper" to "The helper couldn’t finish.",
     "run_server" to "The server run couldn’t finish.",
     "runner_start" to "The runner couldn’t start.",
 )
@@ -58,6 +59,10 @@ val ACTION_OVERRIDES: Map<String, Map<ErrorKind, String>> = mapOf(
     "fix" to mapOf(
         ErrorKind.RateLimited to "Fix has hit its limit for now. Try again in {wait}.",
         ErrorKind.TooLarge to "This code is too long for Fix. Try a smaller part.",
+    ),
+    "helper" to mapOf(
+        ErrorKind.RateLimited to "The helper has hit its limit for now. Try again in {wait}.",
+        ErrorKind.TooLarge to "The answer would be too long for the helper. Ask for something smaller.",
     ),
     "run_server" to mapOf(ErrorKind.RateLimited to "Server runs have hit their limit for now. Try again in {wait}."),
     "sign_in" to mapOf(ErrorKind.RateLimited to "Too many attempts. Try again in {wait}."),
