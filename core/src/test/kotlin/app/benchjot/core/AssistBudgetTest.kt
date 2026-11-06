@@ -81,9 +81,22 @@ class AssistBudgetTest {
         assertEquals(lines.take(w.first) + "FIXED" + lines.drop(w.last + 1), fixed.split("\n"))
     }
 
-    @Test fun cursorLineWinsOverTheErrorsLine() {
-        val r = fits(AssistBudget.plan(AssistInput.Fix("python", program(120), traceback(100), focusLine = 5), perChar), perChar)
-        assertTrue(4 in r.window!!.first..r.window!!.last)
+    @Test fun theErrorsLineStaysInViewAndTheCursorIsTheFallback() {
+        val byError = fits(AssistBudget.plan(AssistInput.Fix("python", program(120), traceback(100), cursorLine = 5), perChar), perChar)
+        assertTrue(99 in byError.window!!.first..byError.window!!.last)
+        val noLine = "NameError: name 'y' is not defined"
+        val byCursor = fits(AssistBudget.plan(AssistInput.Fix("python", program(120), noLine, cursorLine = 5), perChar), perChar)
+        assertTrue(4 in byCursor.window!!.first..byCursor.window!!.last)
+        // A line past the program's end (a library's frame) doesn't count as the error's line.
+        val outside = fits(AssistBudget.plan(AssistInput.Fix("python", program(120), traceback(500), cursorLine = 5), perChar), perChar)
+        assertTrue(4 in outside.window!!.first..outside.window!!.last)
+    }
+
+    @Test fun cursorOffsetToLine() {
+        assertEquals(1, AssistBudget.lineAt("ab\ncd", 0))
+        assertEquals(1, AssistBudget.lineAt("ab\ncd", 2))
+        assertEquals(2, AssistBudget.lineAt("ab\ncd", 3))
+        assertEquals(2, AssistBudget.lineAt("ab\ncd", 99))
     }
 
     @Test fun impossibleIsTooLarge() {

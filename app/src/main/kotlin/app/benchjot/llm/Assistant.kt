@@ -23,11 +23,12 @@ enum class FixSource { Phone, Server }
 object Assistant {
     /** Errors where the server should take over silently: the user asked for a fix, not for a model. */
 
-    suspend fun fix(context: Context, scope: CoroutineScope, request: FixRequest, onPhase: (String) -> Unit = {}): Pair<FixAnswer, FixSource> {
+    /** [cursorLine] (1-based) is kept in view if the code must be cut to fit and the error names no line in it. */
+    suspend fun fix(context: Context, scope: CoroutineScope, request: FixRequest, cursorLine: Int? = null, onPhase: (String) -> Unit = {}): Pair<FixAnswer, FixSource> {
         val ready = ModelStore.state.value is ModelState.Ready
         if (ready && request.code.length <= AssistTask.Fix.maxInputChars) {
             onPhase("Fixing on your phone…")
-            val input = AssistInput.Fix(request.language, request.code, request.error)
+            val input = AssistInput.Fix(request.language, request.code, request.error, cursorLine)
             when (val r = LocalModel.generate(context, scope, input, onPhase = { if (it.isNotEmpty()) onPhase(it) }).result.await()) {
                 is LocalResult.Done -> {
                     val read = readCodeAnswer(r.text)

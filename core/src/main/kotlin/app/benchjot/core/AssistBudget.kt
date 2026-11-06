@@ -16,8 +16,8 @@ fun interface TokenCounter { fun count(text: String): Int }
 sealed interface AssistInput {
     val task: AssistTask
 
-    /** [focusLine] is the 1-based line to keep in view if the code must be cut (the cursor); else the error's last line number. */
-    data class Fix(val language: String, val code: String, val error: String, val focusLine: Int? = null) : AssistInput {
+    /** If the code must be cut, the error's line stays in view; [cursorLine] (1-based) when the error names none in the code. */
+    data class Fix(val language: String, val code: String, val error: String, val cursorLine: Int? = null) : AssistInput {
         override val task get() = AssistTask.Fix
     }
     data class Write(val language: String, val request: String) : AssistInput {
@@ -120,7 +120,8 @@ object AssistBudget {
 
         // 3. The code to a window of whole lines around the focus line.
         val code = input.code.split("\n")
-        val focus = ((input.focusLine ?: lastLineNumber(input.error) ?: 1) - 1).coerceIn(0, code.size - 1)
+        val errorLine = lastLineNumber(input.error)?.takeIf { it in 1..code.size }
+        val focus = ((errorLine ?: input.cursorLine ?: 1) - 1).coerceIn(0, code.size - 1)
         fun attempt(size: Int): AssistPlan.Ready? {
             val w = windowAround(focus, size, code.size)
             val shown = code.subList(w.first, w.last + 1).joinToString("\n")
@@ -173,6 +174,12 @@ object AssistBudget {
 
     /** The last "line N" an error mentions (Python tracebacks end with the failing line). */
     internal fun lastLineNumber(error: String): Int? = LINE_NUMBER.findAll(error).lastOrNull()?.groupValues?.get(1)?.toIntOrNull()
+
+    /** The 1-based line [offset] (a cursor position) falls on in [text]. */
+    fun lineAt(text: String, offset: Int): Int {
+        val end = offset.coerceIn(0, text.length)
+        return 1 + (0 until end).count { text[it] == '\n' }
+    }
 
     const val NOTE_CUT = "[The rest of the note was cut to fit.]"
 }

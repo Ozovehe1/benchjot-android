@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.benchjot.core.AssistBudget
 import app.benchjot.core.Autosaver
 import app.benchjot.core.Chunk
 import app.benchjot.core.DiffKind
@@ -252,9 +253,10 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     fun proposeFix() {
         fixing = true
         val before = code.text
+        val cursorLine = AssistBudget.lineAt(before, code.field.selection.start)
         scope.launch {
             fix = try {
-                val (a, source) = Assistant.fix(context, scope, FixRequest(language, before, lastError, outcome?.value)) { fixPhase = it }
+                val (a, source) = Assistant.fix(context, scope, FixRequest(language, before, lastError, outcome?.value), cursorLine) { fixPhase = it }
                 Fix(before, a.code.replace("\r\n", "\n"), a.summary, onPhone = source == FixSource.Phone)
             } catch (e: Exception) {
                 Fix(before, before, Accounts.message(e, "fix"))

@@ -208,7 +208,7 @@ internal object LlmProtocol {
     private const val LANGUAGE = "language"
     private const val CODE = "code"
     private const val ERROR_TEXT = "error_text"
-    private const val FOCUS_LINE = "focus_line"
+    private const val CURSOR_LINE = "cursor_line"
     private const val REQUEST = "request"
     private const val TITLE = "title"
     private const val NOTE = "note"
@@ -221,7 +221,7 @@ internal object LlmProtocol {
         when (input) {
             is AssistInput.Fix -> {
                 b.putString(KIND, "fix"); b.putString(LANGUAGE, input.language); b.putString(CODE, input.code); b.putString(ERROR_TEXT, input.error)
-                input.focusLine?.let { b.putInt(FOCUS_LINE, it) }
+                input.cursorLine?.let { b.putInt(CURSOR_LINE, it) }
             }
             is AssistInput.Write -> { b.putString(KIND, "write"); b.putString(LANGUAGE, input.language); b.putString(REQUEST, input.request) }
             is AssistInput.Ask -> { b.putString(KIND, "ask"); b.putString(TITLE, input.noteTitle); b.putString(NOTE, input.noteText); b.putString(QUESTION, input.question) }
@@ -233,7 +233,7 @@ internal object LlmProtocol {
     fun readInput(b: Bundle): AssistInput? {
         fun s(k: String) = b.getString(k).orEmpty()
         return when (b.getString(KIND)) {
-            "fix" -> AssistInput.Fix(s(LANGUAGE), s(CODE), s(ERROR_TEXT), if (b.containsKey(FOCUS_LINE)) b.getInt(FOCUS_LINE) else null)
+            "fix" -> AssistInput.Fix(s(LANGUAGE), s(CODE), s(ERROR_TEXT), if (b.containsKey(CURSOR_LINE)) b.getInt(CURSOR_LINE) else null)
             "write" -> AssistInput.Write(s(LANGUAGE), s(REQUEST))
             "ask" -> AssistInput.Ask(s(TITLE), s(NOTE), s(QUESTION))
             "raw" -> AssistTask.entries.firstOrNull { it.name == b.getString(TASK) }?.let { AssistInput.Raw(it, s(PROMPT)) }
