@@ -1,6 +1,7 @@
 package app.benchjot.core
 
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.boolean
 import kotlinx.serialization.json.double
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -18,10 +19,12 @@ class GraphTest {
     private val nodes = fx["nodes"]!!.jsonArray.map { it.jsonObject }.map { NoteIndexItem(it.s("id")!!, it.s("title")!!, it.s("parent_id")) }
     private val links = fx["links"]!!.jsonArray.map { it.jsonObject }.map { SourcedLink(it.s("source")!!, it.s("label")!!, it.s("id")) }
 
-    // graph.json predates directed edges: the same pairs, in the same order and direction (map_model.json covers `mutual`).
+    // The same directed edges, in the same order, with the same `mutual` marks.
     @Test fun edgesMatchTheWeb() {
-        val want = fx["edges"]!!.jsonArray.map { it.jsonObject }.map { Triple(it.s("source")!!, it.s("target")!!, EdgeKind.of(it.s("kind")!!)) }
-        assertEquals(want, buildEdges(nodes, links).map { Triple(it.source, it.target, it.kind) })
+        val want = fx["edges"]!!.jsonArray.map { it.jsonObject }.map {
+            GraphEdge(it.s("source")!!, it.s("target")!!, EdgeKind.of(it.s("kind")!!), it["mutual"]!!.jsonPrimitive.boolean)
+        }
+        assertEquals(want, buildEdges(nodes, links))
     }
 
     @Test fun layoutIsCloseToTheWebsAndDeterministic() {
