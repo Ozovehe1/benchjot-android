@@ -40,6 +40,25 @@ jobs:
           name: ruff-android
           path: app/src/main/jniLibs
 
+  llama:
+    # llama.cpp (the on-device model engine) + the app's JNI bridge, built for every ABI with the NDK,
+    # cached per llama.cpp commit and the bridge's sources.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: cache
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/jniLibs
+          key: llama-android-${{ hashFiles('scripts/llama.lock', 'scripts/build-llama-android.sh', 'app/src/main/cpp/**') }}
+      - name: Build llama.cpp for Android
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: sudo apt-get install -y -qq ninja-build >/dev/null && bash scripts/build-llama-android.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: llama-android
+          path: app/src/main/jniLibs
+
   python-armv7:
     # Python 3.13 + its native packages (scripts/python-armv7-packages.txt) for 32-bit ARM phones, which Chaquopy only publishes for 64-bit
     # (scripts/build-python-armv7.sh). Cached per Python version and inputs as an artifact named by its key, which
@@ -127,7 +146,7 @@ jobs:
           path: build/python-sci/${{ matrix.abi }}/*.whl
 
   build:
-    needs: [ruff, python-armv7, python-sci]
+    needs: [ruff, llama, python-armv7, python-sci]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -180,6 +199,14 @@ jobs:
           name: ruff-android
           path: app/src/main/jniLibs
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: llama-android
+          path: app/src/main/jniLibs
+
+      - name: Test model for the llama.cpp instrumented tests (1.2 MB, SHA-256 checked)
+        run: bash scripts/fetch-test-model.sh
+
       - name: Unit tests (core rules, JS engine, Ruff vs the web's WASM)
         run: ./gradlew --no-daemon :core:test :engine:test :app:testDebugUnitTest
 
@@ -198,7 +225,7 @@ jobs:
       - name: No WebView in the APK
         run: bash scripts/check-no-webview.sh apks/app-release-universal.apk
 
-      - name: Every engine is in the APKs for each ABI (Python, numpy, QuickJS, Ruff; by ELF header)
+      - name: Every engine is in the APKs for each ABI (Python, numpy, QuickJS, Ruff, llama.cpp; by ELF header)
         run: |
           python3 scripts/check-apk-abis.py apks/app-release-universal.apk arm64-v8a armeabi-v7a
           python3 scripts/check-apk-abis.py apks/app-debug-armeabi-v7a.apk armeabi-v7a

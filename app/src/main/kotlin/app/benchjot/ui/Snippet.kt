@@ -73,6 +73,8 @@ import app.benchjot.data.Backend
 import app.benchjot.data.LocalOutputs
 import app.benchjot.data.OutputStore
 import app.benchjot.data.WebApi
+import app.benchjot.llm.Assistant
+import app.benchjot.llm.FixSource
 import app.benchjot.core.SavedOutputs
 import app.benchjot.run.DeviceRunner
 import app.benchjot.core.OutputBuffer
@@ -88,7 +90,7 @@ import kotlinx.coroutines.launch
 
 private data class CodeValue(val language: String, val content: String)
 
-private data class Fix(val before: String, val code: String, val summary: String)
+private data class Fix(val before: String, val code: String, val summary: String, val onPhone: Boolean = false)
 
 @Composable
 fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, registry: SaveRegistry, onOpenOutput: (snippetId: String, index: Int) -> Unit = { _, _ -> }) {
@@ -116,6 +118,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     var hideSaved by remember(snippet.id) { mutableStateOf(false) }
     var fix by remember { mutableStateOf<Fix?>(null) }
     var fixing by remember { mutableStateOf(false) }
+    var fixPhase by remember { mutableStateOf("") }
     var handle by remember { mutableStateOf<RunHandle?>(null) }
     var confirmRemove by remember { mutableStateOf(false) }
     var picking by remember { mutableStateOf(false) }
@@ -251,12 +254,13 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
         val before = code.text
         scope.launch {
             fix = try {
-                val a = WebApi.fix(FixRequest(language, before, lastError, outcome?.value))
-                Fix(before, a.code.replace("\r\n", "\n"), a.summary)
+                val (a, source) = Assistant.fix(context, scope, FixRequest(language, before, lastError, outcome?.value)) { fixPhase = it }
+                Fix(before, a.code.replace("\r\n", "\n"), a.summary, onPhone = source == FixSource.Phone)
             } catch (e: Exception) {
                 Fix(before, before, Accounts.message(e, "fix"))
             } finally {
                 fixing = false
+                fixPhase = ""
             }
         }
     }
@@ -306,7 +310,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
                 scope.launch { delay(1500); copied = false }
             })
             TextBtn("Download", { download(downloadName(snippet.filename, language, index), code.text) })
-            if (lastError.isNotEmpty() && !running && fix == null) TextBtn(if (fixing) "Fixing…" else "Fix", ::proposeFix, enabled = !fixing)
+            if (lastError.isNotEmpty() && !running && fix == null) TextBtn(if (fixing) fixPhase.ifEmpty { "Fixing…" } else "Fix", ::proposeFix, enabled = !fixing)
             if (language == "python" && fixable > 0) TextBtn("Autofix", ::autofix)
             Spacer(Modifier.weight(1f))
             TextBtn("Remove", { if (code.text.isNotBlank()) confirmRemove = true else remove(snippet, saver, handle, savedOutputs) })
@@ -388,6 +392,7 @@ private fun FixDiff(fix: Fix, onAccept: () -> Unit, onReject: () -> Unit) {
     val hunks = remember(fix) { diffHunks(lineDiff(fix.before, fix.code)) }
     val mono = TextStyle(fontFamily = Type.mono, fontSize = 12.5.sp, lineHeight = 20.sp)
     Column(Modifier.fillMaxWidth().topLine(t.line).padding(top = 8.dp)) {
+        if (fix.onPhone) Text("Fixed on your phone", style = Type.xs, color = t.faint)
         if (fix.summary.isNotEmpty()) Text(fix.summary, style = Type.sm, color = t.muted)
         if (hunks.isEmpty()) {
             Text("No change suggested.", Modifier.padding(vertical = 8.dp), style = Type.sm, color = t.muted)

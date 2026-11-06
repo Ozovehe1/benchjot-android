@@ -59,6 +59,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        app.benchjot.llm.ModelStore.init(this)
         setContent {
             BenchjotTheme {
                 val dark = isDark()
@@ -132,6 +133,7 @@ private fun SignedIn() {
         WelcomeScreen(suggestUsername(Backend.email())) { loaded = false; generation++ }
         return
     }
+    app.benchjot.ui.ModelFirstRun()
     val nav = rememberNavController()
     val pro = profile?.plan == "pro"
     NavHost(nav, startDestination = "home") {

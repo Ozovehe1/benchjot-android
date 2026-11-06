@@ -133,11 +133,13 @@ chaquopy {
     }
 }
 
-// The Ruff binaries the APK bundles (scripts/build-ruff-android.sh); a build without them would ship no Autofix.
+// The native libraries the APK bundles: Ruff (scripts/build-ruff-android.sh; without it, no Autofix) and
+// llama.cpp (scripts/build-llama-android.sh; without it, no on-device model).
 tasks.named("preBuild") {
     doFirst {
         for (abi in android.defaultConfig.ndk.abiFilters) {
             check(file("src/main/jniLibs/$abi/libruff.so").exists()) { "Missing Ruff for $abi: run scripts/build-ruff-android.sh" }
+            check(file("src/main/jniLibs/$abi/libbj_llm.so").exists()) { "Missing llama.cpp for $abi: run scripts/build-llama-android.sh" }
         }
     }
 }

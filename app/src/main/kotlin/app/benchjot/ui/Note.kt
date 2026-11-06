@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.benchjot.core.Autosaver
+import app.benchjot.core.CodeFile
+import app.benchjot.core.DEFAULT_LANGUAGE
 import app.benchjot.core.Entry
 import app.benchjot.core.NoteIndexItem
 import app.benchjot.core.OUTCOME_CHOICES
@@ -104,6 +106,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     val keys = remember { CodeKeysController() }
     var title by remember(entry.id) { mutableStateOf(entry.title) }
     var body by remember(entry.id) { mutableStateOf(TextFieldValue(entry.notes)) }
+    var helper by remember { mutableStateOf(false) }
     // The format bar shows only while the body is being edited.
     var bodyFocused by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf(false) }
@@ -195,6 +198,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                     back = project?.let { p -> p.name to { nav.project(p.id) } } ?: ("All notes" to { nav.home() }),
                 ) {
                     SaveIndicator(registry)
+                    TextBtn("Helper", { helper = true })
                     TextBtn(if (preview) "Edit" else "Preview", { preview = !preview })
                 }
 
@@ -310,6 +314,24 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                 } else {
                     keys.target?.let { CodeKeysRow(it) }
                 }
+            }
+            if (helper) {
+                val code = snippets.value.orEmpty()
+                HelperSheet(
+                    noteTitle = displayTitle(title),
+                    // Read on the tap that asks, never before: the note's text and its code blocks.
+                    noteText = { (listOf(body.text) + code.map { "```${it.language}\n${it.content}\n```" }).joinToString("\n\n") },
+                    language = code.lastOrNull()?.language?.takeIf { it != "text" } ?: DEFAULT_LANGUAGE,
+                    onInsertCode = { c ->
+                        val lang = code.lastOrNull()?.language?.takeIf { it != "text" } ?: DEFAULT_LANGUAGE
+                        scope.launch {
+                            runCatching { Backend.createSnippets(entry.id, count, listOf(CodeFile("", lang, c))) }
+                                .onFailure { uploadError = Accounts.message(it, "upload") }
+                        }
+                        helper = false
+                    },
+                    onDismiss = { helper = false },
+                )
             }
         }
     }

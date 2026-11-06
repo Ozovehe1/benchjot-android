@@ -1,0 +1,4 @@
+# llama.cpp, the on-device model engine (scripts/build-llama-android.sh). One commit for the
+# app and the model tooling (benchjot-coder's quant.yml uses the same one), so what was
+# measured there is what ships. Bump only after checking llama.cpp's security advisories.
+commit=67107ac34f62882d8b53ea41ad68010ea635b9be
