@@ -66,6 +66,9 @@ data class Snippet(
     val content: String = "",
     val position: Int = 0,
     @SerialName("last_run") val lastRun: LastRun? = null,
+    /** The cell's "Note before run" and "Note after run" (Markdown, written only by the user; CellNotes.kt). */
+    @SerialName("note_before") val noteBefore: String = "",
+    @SerialName("note_after") val noteAfter: String = "",
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,
 )
@@ -75,6 +78,7 @@ class ValidationError(message: String) : IllegalArgumentException(message)
 object Limits {
     fun title(v: String) = v.also { if (it.length > 200) throw ValidationError("Title is over 200 characters") }
     fun notes(v: String) = v.also { if (it.length > 200_000) throw ValidationError("Note is over 200k characters") }
+    fun cellNote(v: String) = v.also { if (it.length > 100_000) throw ValidationError("Cell note is over 100k characters") }
     fun projectName(v: String): String {
         val t = v.trim()
         if (t.isEmpty()) throw ValidationError("Name the project")

@@ -229,6 +229,15 @@ object Backend {
         changed()
     }
 
+    /** Writes a code cell's two notes. Only the user's own typing reaches here (the helper never writes notes). */
+    suspend fun updateCellNotes(id: String, before: String, after: String) {
+        requireRows(client.from("snippets").update(buildJsonObject {
+            put("note_before", Limits.cellNote(before))
+            put("note_after", Limits.cellNote(after))
+        }) { select(Columns.list("id")); filter { eq("id", id) } }.decodeList<IdRow>())
+        changed()
+    }
+
     /** Stores (or, with null, clears) a code block's latest run. A saved run isn't an edit: lists don't reload. */
     suspend fun saveLastRun(id: String, run: LastRun?) {
         val value = run?.let { json.encodeToJsonElement(LastRun.serializer(), it) } ?: JsonNull

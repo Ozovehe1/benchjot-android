@@ -52,6 +52,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -246,10 +247,10 @@ private val BODY_STYLE = TextStyle(fontSize = 15.sp, lineHeight = 28.sp)
 /**
  * One live Markdown block. Markers show (dimmed) only on the lines the cursor touches; elsewhere the
  * text reads formatted, with bullets, numbers and tappable checkboxes drawn in. `label` is the
- * accessible name and the placeholder.
+ * accessible name, `placeholder` the hint while empty (the label unless given).
  */
 @Composable
-fun MarkdownBlockEditor(state: MarkdownBlockState, label: String, modifier: Modifier = Modifier) {
+fun MarkdownBlockEditor(state: MarkdownBlockState, label: String, modifier: Modifier = Modifier, placeholder: String = label, minHeight: Dp = 96.dp) {
     val bar = LocalFormatBar.current
     val colors = editorColors()
     var focused by remember { mutableStateOf(false) }
@@ -273,13 +274,13 @@ fun MarkdownBlockEditor(state: MarkdownBlockState, label: String, modifier: Modi
         visualTransformation = transform,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
         onTextLayout = { layout = it },
-        modifier = modifier.fillMaxWidth().heightIn(min = 96.dp).focusRequester(state.focus)
+        modifier = modifier.fillMaxWidth().heightIn(min = minHeight).focusRequester(state.focus)
             .onFocusChanged { focused = it.isFocused; bar.focused(state, it.isFocused) }
             .semantics { contentDescription = label }
             .drawBehind { layout?.takeIf { it.layoutInput.text.text == view.text }?.let { drawLive(it, view, colors, formulas) } },
         decorationBox = { inner ->
             Box {
-                if (text.isEmpty()) Text(label, style = BODY_STYLE, color = colors.placeholder)
+                if (text.isEmpty()) Text(placeholder, style = BODY_STYLE, color = colors.placeholder)
                 inner()
                 layout?.takeIf { it.layoutInput.text.text == view.text }?.let { CheckBoxes(it, view, state, colors) }
             }
