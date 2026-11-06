@@ -193,10 +193,14 @@ private fun LinkText(text: AnnotatedString, style: TextStyle, inline: Map<String
     Text(text, modifier, style = style, color = t.fg, inlineContent = inline, onTextLayout = { layout.value = it })
 }
 
+/** TeX laid out by JLaTeXMath at `px` text size (Preview and the live editor's formulas); null when it doesn't parse. */
+fun mathDrawable(tex: String, px: Float, color: Color): JLatexMathDrawable? = runCatching {
+    JLatexMathDrawable.builder(tex.ifBlank { " " }).textSize(px).color(color.toArgb()).padding(0).build()
+}.getOrNull()
+
 /** Draws TeX with JLaTeXMath into a bitmap; null when the TeX doesn't parse (shown as its source, like KaTeX's throwOnError: false). */
 private fun renderMath(piece: MathPiece, fontSize: TextUnit, color: Color, density: Density): ImageBitmap? = runCatching {
-    val px = with(density) { fontSize.toPx() }
-    val drawable = JLatexMathDrawable.builder(piece.tex.ifBlank { " " }).textSize(px).color(color.toArgb()).padding(0).build()
+    val drawable = mathDrawable(piece.tex, with(density) { fontSize.toPx() }, color) ?: return null
     val w = drawable.intrinsicWidth.coerceAtLeast(1)
     val h = drawable.intrinsicHeight.coerceAtLeast(1)
     drawable.setBounds(0, 0, w, h)

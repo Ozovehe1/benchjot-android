@@ -32,7 +32,7 @@ data class Tokens(
     val dark: Boolean,
 )
 
-private fun hex(s: String) = Color(0xFF000000 or s.removePrefix("#").toLong(16))
+internal fun hex(s: String) = Color(0xFF000000 or s.removePrefix("#").toLong(16))
 
 private fun Palette.tokens(dark: Boolean) = Tokens(
     hex(bg), hex(fg), hex(muted), hex(faint), hex(line), hex(tint), hex(ok), hex(fail),

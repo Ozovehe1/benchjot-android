@@ -22,3 +22,10 @@ fun nextGate(previous: Gate, signedIn: Boolean?): Gate = when (signedIn) {
     true -> Gate.SignedIn
     false -> Gate.SignedOut
 }
+
+/** The map's nav route: optional focus (the Around lens) and depth, as the web's /map?focus=&depth=. */
+const val MAP_ROUTE = "map?focus={focus}&depth={depth}"
+
+/** Where the map opens: Around a note (depth clamped to 1–3), or Everything. Mirrors the web's mapHref. */
+fun mapRoute(focus: String? = null, depth: Int = Depth.DEFAULT): String =
+    if (focus.isNullOrEmpty()) "map" else "map?focus=$focus&depth=${depth.coerceIn(Depth.MIN, Depth.MAX)}"

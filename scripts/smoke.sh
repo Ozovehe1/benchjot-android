@@ -173,7 +173,7 @@ if [ -n "${BJ_USER:-}" ] && [ -n "${BJ_PASS:-}" ]; then
   adb shell pidof app.benchjot >/dev/null && echo "process still alive after am kill" || echo "process killed while in Recents"
   adb shell monkey -p app.benchjot -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1 # = tapping the icon / the Recents card
   waitfor "Preview" 60; waitfor "Filed note" 20; alive; shot 11b-restored
-  to_bottom; tap "Delete note"; waitfor "OK" 10; tap "OK"
+  tap "More"; waitfor "Delete note" 10; tap "Delete note"; waitfor "OK" 10; tap "OK" # Delete note lives in the ⋮ menu
   waitfor "Rename" 20; waitfor "Smoke project" 10; alive; shot 11c-deleted-in-project
   tap "Delete"; waitfor "OK" 10; tap "OK"; waitfor "New project" 20; to_top
   tap "Search"; type_text "hypothesis"; sleep 3; waitfor "Smoke test note" 10; shot 11-search
