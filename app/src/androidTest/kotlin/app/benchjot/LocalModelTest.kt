@@ -3,6 +3,7 @@ package app.benchjot
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import app.benchjot.core.AssistError
+import app.benchjot.core.AssistInput
 import app.benchjot.core.AssistTask
 import app.benchjot.llm.LocalModel
 import app.benchjot.llm.LocalResult
@@ -29,13 +30,15 @@ class LocalModelTest {
         InstrumentationRegistry.getInstrumentation().context.assets.open("llm/stories260K.gguf").use { i -> model.outputStream().use { i.copyTo(it) } }
     }
 
+    private val story = AssistInput.Raw(AssistTask.Ask, "Once upon a time")
+
     private fun llmPid(): Int? = target.getSystemService(android.app.ActivityManager::class.java).runningAppProcesses
         ?.firstOrNull { it.processName == "${target.packageName}:llm" }?.pid
 
     @Test fun streamsTextFromItsOwnProcess() = runBlocking {
         var updates = 0
         val r = withContext(Dispatchers.Main) {
-            LocalModel.generate(target, this, AssistTask.Ask, "Once upon a time", onText = { updates++ }, testModel = model).result.await()
+            LocalModel.generate(target, this, story, onText = { updates++ }, testModel = model).result.await()
         }
         assertTrue("$r", r is LocalResult.Done && r.text.isNotBlank())
         assertTrue(updates >= 1)
@@ -44,7 +47,7 @@ class LocalModelTest {
 
     @Test fun stopEndsIt() = runBlocking {
         val r = withContext(Dispatchers.Main) {
-            val req = LocalModel.generate(target, this, AssistTask.Ask, "Once upon a time", testModel = model)
+            val req = LocalModel.generate(target, this, story, testModel = model)
             req.stop()
             req.result.await()
         }
@@ -54,7 +57,7 @@ class LocalModelTest {
     @Test fun processDeathIsAPlainErrorAndTheAppLives() = runBlocking {
         val r = withContext(Dispatchers.Main) {
             var killed = false
-            val req = LocalModel.generate(target, this, AssistTask.Ask, "Once upon a time", testModel = model, onText = {
+            val req = LocalModel.generate(target, this, story, testModel = model, onText = {
                 if (!killed) { killed = true; llmPid()?.let(android.os.Process::killProcess) }
             })
             req.result.await()
@@ -63,7 +66,7 @@ class LocalModelTest {
         else assertTrue("finished before the kill landed: $r", r is LocalResult.Done)
         // And the next request works on a fresh process.
         delay(500)
-        val again = withContext(Dispatchers.Main) { LocalModel.generate(target, this, AssistTask.Ask, "Once upon a time", testModel = model).result.await() }
+        val again = withContext(Dispatchers.Main) { LocalModel.generate(target, this, story, testModel = model).result.await() }
         assertTrue("$again", again is LocalResult.Done)
     }
 }

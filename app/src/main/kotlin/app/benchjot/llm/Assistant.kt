@@ -2,7 +2,7 @@ package app.benchjot.llm
 
 import android.content.Context
 import app.benchjot.core.AssistError
-import app.benchjot.core.AssistPrompts
+import app.benchjot.core.AssistInput
 import app.benchjot.core.AssistTask
 import app.benchjot.core.FixAnswer
 import app.benchjot.core.FixRequest
@@ -27,12 +27,18 @@ object Assistant {
         val ready = ModelStore.state.value is ModelState.Ready
         if (ready && request.code.length <= AssistTask.Fix.maxInputChars) {
             onPhase("Fixing on your phone…")
-            val prompt = AssistPrompts.fix(request.language, request.code, request.error)
-            when (val r = LocalModel.generate(context, scope, AssistTask.Fix, prompt, onPhase = { if (it.isNotEmpty()) onPhase(it) }).result.await()) {
+            val input = AssistInput.Fix(request.language, request.code, request.error)
+            when (val r = LocalModel.generate(context, scope, input, onPhase = { if (it.isNotEmpty()) onPhase(it) }).result.await()) {
                 is LocalResult.Done -> {
                     val read = readCodeAnswer(r.text)
-                    if (read != null && read.second && !r.cutShort) return FixAnswer(read.first.code, read.first.summary) to FixSource.Phone
-                    android.util.Log.w("Assistant", "phone fix unusable (code=${read != null}, cut=${r.cutShort}); using the server")
+                    // Cut to fit, the model saw and rewrote only a window of lines: put them back in the whole program.
+                    val code = when {
+                        read == null -> null
+                        r.window == null -> read.first.code
+                        else -> r.window.splice(request.code, read.first.code)
+                    }
+                    if (read != null && code != null && read.second && !r.cutShort) return FixAnswer(code, read.first.summary) to FixSource.Phone
+                    android.util.Log.w("Assistant", "phone fix unusable (code=${read != null}, window=${r.window}, cut=${r.cutShort}); using the server")
                 }
                 is LocalResult.Stopped -> throw FriendlyException("Fix stopped.")
                 is LocalResult.Failed -> {

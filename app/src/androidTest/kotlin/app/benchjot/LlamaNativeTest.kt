@@ -77,6 +77,22 @@ class LlamaNativeTest {
         assertEquals("", text)
     }
 
+    @Test fun countsTokens() {
+        val n = LlamaNative.countTokens(handle, "Once upon a time".toByteArray())
+        assertTrue("count $n", n in 1..16)
+        assertTrue(LlamaNative.countTokens(handle, "Once upon a time ".repeat(20).toByteArray()) > n)
+    }
+
+    @Test fun answerNeverPassesTheContext() {
+        // Asked for far more than the 256-token context holds: it ends at the context's end, never past it.
+        val prompt = "Once upon a time".toByteArray()
+        val n = LlamaNative.countTokens(handle, prompt)
+        var pieces = 0
+        val status = GenerateStatus.of(LlamaNative.generate(handle, prompt, 10_000) { pieces++; true })
+        assertTrue("status $status", status == GenerateStatus.Limit || status == GenerateStatus.Done)
+        assertTrue("$pieces answer tokens after $n prompt tokens", n + pieces <= 256)
+    }
+
     @Test fun badFileFailsCleanly() {
         val junk = File(target.cacheDir, "junk.gguf").apply { writeText("not a model") }
         assertEquals(0L, LlamaNative.load(junk.path, 256, 1))

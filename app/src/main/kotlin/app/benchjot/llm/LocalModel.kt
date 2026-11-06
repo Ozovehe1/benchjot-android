@@ -12,7 +12,8 @@ import android.os.Message
 import android.os.Messenger
 import android.os.Process
 import app.benchjot.core.AssistError
-import app.benchjot.core.AssistTask
+import app.benchjot.core.AssistInput
+import app.benchjot.core.CodeWindow
 import app.benchjot.core.GenerateStatus
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
@@ -25,7 +26,8 @@ import kotlinx.coroutines.withTimeoutOrNull
 /** How a request to the on-device model ended. [text] is everything it said, also on failure. */
 sealed interface LocalResult {
     val text: String
-    data class Done(override val text: String, val cutShort: Boolean) : LocalResult
+    /** [window]: a Fix that had to be cut to fit answered only these lines of the code. */
+    data class Done(override val text: String, val cutShort: Boolean, val window: CodeWindow? = null) : LocalResult
     data class Stopped(override val text: String) : LocalResult
     data class Failed(override val text: String, val error: AssistError) : LocalResult
 }
@@ -36,7 +38,7 @@ class LocalRequest(val result: Deferred<LocalResult>, val stop: () -> Unit)
 /**
  * The app side of [LlmService]. Main thread only. One request at a time: a new one while
  * another runs stops the old one first (the helper sheet and Fix never ask at once anyway).
- * The time limit is per task ([AssistTask.timeoutMs]); past it the request is stopped, and if
+ * The time limit is per task ([app.benchjot.core.AssistTask.timeoutMs]); past it the request is stopped, and if
  * the process doesn't answer within [KILL_GRACE_MS] it is killed.
  */
 object LocalModel {
@@ -88,20 +90,21 @@ object LocalModel {
             ?.firstOrNull { it.processName == "${context.packageName}:llm" }?.pid
 
     /**
-     * Runs [prompt] (already in the model's chat format) for [task]. [onText] gets the answer as
-     * it grows, in ~50 ms batches; [onPhase] says "Loading the model…" while it loads.
+     * Runs [input]. The model's process builds the prompt and fits it, in real tokens, into the
+     * context with room to answer (or fails with [AssistError.TooLong]). [onText] gets the answer
+     * as it grows, in ~50 ms batches; [onPhase] says "Loading the model…" while it loads.
      */
     fun generate(
         context: Context,
         scope: CoroutineScope,
-        task: AssistTask,
-        prompt: String,
+        input: AssistInput,
         onPhase: (String) -> Unit = {},
         onText: (String) -> Unit = {},
         /** Tests only: a model file to use instead of the downloaded one. */
         testModel: java.io.File? = null,
     ): LocalRequest {
         current?.stop?.invoke()
+        val task = input.task
         val state = testModel?.let { ModelState.Ready(it) } ?: ModelStore.state.value
         val id = nextId++
         val inbox = Channel<Message>(Channel.UNLIMITED)
@@ -117,9 +120,8 @@ object LocalModel {
                 val sent = runCatching {
                     messenger.send(Message.obtain(null, LlmProtocol.GENERATE, id, 0).apply {
                         data = Bundle().apply {
-                            putString(LlmProtocol.PROMPT, prompt)
                             putString(LlmProtocol.MODEL, state.file.path)
-                            putInt(LlmProtocol.MAX_TOKENS, task.maxNewTokens)
+                            LlmProtocol.putInput(this, input)
                         }
                         replyTo = replies
                     })
@@ -145,8 +147,8 @@ object LocalModel {
                         LlmProtocol.FAIL -> return@async LocalResult.Failed(text.toString(), AssistError.of(msg.data.getString(LlmProtocol.ERROR)) ?: AssistError.EngineCrashed)
                         LlmProtocol.DONE -> return@async when (GenerateStatus.of(msg.data.getInt(LlmProtocol.STATUS))) {
                             GenerateStatus.Stopped -> if (timedOut) LocalResult.Failed(text.toString(), AssistError.Timeout) else LocalResult.Stopped(text.toString())
-                            GenerateStatus.Limit -> LocalResult.Done(text.toString(), cutShort = true)
-                            else -> LocalResult.Done(text.toString(), cutShort = false)
+                            GenerateStatus.Limit -> LocalResult.Done(text.toString(), cutShort = true, window = LlmProtocol.readWindow(msg.data))
+                            else -> LocalResult.Done(text.toString(), cutShort = false, window = LlmProtocol.readWindow(msg.data))
                         }
                     }
                 }

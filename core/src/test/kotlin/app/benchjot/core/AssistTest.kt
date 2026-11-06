@@ -58,8 +58,8 @@ class AssistTest {
         assertEquals("About 2 min left", timeLeft(6_100, 100.0))
     }
 
-    @Test fun eachTaskFitsTheContext() {
-        // Prompt (≈ chars / 3) plus the longest answer must fit the 4,096-token context.
-        AssistTask.entries.forEach { assertTrue("$it", it.maxInputChars / 3 + it.maxNewTokens <= OnDeviceModel.CONTEXT_TOKENS) }
+    @Test fun eachTaskLeavesRoomForAPrompt() {
+        // The answer's cap alone never fills the context; AssistBudget lowers it to what a real prompt leaves.
+        AssistTask.entries.forEach { assertTrue("$it", it.maxNewTokens + AssistBudget.SAFETY_TOKENS + 256 <= OnDeviceModel.CONTEXT_TOKENS) }
     }
 }

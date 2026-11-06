@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.dp
 import app.benchjot.core.ASSIST_SUGGESTIONS
 import app.benchjot.core.AssistAction
 import app.benchjot.core.AssistError
-import app.benchjot.core.AssistPrompts
+import app.benchjot.core.AssistInput
 import app.benchjot.core.AssistTask
 import app.benchjot.core.OnDeviceModel
 import app.benchjot.core.megabytes
@@ -120,12 +120,12 @@ private fun Ask(noteTitle: String, noteText: () -> String, language: String, onI
         val q = text.trim().take(kind.maxInputChars)
         if (q.isEmpty() || answer is Answer.Working) return
         task = kind
-        val prompt = when (kind) {
-            AssistTask.Ask -> AssistPrompts.ask(noteTitle, noteText().take(AssistTask.Ask.maxInputChars), q) // read now, on this tap only
-            else -> AssistPrompts.write(language, q)
+        val input = when (kind) {
+            AssistTask.Ask -> AssistInput.Ask(noteTitle, noteText().take(AssistTask.Ask.maxInputChars), q) // read now, on this tap only
+            else -> AssistInput.Write(language, q)
         }
         answer = Answer.Working(kind, "Thinking…", "")
-        val r = LocalModel.generate(context, scope, kind, prompt,
+        val r = LocalModel.generate(context, scope, input,
             onPhase = { p -> (answer as? Answer.Working)?.let { answer = it.copy(phase = p) } },
             onText = { s -> (answer as? Answer.Working)?.let { answer = it.copy(phase = "", text = s) } },
         )

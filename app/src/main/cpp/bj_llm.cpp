@@ -1,8 +1,10 @@
 // JNI bridge between the app (app.benchjot.llm.LlamaNative) and llama.cpp.
 //
-// Contract, kept small on purpose (four calls cross the bridge):
+// Contract, kept small on purpose (five calls cross the bridge):
 //   load(path, nCtx, nThreads) -> handle (0 on failure; lastError() says why)
-//   generate(handle, prompt, maxTokens, sink) -> status (see Status below)
+//   countTokens(handle, prompt) -> tokens the prompt is, exactly as generate() tokenizes it (-1 on failure)
+//   generate(handle, prompt, maxTokens, sink) -> status (see Status below); never writes past n_ctx,
+//                   whatever maxTokens says: the answer stops at the context's end (LIMIT)
 //   stop(handle)    : asks a running generate() to end after its current token; any thread
 //   free(handle)    : releases the model; never while generate() runs on it
 // One generate() at a time per handle (the app runs a single worker thread).
@@ -65,6 +67,19 @@ std::string to_utf8(JNIEnv * env, jbyteArray bytes) {
 }
 
 Session * session_of(jlong handle) { return reinterpret_cast<Session *>(handle); }
+
+// The prompt's tokens. parse_special = true: the prompt carries the chat template's control
+// tokens (<|im_start|> …). One place, so countTokens() and generate() always agree.
+bool tokenize(Session * s, const std::string & prompt, std::vector<llama_token> & out) {
+    const int n = -llama_tokenize(s->vocab, prompt.data(), static_cast<int32_t>(prompt.size()), nullptr, 0, true, true);
+    if (n <= 0) { set_error("could not tokenize the prompt"); return false; }
+    out.resize(static_cast<size_t>(n));
+    if (llama_tokenize(s->vocab, prompt.data(), static_cast<int32_t>(prompt.size()), out.data(), n, true, true) < 0) {
+        set_error("could not tokenize the prompt");
+        return false;
+    }
+    return true;
+}
 
 // Feeds tokens to the context in chunks of at most n_batch, from position pos0.
 bool decode(Session * s, llama_batch_ext * batch, const llama_token * tokens, int n, int pos0) {
@@ -131,15 +146,10 @@ Java_app_benchjot_llm_LlamaNative_generate(JNIEnv * env, jobject, jlong handle, 
 
     const std::string prompt = to_utf8(env, jprompt);
     const int n_ctx = static_cast<int>(llama_n_ctx(s->ctx));
-    // parse_special = true: the prompt carries the chat template's control tokens (<|im_start|> …)
-    int n = -llama_tokenize(s->vocab, prompt.data(), static_cast<int32_t>(prompt.size()), nullptr, 0, true, true);
-    if (n <= 0) { set_error("could not tokenize the prompt"); return FAILED; }
+    std::vector<llama_token> tokens;
+    if (!tokenize(s, prompt, tokens)) return FAILED;
+    const int n = static_cast<int>(tokens.size());
     if (n + 16 > n_ctx) return PROMPT_TOO_LONG;
-    std::vector<llama_token> tokens(static_cast<size_t>(n));
-    if (llama_tokenize(s->vocab, prompt.data(), static_cast<int32_t>(prompt.size()), tokens.data(), n, true, true) < 0) {
-        set_error("could not tokenize the prompt");
-        return FAILED;
-    }
 
     llama_batch_ext * batch = llama_batch_ext_init(s->ctx);
     llama_sampler * smpl = llama_sampler_chain_init(llama_sampler_chain_default_params());
@@ -149,10 +159,14 @@ Java_app_benchjot_llm_LlamaNative_generate(JNIEnv * env, jobject, jlong handle, 
     int pos = 0;
     if (!decode(s, batch, tokens.data(), n, 0)) status = FAILED;
     pos = n;
-    const int budget = std::min(static_cast<int>(max_tokens), n_ctx - n);
+    // Hard guard: the answer gets at most what the context has left, whatever the caller asked.
+    // The i-th answer token is decoded at position n + i, so i < n_ctx - n keeps every write inside.
+    const int room = n_ctx - n;
+    if (max_tokens > room) __android_log_print(ANDROID_LOG_WARN, TAG, "maxTokens %d > room %d: capped", static_cast<int>(max_tokens), room);
+    const int budget = std::min(static_cast<int>(max_tokens), room);
     for (int i = 0; status == OK; ++i) {
         if (s->stop.load()) { status = STOPPED; break; }
-        if (i >= budget) { status = LIMIT; break; }
+        if (i >= budget || pos >= n_ctx) { status = LIMIT; break; }
         const llama_token tok = llama_sampler_sample(smpl, s->ctx, -1);
         if (llama_vocab_is_eog(s->vocab, tok)) break;
         char buf[256];
@@ -175,6 +189,15 @@ Java_app_benchjot_llm_LlamaNative_generate(JNIEnv * env, jobject, jlong handle, 
     llama_batch_ext_free(batch);
     env->DeleteLocalRef(sink_cls);
     return status;
+}
+
+JNIEXPORT jint JNICALL
+Java_app_benchjot_llm_LlamaNative_countTokens(JNIEnv * env, jobject, jlong handle, jbyteArray jprompt) {
+    Session * s = session_of(handle);
+    if (s == nullptr || jprompt == nullptr) { set_error("bad countTokens arguments"); return -1; }
+    std::vector<llama_token> tokens;
+    if (!tokenize(s, to_utf8(env, jprompt), tokens)) return -1;
+    return static_cast<jint>(tokens.size());
 }
 
 JNIEXPORT void JNICALL

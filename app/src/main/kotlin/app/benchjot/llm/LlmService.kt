@@ -13,15 +13,25 @@ import android.os.Message
 import android.os.Messenger
 import android.os.Process
 import android.os.RemoteException
+import app.benchjot.core.AssistBudget
 import app.benchjot.core.AssistError
+import app.benchjot.core.AssistInput
+import app.benchjot.core.AssistPlan
+import app.benchjot.core.AssistTask
+import app.benchjot.core.CodeWindow
 import app.benchjot.core.GenerateStatus
 import app.benchjot.core.OnDeviceModel
+import app.benchjot.core.TokenCounter
 import app.benchjot.core.Utf8Stream
 
 /**
  * llama.cpp in its own process, ":llm", like Python in ":python". A native crash or the system
  * killing it for memory takes this process down, never the app: the note you're editing stays.
  * Analogy: the model is a kitchen with its own fire door.
+ *
+ * The prompt is built here, where the model's tokenizer is: [AssistBudget] counts it in real
+ * tokens and gives the answer only the room the 4,096-token context has left (trimming the
+ * input, or refusing as too long, when that room is too small).
  *
  * One worker thread runs one request at a time. The model stays loaded between requests and is
  * unloaded after [IDLE_UNLOAD_MS] without one, or at once when the system is short of memory.
@@ -41,11 +51,10 @@ class LlmService : Service() {
                 val reply = msg.replyTo
                 val id = msg.arg1
                 val d = msg.data
-                val prompt = d.getString(LlmProtocol.PROMPT).orEmpty()
+                val input = LlmProtocol.readInput(d)
                 val path = d.getString(LlmProtocol.MODEL).orEmpty()
-                val maxTokens = d.getInt(LlmProtocol.MAX_TOKENS)
                 worker.removeCallbacks(unload)
-                worker.post { generateOne(reply, id, path, prompt, maxTokens) }
+                worker.post { generateOne(reply, id, path, input) }
             }
             LlmProtocol.STOP -> handle.takeIf { it != 0L }?.let(LlamaNative::stop) // the native side checks between tokens
         }
@@ -79,9 +88,10 @@ class LlmService : Service() {
         return !info.lowMemory && info.availMem >= LOW_MEMORY_BYTES
     }
 
-    private fun generateOne(reply: Messenger, id: Int, path: String, prompt: String, maxTokens: Int) {
+    private fun generateOne(reply: Messenger, id: Int, path: String, input: AssistInput?) {
         val out = Out(reply, id)
         try {
+            if (input == null) { android.util.Log.e(TAG, "request without an input"); out.fail(AssistError.EngineCrashed); return }
             if (handle == 0L || loadedPath != path) {
                 freeModel()
                 if (!memoryOk()) { out.fail(AssistError.LowMemory); return }
@@ -95,9 +105,20 @@ class LlmService : Service() {
                 }
                 loadedPath = path
             }
+            val loaded = handle
+            val counter = TokenCounter { t -> LlamaNative.countTokens(loaded, t.toByteArray(Charsets.UTF_8)) }
+            val plan = when (val p = AssistBudget.plan(input, counter, OnDeviceModel.CONTEXT_TOKENS)) {
+                is AssistPlan.TooLarge -> {
+                    android.util.Log.w(TAG, "too long for the context even trimmed (${p.promptTokens} prompt tokens)")
+                    out.fail(AssistError.TooLong)
+                    return
+                }
+                is AssistPlan.Ready -> p
+            }
+            if (plan.trimmed) android.util.Log.i(TAG, "input trimmed to fit: ${plan.promptTokens} prompt tokens, ${plan.maxNewTokens} for the answer, window ${plan.window}")
             out.send(LlmProtocol.STARTED)
             val text = Utf8Stream()
-            val code = LlamaNative.generate(handle, prompt.toByteArray(Charsets.UTF_8), maxTokens) { bytes ->
+            val code = LlamaNative.generate(handle, plan.prompt.toByteArray(Charsets.UTF_8), plan.maxNewTokens) { bytes ->
                 out.text(text.push(bytes))
                 out.alive // the app went away: stop spending the battery
             }
@@ -108,7 +129,7 @@ class LlmService : Service() {
                     android.util.Log.e(TAG, "generate failed ($status): ${LlamaNative.lastError()}")
                     out.fail(AssistError.EngineCrashed)
                 }
-                else -> out.done(status)
+                else -> out.done(status, plan.window)
             }
         } catch (e: Throwable) { // UnsatisfiedLinkError (no library for this CPU), OutOfMemoryError, …
             android.util.Log.e(TAG, "request failed", e)
@@ -148,7 +169,10 @@ class LlmService : Service() {
             if (!scheduled) { scheduled = true; timer.postDelayed({ flush() }, FLUSH_MS) }
         }
 
-        fun done(status: GenerateStatus) { flush(); send(LlmProtocol.DONE) { putInt(LlmProtocol.STATUS, status.code) } }
+        fun done(status: GenerateStatus, window: CodeWindow?) {
+            flush()
+            send(LlmProtocol.DONE) { putInt(LlmProtocol.STATUS, status.code); window?.let { LlmProtocol.putWindow(this, it) } }
+        }
         fun fail(e: AssistError) { flush(); send(LlmProtocol.FAIL) { putString(LlmProtocol.ERROR, e.id) } }
         fun close() { flush(); flusher.quitSafely() }
     }
@@ -172,10 +196,54 @@ internal object LlmProtocol {
     const val DONE = 6
     const val FAIL = 7
 
-    const val PROMPT = "prompt"
     const val MODEL = "model"
-    const val MAX_TOKENS = "max_tokens"
     const val TEXT_KEY = "text"
     const val STATUS = "status"
     const val ERROR = "error"
+
+    // The request's input (the service builds and budgets the prompt), and a trimmed Fix's window.
+    private const val KIND = "kind"
+    private const val TASK = "task"
+    private const val PROMPT = "prompt"
+    private const val LANGUAGE = "language"
+    private const val CODE = "code"
+    private const val ERROR_TEXT = "error_text"
+    private const val FOCUS_LINE = "focus_line"
+    private const val REQUEST = "request"
+    private const val TITLE = "title"
+    private const val NOTE = "note"
+    private const val QUESTION = "question"
+    private const val WINDOW_FIRST = "window_first"
+    private const val WINDOW_LAST = "window_last"
+    private const val WINDOW_TOTAL = "window_total"
+
+    fun putInput(b: Bundle, input: AssistInput) {
+        when (input) {
+            is AssistInput.Fix -> {
+                b.putString(KIND, "fix"); b.putString(LANGUAGE, input.language); b.putString(CODE, input.code); b.putString(ERROR_TEXT, input.error)
+                input.focusLine?.let { b.putInt(FOCUS_LINE, it) }
+            }
+            is AssistInput.Write -> { b.putString(KIND, "write"); b.putString(LANGUAGE, input.language); b.putString(REQUEST, input.request) }
+            is AssistInput.Ask -> { b.putString(KIND, "ask"); b.putString(TITLE, input.noteTitle); b.putString(NOTE, input.noteText); b.putString(QUESTION, input.question) }
+            is AssistInput.Raw -> { b.putString(KIND, "raw"); b.putString(TASK, input.task.name); b.putString(PROMPT, input.prompt) }
+        }
+    }
+
+    /** Null when the bundle holds no input this version understands. */
+    fun readInput(b: Bundle): AssistInput? {
+        fun s(k: String) = b.getString(k).orEmpty()
+        return when (b.getString(KIND)) {
+            "fix" -> AssistInput.Fix(s(LANGUAGE), s(CODE), s(ERROR_TEXT), if (b.containsKey(FOCUS_LINE)) b.getInt(FOCUS_LINE) else null)
+            "write" -> AssistInput.Write(s(LANGUAGE), s(REQUEST))
+            "ask" -> AssistInput.Ask(s(TITLE), s(NOTE), s(QUESTION))
+            "raw" -> AssistTask.entries.firstOrNull { it.name == b.getString(TASK) }?.let { AssistInput.Raw(it, s(PROMPT)) }
+            else -> null
+        }
+    }
+
+    fun putWindow(b: Bundle, w: CodeWindow) { b.putInt(WINDOW_FIRST, w.first); b.putInt(WINDOW_LAST, w.last); b.putInt(WINDOW_TOTAL, w.totalLines) }
+
+    fun readWindow(b: Bundle): CodeWindow? =
+        if (!b.containsKey(WINDOW_FIRST)) null
+        else runCatching { CodeWindow(b.getInt(WINDOW_FIRST), b.getInt(WINDOW_LAST), b.getInt(WINDOW_TOTAL)) }.getOrNull()
 }
