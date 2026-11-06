@@ -14,3 +14,7 @@ node_modules/
 __pycache__/
 *.pyc
 apks/
+# The llama.cpp test model: fetched by scripts/fetch-test-model.sh
+app/src/androidTest/assets/llm/
+# llama.cpp for Android: built by scripts/build-llama-android.sh (CI caches it)
+app/src/main/jniLibs/*/libbj_llm.so

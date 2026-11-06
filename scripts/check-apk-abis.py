@@ -64,7 +64,7 @@ def main(apk: str, abis: list[str]) -> int:
         libs = [n for n in names if py.match(n) and n.startswith(f"lib/{abi}/")]
         if not libs:
             problems.append(f"lib/{abi}/libpython3.*.so missing")
-        for n in libs + [f"lib/{abi}/{f}" for f in ("libchaquopy_java.so", "libquickjs.so", "libruff.so")] \
+        for n in libs + [f"lib/{abi}/{f}" for f in ("libchaquopy_java.so", "libquickjs.so", "libruff.so", "libbj_llm.so")] \
                 + [f"assets/chaquopy/bootstrap-native/{abi}/java/chaquopy.so"]:
             if n in names:
                 check(n, z.read(n), abi)

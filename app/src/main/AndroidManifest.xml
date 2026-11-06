@@ -35,5 +35,11 @@
             android:name=".run.PythonService"
             android:exported="false"
             android:process=":python" />
+
+        <!-- The on-device model (llama.cpp) in its own process, so a native crash never takes the app down (llm/LlmService.kt). -->
+        <service
+            android:name=".llm.LlmService"
+            android:exported="false"
+            android:process=":llm" />
     </application>
 </manifest>
