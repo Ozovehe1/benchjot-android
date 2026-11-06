@@ -93,8 +93,22 @@ private data class CodeValue(val language: String, val content: String)
 
 private data class Fix(val before: String, val code: String, val summary: String, val onPhone: Boolean = false)
 
+/**
+ * `before` / `after` are shown directly above the cell and directly below its run output (the cell's
+ * notes; the block knows nothing of what they are). `onBeforeRemove` runs before the row is deleted.
+ */
 @Composable
-fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, registry: SaveRegistry, onOpenOutput: (snippetId: String, index: Int) -> Unit = { _, _ -> }) {
+fun SnippetBlock(
+    snippet: Snippet,
+    index: Int,
+    outcome: Outcome?,
+    pro: Boolean,
+    registry: SaveRegistry,
+    before: @Composable () -> Unit = {},
+    after: @Composable () -> Unit = {},
+    onBeforeRemove: suspend () -> Unit = {},
+    onOpenOutput: (snippetId: String, index: Int) -> Unit = { _, _ -> },
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val clipboard = LocalClipboardManager.current
@@ -268,6 +282,7 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
     }
 
     Column(Modifier.fillMaxWidth().topLine(t.line)) {
+        before()
         SnippetHeader(snippet.filename, language = {
             Box {
                 TextBtn(languageConfig(language).label, { picking = true }, style = headerMono)
@@ -302,6 +317,8 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
         live?.let { l -> RunOutputs(l.manifest.items, l.manifest.notes, remember(l) { OutputFiles.Live(l) }, onOpen = null) }
             ?: shownSaved?.let { o -> RunOutputs(o.items, o.notes, remember(o) { OutputFiles.Saved(o) }, onOpen = { i -> onOpenOutput(snippet.id, i) }) }
 
+        after()
+
         fix?.let { f ->
             FixDiff(f, onAccept = { code.replaceAll(f.code); fix = null; edited() }, onReject = { fix = null })
         }
@@ -315,16 +332,18 @@ fun SnippetBlock(snippet: Snippet, index: Int, outcome: Outcome?, pro: Boolean, 
             if (lastError.isNotEmpty() && !running && fix == null) TextBtn(if (fixing) fixPhase.ifEmpty { "Fixing…" } else "Fix", ::proposeFix, enabled = !fixing)
             if (language == "python" && fixable > 0) TextBtn("Autofix", ::autofix)
             Spacer(Modifier.weight(1f))
-            TextBtn("Remove", { if (code.text.isNotBlank()) confirmRemove = true else remove(snippet, saver, handle, savedOutputs) })
+            TextBtn("Remove", { if (code.text.isNotBlank()) confirmRemove = true else remove(snippet, saver, onBeforeRemove, handle, savedOutputs) })
         }
     }
-    if (confirmRemove) ConfirmDialog("Remove this code?") { ok -> confirmRemove = false; if (ok) remove(snippet, saver, handle, savedOutputs) }
+    if (confirmRemove) ConfirmDialog("Remove this code?") { ok -> confirmRemove = false; if (ok) remove(snippet, saver, onBeforeRemove, handle, savedOutputs) }
 }
 
-private fun remove(snippet: Snippet, saver: Autosaver<*>, handle: RunHandle?, outputs: SavedOutputs?) {
+/** Saves the cell's pending code (and, by `onBeforeRemove`, its notes) first, then deletes the row. */
+private fun remove(snippet: Snippet, saver: Autosaver<*>, onBeforeRemove: suspend () -> Unit, handle: RunHandle?, outputs: SavedOutputs?) {
     handle?.stop?.invoke()
     Backend.scope.launch {
         saver.flush()
+        onBeforeRemove()
         if (runCatching { Backend.deleteSnippet(snippet.id) }.isSuccess) OutputStore.delete(outputs)
     }
 }

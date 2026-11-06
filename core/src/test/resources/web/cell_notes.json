@@ -1,0 +1,348 @@
+{
+  "labels": {
+    "before": "Note before run",
+    "after": "Note after run"
+  },
+  "collapse": [
+    {
+      "text": "",
+      "collapsed": true
+    },
+    {
+      "text": " ",
+      "collapsed": true
+    },
+    {
+      "text": "\n\n",
+      "collapsed": true
+    },
+    {
+      "text": " \t\n \r\n",
+      "collapsed": true
+    },
+    {
+      "text": "x",
+      "collapsed": false
+    },
+    {
+      "text": "  done \n",
+      "collapsed": false
+    },
+    {
+      "text": "[[Dropout sweep]]",
+      "collapsed": false
+    },
+    {
+      "text": "-",
+      "collapsed": false
+    }
+  ],
+  "links": [
+    {
+      "name": "old note: body links only, empty cell notes",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "notes": "See [[Dropout sweep|0b6e6a9e-1111-4222-8333-444455556666]]."
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": ""
+        }
+      ],
+      "links": [
+        {
+          "source": "2d808c10-3333-4444-a555-666677778888",
+          "label": "Dropout sweep",
+          "id": "0b6e6a9e-1111-4222-8333-444455556666"
+        }
+      ]
+    },
+    {
+      "name": "link in a note before run",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "notes": "No links here."
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "Compare with [[Tokenizer study|1c7f7b0f-2222-4333-9444-555566667777]] first.",
+          "note_after": ""
+        }
+      ],
+      "links": [
+        {
+          "source": "2d808c10-3333-4444-a555-666677778888",
+          "label": "Tokenizer study",
+          "id": "1c7f7b0f-2222-4333-9444-555566667777"
+        }
+      ]
+    },
+    {
+      "name": "link in a note after run, uppercase id, plus the body",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "notes": "Goal from [[Dropout sweep|0b6e6a9e-1111-4222-8333-444455556666]]."
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": "Matches [[ Tokenizer study |1C7F7B0F-2222-4333-9444-555566667777]]."
+        }
+      ],
+      "links": [
+        {
+          "source": "2d808c10-3333-4444-a555-666677778888",
+          "label": "Dropout sweep",
+          "id": "0b6e6a9e-1111-4222-8333-444455556666"
+        },
+        {
+          "source": "2d808c10-3333-4444-a555-666677778888",
+          "label": "Tokenizer study",
+          "id": "1c7f7b0f-2222-4333-9444-555566667777"
+        }
+      ]
+    },
+    {
+      "name": "two cells out of order: by position, before then after",
+      "entry": {
+        "id": "3e919d21-4444-4555-b666-777788889999",
+        "notes": ""
+      },
+      "snippets": [
+        {
+          "position": 1,
+          "content": "print(1)",
+          "note_before": "[[Second before|1c7f7b0f-2222-4333-9444-555566667777]]",
+          "note_after": "[[Second after]]"
+        },
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "[[First before]]",
+          "note_after": "[[First after|0b6e6a9e-1111-4222-8333-444455556666]]"
+        }
+      ],
+      "links": [
+        {
+          "source": "3e919d21-4444-4555-b666-777788889999",
+          "label": "First before",
+          "id": null
+        },
+        {
+          "source": "3e919d21-4444-4555-b666-777788889999",
+          "label": "First after",
+          "id": "0b6e6a9e-1111-4222-8333-444455556666"
+        },
+        {
+          "source": "3e919d21-4444-4555-b666-777788889999",
+          "label": "Second before",
+          "id": "1c7f7b0f-2222-4333-9444-555566667777"
+        },
+        {
+          "source": "3e919d21-4444-4555-b666-777788889999",
+          "label": "Second after",
+          "id": null
+        }
+      ]
+    },
+    {
+      "name": "not links: unclosed, multi-line, empty, bad id",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "notes": ""
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "[[open and [[a\nb]]",
+          "note_after": "[[]] and [[x|not-an-id]] and [a]"
+        }
+      ],
+      "links": []
+    },
+    {
+      "name": "a [[link]] inside code doesn't count",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "notes": ""
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "s = \"[[Dropout sweep|0b6e6a9e-1111-4222-8333-444455556666]]\"",
+          "note_before": "",
+          "note_after": ""
+        }
+      ],
+      "links": []
+    }
+  ],
+  "search": [
+    {
+      "name": "word in a note before run",
+      "query": "hypothesis",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "Hypothesis: cosine beats linear.",
+          "note_after": ""
+        }
+      ],
+      "match": true
+    },
+    {
+      "name": "word in a note after run",
+      "query": "overfits",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": "It overfits after epoch 3."
+        }
+      ],
+      "match": true
+    },
+    {
+      "name": "word in neither",
+      "query": "tokenizer",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "Hypothesis.",
+          "note_after": "Result."
+        }
+      ],
+      "match": false
+    },
+    {
+      "name": "every term must match, across body and cell notes",
+      "query": "goal overfits",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "The goal.",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": "overfits"
+        }
+      ],
+      "match": true
+    },
+    {
+      "name": "one term missing",
+      "query": "goal underfits",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "The goal.",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": "overfits"
+        }
+      ],
+      "match": false
+    },
+    {
+      "name": "case-insensitive",
+      "query": "COSINE",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "cosine schedule",
+          "note_after": ""
+        }
+      ],
+      "match": true
+    },
+    {
+      "name": "second cell's note",
+      "query": "baseline",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": ""
+        },
+        {
+          "position": 1,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": "keep as baseline"
+        }
+      ],
+      "match": true
+    },
+    {
+      "name": "old note: code still matches with empty cell notes",
+      "query": "print",
+      "entry": {
+        "id": "2d808c10-3333-4444-a555-666677778888",
+        "title": "Warmup run",
+        "notes": "",
+        "outcome": null
+      },
+      "snippets": [
+        {
+          "position": 0,
+          "content": "print(1)",
+          "note_before": "",
+          "note_after": ""
+        }
+      ],
+      "match": true
+    }
+  ]
+}

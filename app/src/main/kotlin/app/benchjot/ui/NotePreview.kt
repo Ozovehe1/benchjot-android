@@ -18,9 +18,11 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import app.benchjot.core.CellNoteSide
 import app.benchjot.core.Outcome
 import app.benchjot.core.SAMPLE_ASSETS
 import app.benchjot.core.SampleNote
+import app.benchjot.core.cellNoteName
 import app.benchjot.core.Snippet
 import app.benchjot.core.fromLastRun
 import app.benchjot.core.parseSampleNote
@@ -54,10 +56,12 @@ private fun SnippetView(snippet: Snippet, index: Int, files: OutputFiles?, onOpe
     val run = remember(snippet) { snippet.lastRun?.let(::fromLastRun) }
     val outputs = snippet.lastRun?.outputs
     Column(Modifier.fillMaxWidth().topLine(t.line)) {
+        RenderedCellNote(snippet.noteBefore, cellNoteName(CellNoteSide.Before, snippet.filename, index))
         SnippetHeader(snippet.filename, language = { LanguageLabel(snippet.language) })
         FoldedCode(snippet.content) { StaticCode(snippet.content, snippet.language, "Code ${index + 1}") }
         run?.let { (chunks, result) -> RunOutput(chunks, status = "", running = false, result = result) }
         if (outputs != null && files != null) RunOutputs(outputs.items, outputs.notes, files, onOpen)
+        RenderedCellNote(snippet.noteAfter, cellNoteName(CellNoteSide.After, snippet.filename, index))
     }
 }
 

@@ -17,6 +17,8 @@ private data class SampleSnippet(
     val language: String,
     val content: String,
     @kotlinx.serialization.SerialName("last_run") val lastRun: LastRun? = null,
+    @kotlinx.serialization.SerialName("note_before") val noteBefore: String = "",
+    @kotlinx.serialization.SerialName("note_after") val noteAfter: String = "",
 )
 
 @Serializable
@@ -34,7 +36,7 @@ fun parseSampleNote(text: String): SampleNote {
     return SampleNote(
         f.entry,
         f.snippets.mapIndexed { i, s ->
-            Snippet(id = s.id, userId = "", entryId = "", filename = s.filename, language = s.language, content = s.content, position = i, lastRun = s.lastRun, createdAt = "", updatedAt = "")
+            Snippet(id = s.id, userId = "", entryId = "", filename = s.filename, language = s.language, content = s.content, position = i, lastRun = s.lastRun, noteBefore = s.noteBefore, noteAfter = s.noteAfter, createdAt = "", updatedAt = "")
         },
     )
 }

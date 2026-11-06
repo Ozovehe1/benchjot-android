@@ -69,7 +69,8 @@ write("code_fold.json", { fold_lines: fold.FOLD_LINES, cases: CODE_FOLD_CASES.ma
 
 // The note body's format bar and live view: the web's hand-written cases as it writes them
 // (tests/fixtures/*.json, the authority for both platforms; core MarkdownFormat.kt and LiveMarkdown.kt
-// must match), and the buttons in the web's order with the ones in the "+" sheet.
+// must match), and the buttons in the web's order with the ones in the "+" sheet. Also the cell
+// notes' cases (labels, collapse rule, [[links]] and search over body + cell notes; core CellNotes.kt).
 // (Read from the source text: markdown-format.ts imports live-markdown without an extension, which
 // plain node can't load.)
 const mdSrc = readFileSync(join(web, "src/lib/markdown-format.ts"), "utf8");
@@ -78,7 +79,7 @@ const constList = (name) => {
   if (!m) throw new Error(`${name} not found in markdown-format.ts`);
   return [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]);
 };
-for (const f of ["markdown_format.json", "live_markdown.json"]) copyFileSync(join(web, "tests/fixtures", f), join(out, f));
+for (const f of ["markdown_format.json", "live_markdown.json", "cell_notes.json"]) copyFileSync(join(web, "tests/fixtures", f), join(out, f));
 write("markdown_format_buttons.json", constList("MARKDOWN_FORMATS"));
 write("markdown_format_sheet.json", constList("SHEET_FORMATS"));
 
