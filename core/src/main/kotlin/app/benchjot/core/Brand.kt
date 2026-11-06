@@ -34,13 +34,28 @@ data class Palette(
 )
 
 val DARK = Palette(
-    bg = BrandColors.CHARCOAL, fg = BrandColors.ASH, muted = "#8a8885", faint = "#6f6d6a", line = "#2a2a2a", tint = "#1d1d1d",
-    ok = BrandColors.ASH, fail = "#b0625a",
-    hlKeyword = "#d9d7d4", hlString = "#a3aeb1", hlNumber = "#c2c0bc", hlComment = "#6f6d6a", hlType = "#b3b1ad",
+    bg = BrandColors.CHARCOAL, fg = BrandColors.ASH, muted = "#8a8885", faint = "#878582", line = "#2a2a2a", tint = "#1d1d1d",
+    ok = BrandColors.ASH, fail = "#c4726a",
+    hlKeyword = "#d9d7d4", hlString = "#a3aeb1", hlNumber = "#c2c0bc", hlComment = "#878582", hlType = "#b3b1ad",
 )
 
 val LIGHT = Palette(
-    bg = BrandColors.ASH, fg = BrandColors.CHARCOAL, muted = "#5c5a57", faint = "#7a7874", line = "#d0cecb", tint = "#dedcd9",
-    ok = "#8a8885", fail = "#9a4d45",
-    hlKeyword = "#161616", hlString = "#4b585c", hlNumber = "#3f3d3a", hlComment = "#7a7874", hlType = "#34322f",
+    bg = BrandColors.ASH, fg = BrandColors.CHARCOAL, muted = "#5c5a57", faint = "#62605d", line = "#d0cecb", tint = "#dedcd9",
+    ok = BrandColors.CHARCOAL, fail = "#924840",
+    hlKeyword = "#161616", hlString = "#4b585c", hlNumber = "#3f3d3a", hlComment = "#62605d", hlType = "#34322f",
 )
+
+// ------------------------------------------------------------------ contrast (WCAG 2.x)
+private fun channel(c: Int): Double { val s = c / 255.0; return if (s <= 0.03928) s / 12.92 else StrictMath.pow((s + 0.055) / 1.055, 2.4) }
+
+/** Relative luminance of "#rrggbb". */
+fun luminance(hex: String): Double {
+    val v = hex.removePrefix("#").also { require(it.length == 6) { "expected #rrggbb, got $hex" } }.toLong(16).toInt()
+    return 0.2126 * channel(v shr 16 and 0xff) + 0.7152 * channel(v shr 8 and 0xff) + 0.0722 * channel(v and 0xff)
+}
+
+/** WCAG contrast ratio between two "#rrggbb" colours (1–21). */
+fun contrastRatio(a: String, b: String): Double {
+    val la = luminance(a); val lb = luminance(b)
+    return (maxOf(la, lb) + 0.05) / (minOf(la, lb) + 0.05)
+}

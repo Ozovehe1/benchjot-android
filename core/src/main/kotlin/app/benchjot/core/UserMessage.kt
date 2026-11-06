@@ -37,6 +37,8 @@ val ACTION_TEXT: Map<String, String> = mapOf(
     "load_figures" to "Couldn’t load the figures.",
     "load" to "Couldn’t load this.",
     "load_notes" to "Couldn’t load your notes.",
+    "load_map" to "Couldn’t load the map.",
+    "new_attempt" to "Couldn’t start a new attempt.",
     "outcome" to "Couldn’t save the outcome.",
     "parent" to "Couldn’t set the parent note.",
     "move" to "Couldn’t move the note.",

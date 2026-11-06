@@ -38,6 +38,10 @@ import app.benchjot.core.afterDeleteRoute
 import app.benchjot.core.HOME_ROUTE
 import app.benchjot.core.nextGate
 import app.benchjot.core.projectRoute
+import app.benchjot.core.MAP_ROUTE
+import app.benchjot.core.mapRoute
+import app.benchjot.core.noteRoute
+import app.benchjot.core.parseDepth
 import app.benchjot.core.suggestUsername
 import app.benchjot.data.Backend
 import app.benchjot.data.Profile
@@ -143,7 +147,22 @@ private fun SignedIn() {
             OutputScreen(a.getString("note").orEmpty(), a.getString("snippet").orEmpty(), a.getInt("n"), onBack = { nav.popBackStack() }, onHome = { nav.home() })
         }
         composable("settings") { SettingsScreen(username) { nav.home() } }
-        composable("map") { NoteMapScreen(onHome = { nav.home() }, onOpenNote = { nav.navigate("note/$it") }) }
+        composable(
+            MAP_ROUTE,
+            arguments = listOf(
+                navArgument("focus") { type = NavType.StringType; nullable = true; defaultValue = null },
+                navArgument("depth") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
+        ) {
+            val focus = it.arguments?.getString("focus")?.takeIf(String::isNotEmpty)
+            NoteMapScreen(
+                focus = focus,
+                initialDepth = parseDepth(it.arguments?.getString("depth")),
+                onHome = { nav.home() },
+                onOpenNote = { id -> nav.navigate(noteRoute(id)) },
+                onMapAround = { id -> nav.navigate(mapRoute(id)) },
+            )
+        }
     }
 }
 
@@ -154,7 +173,7 @@ private fun List(nav: NavHostController, projectId: String?) = EntryListScreen(
     onOpenProject = { nav.navigate("project/$it") },
     onHome = { nav.home() },
     onSettings = { nav.navigate("settings") },
-    onMap = { nav.navigate("map") },
+    onMap = { nav.navigate(mapRoute()) },
     onProjectGone = { nav.home() },
 )
 

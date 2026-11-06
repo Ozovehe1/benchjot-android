@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -33,6 +34,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
@@ -58,6 +60,8 @@ import app.benchjot.core.completeLink
 import app.benchjot.core.displayTitle
 import app.benchjot.core.linkQueryAt
 import app.benchjot.core.linkSuggestions
+import app.benchjot.core.mapRoute
+import app.benchjot.core.noteRoute
 import app.benchjot.core.parentCandidates
 import app.benchjot.core.searchTerms
 import app.benchjot.data.Accounts
@@ -117,6 +121,9 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     var picking by remember { mutableStateOf(false) }
     var choosingProject by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
+    var attempting by remember { mutableStateOf(false) }
+    var menuOpen by remember { mutableStateOf(false) }
+    var attemptError by remember { mutableStateOf<String?>(null) }
     val bodyFocus = remember { FocusRequester() }
     val titleFocus = remember { FocusRequester() }
 
@@ -131,6 +138,8 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     val parent = path.lastOrNull()
     val subNotes = childrenOf(entry.id, tree)
     val linkedFrom = links.value?.let { backlinksTo(entry.id, it, notesIndex) }.orEmpty()
+    val origin = notesIndex.firstOrNull { it.id == entry.derivedFrom }
+    val attempts = notesIndex.filter { it.derivedFrom == entry.id }
     val project = projects.value?.firstOrNull { it.id == projectId }
 
     val saver = remember(entry.id) {
@@ -146,6 +155,21 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
 
     fun openNote(id: String) {
         scope.launch { registry.flushAll(); nav.navigate("note/$id") }
+    }
+
+    /** new_attempt() copies the note as saved, so pending edits are flushed first. */
+    fun startAttempt() {
+        attempting = true
+        attemptError = null
+        scope.launch {
+            try {
+                registry.flushAll()
+                nav.navigate(noteRoute(Backend.newAttempt(entry.id)))
+            } catch (e: Exception) {
+                attemptError = Accounts.message(e, "new_attempt")
+                attempting = false
+            }
+        }
     }
 
     fun mark(next: Outcome?) {
@@ -196,6 +220,16 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                 ) {
                     SaveIndicator(registry)
                     TextBtn(if (preview) "Edit" else "Preview", { preview = !preview })
+                    Box {
+                        Box(Modifier.size(48.dp).plainClick { menuOpen = true }.semantics { contentDescription = "More" }, contentAlignment = Alignment.Center) {
+                            Text("⋮", Modifier.clearAndSetSemantics {}, style = Type.body, color = t.muted)
+                        }
+                        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }, containerColor = t.bg) {
+                            MenuItem("Map") { menuOpen = false; scope.launch { registry.flushAll(); nav.navigate(mapRoute(entry.id, 1)) } }
+                            MenuItem("New attempt", enabled = !attempting) { menuOpen = false; startAttempt() }
+                            MenuItem("Delete note") { menuOpen = false; confirmDelete = true }
+                        }
+                    }
                 }
 
                 if (path.isNotEmpty()) {
@@ -284,8 +318,14 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                     })
                 }
                 NoteList("Linked from", linkedFrom, empty = "No notes link here.", onOpen = ::openNote)
+                if (origin != null) NoteList("Derived from", listOf(origin), empty = null, onOpen = ::openNote)
+                NoteList("Attempts", attempts, empty = null, onOpen = ::openNote) {
+                    Column {
+                        TextBtn("New attempt", ::startAttempt, enabled = !attempting)
+                        ErrorLine(attemptError, Modifier.padding(top = 0.dp))
+                    }
+                }
 
-                TextBtn("Delete note", { confirmDelete = true }, Modifier.padding(top = 48.dp))
             }
 
             // Pinned above the keyboard: [[ suggestions while typing a link, the body's format bar, or the code symbol row.
@@ -324,6 +364,17 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
             }
         }
     }
+}
+
+/** One row of the note's ⋮ menu: 48dp tall, named for TalkBack by its text. */
+@Composable
+private fun MenuItem(text: String, enabled: Boolean = true, onClick: () -> Unit) {
+    DropdownMenuItem(
+        text = { Text(text, style = Type.sm, color = t.fg) },
+        onClick = onClick,
+        enabled = enabled,
+        modifier = Modifier.heightIn(min = 48.dp).semantics { contentDescription = text },
+    )
 }
 
 /** Quiet status: "Saved" after a save, "Not saved" on failure, nothing otherwise. */

@@ -4,7 +4,7 @@
 // node >= 22.6:  node --experimental-strip-types scripts/web-fixtures.mjs <path-to-web-checkout>
 // CI runs it against a fresh checkout of Ozovehe1/benchjot and fails on any diff,
 // so a rule changed on the web can't silently drift from the app.
-import { copyFileSync, cpSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -13,6 +13,11 @@ const out = resolve(import.meta.dirname, "../core/src/test/resources/web");
 mkdirSync(out, { recursive: true });
 const load = (p) => import(pathToFileURL(join(web, p)).href);
 const write = (name, data) => writeFileSync(join(out, name), typeof data === "string" ? data : JSON.stringify(data, null, 2) + "\n");
+
+// The Research Map model contract (rules, tokens and expected graphs), copied as the web keeps it.
+// Absent on a web checkout from before the Research Map; then the committed copy stands.
+const mapModel = join(web, "tests/fixtures/map_model.json");
+if (existsSync(mapModel)) copyFileSync(mapModel, join(out, "map_model.json"));
 
 // Languages (data only)
 const langs = await load("src/lib/languages.ts");

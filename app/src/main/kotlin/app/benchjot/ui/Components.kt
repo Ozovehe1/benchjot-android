@@ -44,8 +44,10 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.vector.PathParser
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -164,19 +166,20 @@ fun FilledBtn(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, 
 
 /** A plain text segmented control: the chosen option reads in full text colour. */
 @Composable
-fun <T> Segmented(options: List<Pair<T, String>>, value: T, onChange: (T) -> Unit, modifier: Modifier = Modifier) {
+fun <T> Segmented(options: List<Pair<T, String>>, value: T, onChange: (T) -> Unit, modifier: Modifier = Modifier, name: (String) -> String = { it }) {
     Row(modifier, horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
         options.forEach { (v, label) ->
             TextBtn(label, { if (v != value) onChange(v) }, strong = v == value, style = Type.xs,
-                modifier = Modifier.semantics { contentDescription = label })
+                modifier = Modifier.semantics { contentDescription = name(label); selected = v == value })
         }
     }
 }
 
-/** The list's tiny outcome dot (ash = successful, muted red = failed). */
+/** The list's tiny outcome mark, the map's shapes: filled circle = successful, muted red diamond = failed (never colour alone). */
 @Composable
 fun OutcomeDot(success: Boolean, name: String) {
-    Box(Modifier.size(6.dp).background(if (success) t.ok else t.fail, CircleShape).semantics { contentDescription = name })
+    val mark = if (success) Modifier.size(6.dp).background(t.ok, CircleShape) else Modifier.size(6.dp).rotate(45f).background(t.fail)
+    Box(mark.semantics { contentDescription = name })
 }
 
 /** 1dp hairline in the line colour. */
