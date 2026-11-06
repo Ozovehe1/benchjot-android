@@ -1,0 +1,551 @@
+{
+  "about": "Research Map model parity fixture (Benchjot web + Android). Web: tests/map-model.test.ts. Every rule and expected value here is the contract both apps implement; change it here first, then in both apps.",
+  "version": 1,
+  "rules": {
+    "edgeOrder": "structural edges first, walking notes in input order: parent (parent -> child) then derived (origin -> attempt); then link edges in link input order",
+    "linkDedupe": "a link is dropped if: target unresolved (id must exist; label-only resolves by case-insensitive trimmed title), self-link, source missing, its unordered pair already has a parent or derived edge, or the same directed link was already added. A link B->A when A->B exists sets mutual=true on the A->B edge and adds nothing",
+    "degree": "number of kept edges touching the node",
+    "radius": {
+      "base": 4,
+      "perSqrtDegree": 1.5,
+      "max": 10,
+      "formula": "min(max, base + perSqrtDegree * sqrt(degree))"
+    },
+    "hitRadius": 24,
+    "depth": {
+      "min": 1,
+      "max": 3,
+      "default": 1,
+      "parse": "a whole number string is clamped to [min,max]; anything else (missing, empty, decimal, text) gives default"
+    },
+    "around": "BFS from the focus over every kept edge, ignoring direction, up to depth hops; nodes in input order; edges with both ends inside; layout of the sub-graph is translated so the focus sits at (0,0). Unknown focus gives an empty graph",
+    "arrows": "derived: always. link and parent: when lens is around, or zoom >= 1. The arrow sits at the target end; a mutual link has arrows at both ends",
+    "marks": {
+      "unmarked": {
+        "shape": "circle",
+        "fill": false,
+        "color": "fg",
+        "strokeWidth": 1.5
+      },
+      "success": {
+        "shape": "circle",
+        "fill": true,
+        "color": "fg"
+      },
+      "failed": {
+        "shape": "diamond",
+        "fill": true,
+        "color": "fail"
+      }
+    },
+    "edgeStyle": {
+      "link": {
+        "color": "muted",
+        "dash": null,
+        "width": 1
+      },
+      "parent": {
+        "color": "faint",
+        "dash": [
+          4,
+          4
+        ],
+        "width": 1
+      },
+      "derived": {
+        "color": "fg",
+        "dash": null,
+        "width": 1.5
+      }
+    },
+    "nodeLabel": "<displayTitle>, <successful|failed|unmarked>, <n> connection(s)  (displayTitle = trimmed title or 'Untitled'; '1 connection', otherwise 'connections')",
+    "listGroups": [
+      "Parent",
+      "Sub-notes",
+      "Links to",
+      "Linked from",
+      "Derived from",
+      "Attempts from this",
+      "Further away"
+    ],
+    "listGroupRules": "Around list for a focus: Parent = parent edge target->focus source; Sub-notes = parent edges from focus; Links to = link edges from focus, or mutual links into focus; Linked from = link edges into focus, or mutual links from focus; Derived from = derived edge into focus; Attempts from this = derived edges from focus; Further away = nodes at hop >= 2. Items in node input order; empty groups left out",
+    "minContrast": {
+      "mark": 3,
+      "text": 4.5
+    },
+    "errors": {
+      "loadMap": "Couldn’t load the map.",
+      "newAttempt": "Couldn’t start a new attempt."
+    },
+    "attemptTitle": "set by SQL new_attempt(): '<base> (attempt N)', base = the origin title without a trailing ' (attempt N)', 'Untitled' when empty; N = notes in the lineage family (root + every note derived from it, transitively) + 1"
+  },
+  "tokens": {
+    "dark": {
+      "bg": "#161616",
+      "fg": "#e8e6e3",
+      "muted": "#8a8885",
+      "faint": "#878582",
+      "fail": "#c4726a",
+      "ok": "#e8e6e3"
+    },
+    "light": {
+      "bg": "#e8e6e3",
+      "fg": "#161616",
+      "muted": "#5c5a57",
+      "faint": "#62605d",
+      "fail": "#924840",
+      "ok": "#161616"
+    }
+  },
+  "input": {
+    "notes": [
+      {
+        "id": "a0000000-0000-4000-8000-00000000000a",
+        "title": "Alpha",
+        "parent_id": null,
+        "derived_from": null,
+        "outcome": "success",
+        "project_id": "90000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-01T10:00:00Z"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000b",
+        "title": "Beta",
+        "parent_id": "a0000000-0000-4000-8000-00000000000a",
+        "derived_from": null,
+        "outcome": "failed",
+        "project_id": "90000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-02T10:00:00Z"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000c",
+        "title": "Gamma",
+        "parent_id": null,
+        "derived_from": null,
+        "outcome": null,
+        "project_id": null,
+        "created_at": "2026-11-03T10:00:00Z"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000d",
+        "title": "Alpha (attempt 2)",
+        "parent_id": null,
+        "derived_from": "a0000000-0000-4000-8000-00000000000a",
+        "outcome": null,
+        "project_id": "90000000-0000-4000-8000-000000000001",
+        "created_at": "2026-11-04T10:00:00Z"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000e",
+        "title": "  ",
+        "parent_id": null,
+        "derived_from": null,
+        "outcome": null,
+        "project_id": null,
+        "created_at": "2026-11-05T10:00:00Z"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000f",
+        "title": "Zeta",
+        "parent_id": null,
+        "derived_from": null,
+        "outcome": "failed",
+        "project_id": null,
+        "created_at": "2026-11-06T10:00:00Z"
+      }
+    ],
+    "links": [
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "label": "x",
+        "id": "a0000000-0000-4000-8000-00000000000c"
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000c",
+        "label": "alpha",
+        "id": null
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000b",
+        "label": "Alpha",
+        "id": null
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000c",
+        "label": "Gamma",
+        "id": null
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "label": "Missing",
+        "id": null
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "label": "gone",
+        "id": "00000000-0000-4000-8000-000000000000"
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000c",
+        "label": "Zeta",
+        "id": "a0000000-0000-4000-8000-00000000000f"
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000d",
+        "label": "Alpha",
+        "id": "a0000000-0000-4000-8000-00000000000a"
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000b",
+        "label": "Gamma",
+        "id": "a0000000-0000-4000-8000-00000000000c"
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "label": "Gamma again",
+        "id": "a0000000-0000-4000-8000-00000000000c"
+      }
+    ]
+  },
+  "expect": {
+    "edges": [
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "target": "a0000000-0000-4000-8000-00000000000b",
+        "kind": "parent",
+        "mutual": false
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "target": "a0000000-0000-4000-8000-00000000000d",
+        "kind": "derived",
+        "mutual": false
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000a",
+        "target": "a0000000-0000-4000-8000-00000000000c",
+        "kind": "link",
+        "mutual": true
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000c",
+        "target": "a0000000-0000-4000-8000-00000000000f",
+        "kind": "link",
+        "mutual": false
+      },
+      {
+        "source": "a0000000-0000-4000-8000-00000000000b",
+        "target": "a0000000-0000-4000-8000-00000000000c",
+        "kind": "link",
+        "mutual": false
+      }
+    ],
+    "nodes": [
+      {
+        "id": "a0000000-0000-4000-8000-00000000000a",
+        "degree": 3,
+        "radius": 6.598076,
+        "mark": "success",
+        "label": "Alpha, successful, 3 connections"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000b",
+        "degree": 2,
+        "radius": 6.12132,
+        "mark": "failed",
+        "label": "Beta, failed, 2 connections"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000c",
+        "degree": 3,
+        "radius": 6.598076,
+        "mark": "unmarked",
+        "label": "Gamma, unmarked, 3 connections"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000d",
+        "degree": 1,
+        "radius": 5.5,
+        "mark": "unmarked",
+        "label": "Alpha (attempt 2), unmarked, 1 connection"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000e",
+        "degree": 0,
+        "radius": 4,
+        "mark": "unmarked",
+        "label": "Untitled, unmarked, 0 connections"
+      },
+      {
+        "id": "a0000000-0000-4000-8000-00000000000f",
+        "degree": 1,
+        "radius": 5.5,
+        "mark": "failed",
+        "label": "Zeta, failed, 1 connection"
+      }
+    ],
+    "radiusCap": [
+      {
+        "degree": 16,
+        "radius": 10
+      },
+      {
+        "degree": 100,
+        "radius": 10
+      }
+    ],
+    "parseDepth": [
+      {
+        "in": null,
+        "out": 1
+      },
+      {
+        "in": "",
+        "out": 1
+      },
+      {
+        "in": "1",
+        "out": 1
+      },
+      {
+        "in": "2",
+        "out": 2
+      },
+      {
+        "in": "3",
+        "out": 3
+      },
+      {
+        "in": "0",
+        "out": 1
+      },
+      {
+        "in": "7",
+        "out": 3
+      },
+      {
+        "in": "2.5",
+        "out": 1
+      },
+      {
+        "in": "two",
+        "out": 1
+      },
+      {
+        "in": "-2",
+        "out": 1
+      }
+    ],
+    "arrows": [
+      {
+        "kind": "derived",
+        "lens": "everything",
+        "zoom": 0.5,
+        "show": true
+      },
+      {
+        "kind": "link",
+        "lens": "everything",
+        "zoom": 0.5,
+        "show": false
+      },
+      {
+        "kind": "link",
+        "lens": "everything",
+        "zoom": 1,
+        "show": true
+      },
+      {
+        "kind": "parent",
+        "lens": "around",
+        "zoom": 0.3,
+        "show": true
+      }
+    ],
+    "around": [
+      {
+        "focus": "a0000000-0000-4000-8000-00000000000a",
+        "depth": 1,
+        "nodes": [
+          [
+            "a0000000-0000-4000-8000-00000000000a",
+            0
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000b",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000c",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000d",
+            1
+          ]
+        ],
+        "edgeCount": 4,
+        "list": [
+          {
+            "group": "Sub-notes",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000b"
+            ]
+          },
+          {
+            "group": "Links to",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000c"
+            ]
+          },
+          {
+            "group": "Linked from",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000c"
+            ]
+          },
+          {
+            "group": "Attempts from this",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000d"
+            ]
+          }
+        ]
+      },
+      {
+        "focus": "a0000000-0000-4000-8000-00000000000a",
+        "depth": 2,
+        "nodes": [
+          [
+            "a0000000-0000-4000-8000-00000000000a",
+            0
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000b",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000c",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000d",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000f",
+            2
+          ]
+        ],
+        "edgeCount": 5,
+        "list": [
+          {
+            "group": "Sub-notes",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000b"
+            ]
+          },
+          {
+            "group": "Links to",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000c"
+            ]
+          },
+          {
+            "group": "Linked from",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000c"
+            ]
+          },
+          {
+            "group": "Attempts from this",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000d"
+            ]
+          },
+          {
+            "group": "Further away",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000f"
+            ]
+          }
+        ]
+      },
+      {
+        "focus": "a0000000-0000-4000-8000-00000000000d",
+        "depth": 1,
+        "nodes": [
+          [
+            "a0000000-0000-4000-8000-00000000000a",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000d",
+            0
+          ]
+        ],
+        "edgeCount": 1,
+        "list": [
+          {
+            "group": "Derived from",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000a"
+            ]
+          }
+        ]
+      },
+      {
+        "focus": "a0000000-0000-4000-8000-00000000000b",
+        "depth": 1,
+        "nodes": [
+          [
+            "a0000000-0000-4000-8000-00000000000a",
+            1
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000b",
+            0
+          ],
+          [
+            "a0000000-0000-4000-8000-00000000000c",
+            1
+          ]
+        ],
+        "edgeCount": 3,
+        "list": [
+          {
+            "group": "Parent",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000a"
+            ]
+          },
+          {
+            "group": "Links to",
+            "ids": [
+              "a0000000-0000-4000-8000-00000000000c"
+            ]
+          }
+        ]
+      },
+      {
+        "focus": "a0000000-0000-4000-8000-00000000000e",
+        "depth": 3,
+        "nodes": [
+          [
+            "a0000000-0000-4000-8000-00000000000e",
+            0
+          ]
+        ],
+        "edgeCount": 0,
+        "list": []
+      },
+      {
+        "focus": "00000000-0000-4000-8000-000000000000",
+        "depth": 1,
+        "nodes": [],
+        "edgeCount": 0,
+        "list": []
+      }
+    ]
+  }
+}

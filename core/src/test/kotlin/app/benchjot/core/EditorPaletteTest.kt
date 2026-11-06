@@ -8,9 +8,9 @@ import org.junit.Test
 class EditorPaletteTest {
     @Test
     fun contrastFormulaMatchesKnownValues() {
-        assertEquals(21.0, contrast("#000000", "#ffffff"), 0.01)
-        assertEquals(1.0, contrast("#777777", "#777777"), 0.0001)
-        assertEquals(4.48, contrast("#777777", "#ffffff"), 0.01)
+        assertEquals(21.0, contrastRatio("#000000", "#ffffff"), 0.01)
+        assertEquals(1.0, contrastRatio("#777777", "#777777"), 0.0001)
+        assertEquals(4.48, contrastRatio("#777777", "#ffffff"), 0.01)
     }
 
     @Test
@@ -19,7 +19,7 @@ class EditorPaletteTest {
             val pairs = editorPalette(p).pairs()
             assertEquals(19, pairs.size)
             for (c in pairs) {
-                val r = contrast(c.fg, c.bg)
+                val r = contrastRatio(c.fg, c.bg)
                 assertTrue("$theme ${c.name}: ${"%.2f".format(r)} < ${c.min} (${c.fg} on ${c.bg})", r >= c.min)
             }
         }
@@ -29,7 +29,7 @@ class EditorPaletteTest {
     fun disabledIsVisiblyDimmerThanEnabled() {
         for (p in listOf(DARK, LIGHT)) {
             val e = editorPalette(p)
-            assertTrue(contrast(e.disabled, e.bar) < contrast(e.glyph, e.bar) - 3)
+            assertTrue(contrastRatio(e.disabled, e.bar) < contrastRatio(e.glyph, e.bar) - 3)
         }
     }
 

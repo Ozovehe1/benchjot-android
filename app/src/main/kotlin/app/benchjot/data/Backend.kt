@@ -15,6 +15,8 @@ import app.benchjot.core.SourcedLink
 import app.benchjot.core.DEFAULT_LANGUAGE
 import app.benchjot.core.CodeFile
 import app.benchjot.core.searchTerms
+import app.benchjot.core.NOTE_INDEX_COLUMNS
+import app.benchjot.core.isMissingFromSchema
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
@@ -126,11 +128,37 @@ object Backend {
     suspend fun entry(id: String): Entry? =
         client.from("entries").select { filter { eq("id", id) } }.decodeSingleOrNull<Entry>()
 
-    /** Every note (id, title, parent), most recently edited first. */
-    suspend fun noteIndex(): List<NoteIndexItem> =
-        allRows { from, to ->
-            client.from("entries").select(Columns.list("id", "title", "parent_id")) { order("updated_at", Order.DESCENDING); order("id", Order.ASCENDING); range(from, to) }.decodeList<NoteIndexItem>()
+    /** Whether entries.derived_from exists (the Research Map migration); null until a read finds out. */
+    @Volatile private var hasDerivedFrom: Boolean? = null
+
+    /** Every note (NOTE_INDEX_COLUMNS), most recently edited first. Before the migration, without derived_from. */
+    suspend fun noteIndex(): List<NoteIndexItem> {
+        if (hasDerivedFrom != false) {
+            try {
+                return noteIndex(NOTE_INDEX_COLUMNS).also { hasDerivedFrom = true }
+            } catch (e: Exception) {
+                if (!isMissingFromSchema("${e.message} ${Accounts.facts(e).message}", "derived_from")) throw e
+                hasDerivedFrom = false
+            }
         }
+        return noteIndex(NOTE_INDEX_COLUMNS - "derived_from")
+    }
+
+    private suspend fun noteIndex(columns: List<String>): List<NoteIndexItem> =
+        allRows { from, to ->
+            client.from("entries").select(Columns.list(*columns.toTypedArray())) { order("updated_at", Order.DESCENDING); order("id", Order.ASCENDING); range(from, to) }.decodeList<NoteIndexItem>()
+        }
+
+    /**
+     * A new attempt of a note: new_attempt() (SQL, from the web's Research Map migration) copies its
+     * title as "<title> (attempt N)", body, project, parent and code cells (not their runs or the
+     * outcome) and sets derived_from, in one transaction. Returns the new note's id.
+     */
+    suspend fun newAttempt(fromId: String): String {
+        val id = client.postgrest.rpc("new_attempt", buildJsonObject { put("p_from", fromId) }).decodeAs<String>()
+        changed()
+        return id
+    }
 
     /** Every [[link]] in the user's notes, derived from the bodies by note_links(). */
     suspend fun noteLinks(): List<SourcedLink> =

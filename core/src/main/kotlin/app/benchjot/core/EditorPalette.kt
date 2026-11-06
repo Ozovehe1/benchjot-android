@@ -1,6 +1,5 @@
 package app.benchjot.core
 
-import kotlin.math.pow
 
 // Which theme token every part of the live note editor and its format bar uses (the user's rule,
 // 2026-11-06: nothing washed out by the theme). One place for the choice, so the Compose UI and the
@@ -74,19 +73,4 @@ fun EditorPalette.pairs(): List<ContrastPair> = listOf(
     ContrastPair("link suggestion (strong)", suggestionStrong, bar, AA_TEXT),
 )
 
-private fun channel(c: Int): Double = (c / 255.0).let { if (it <= 0.03928) it / 12.92 else ((it + 0.055) / 1.055).pow(2.4) }
-
-/** WCAG 2 relative luminance of #rrggbb. */
-fun luminance(hex: String): Double {
-    val h = hex.removePrefix("#")
-    require(h.length == 6) { "expected #rrggbb, got $hex" }
-    val v = h.toInt(16)
-    return 0.2126 * channel(v shr 16 and 0xff) + 0.7152 * channel(v shr 8 and 0xff) + 0.0722 * channel(v and 0xff)
-}
-
-/** WCAG 2 contrast ratio (1..21). */
-fun contrast(a: String, b: String): Double {
-    val x = luminance(a)
-    val y = luminance(b)
-    return (maxOf(x, y) + 0.05) / (minOf(x, y) + 0.05)
-}
+// Contrast: luminance() and contrastRatio() in Brand.kt (one WCAG implementation for both palettes).

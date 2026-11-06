@@ -20,6 +20,8 @@ data class Entry(
     val outcome: String? = null,
     @SerialName("created_at") val createdAt: String,
     @SerialName("updated_at") val updatedAt: String,
+    /** The note this one is an attempt from; absent until the Research Map migration is applied. */
+    @SerialName("derived_from") val derivedFrom: String? = null,
 )
 
 @Serializable
@@ -31,13 +33,24 @@ data class EntryListItem(
     @SerialName("updated_at") val updatedAt: String,
 )
 
-/** Every note's id, title and parent: for links and the tree. */
+/**
+ * Every note's id, title and parent (for links and the tree), plus what the map draws:
+ * outcome, project, creation time and the note it was derived from. `derived_from` is
+ * missing until the Research Map migration is applied; it then reads as null.
+ */
 @Serializable
 data class NoteIndexItem(
     override val id: String,
     override val title: String = "",
     @SerialName("parent_id") override val parentId: String? = null,
-) : TreeNode
+    override val outcome: String? = null,
+    @SerialName("project_id") override val projectId: String? = null,
+    @SerialName("created_at") override val createdAt: String? = null,
+    @SerialName("derived_from") override val derivedFrom: String? = null,
+) : MapNote
+
+/** The columns Backend.noteIndex() selects: NoteIndexItem's keys, as the web's NOTE_INDEX_COLUMNS. */
+val NOTE_INDEX_COLUMNS = listOf("id", "title", "parent_id", "derived_from", "outcome", "project_id", "created_at")
 
 /** One [[link]] in a note body, as note_links() returns it. */
 @Serializable

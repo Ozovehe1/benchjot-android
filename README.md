@@ -27,7 +27,7 @@ Pro "Run on server" and Fix call the web's `/api/run` and `/api/fix` with the us
 
 ## Also native
 
-- **Map** (`ui/NoteMap.kt`): Compose Canvas; the layout is a line-for-line port of the web's d3-force setup (`core/Graph.kt`), checked against d3's own positions.
+- **Research Map** (`ui/NoteMap.kt`): Compose Canvas. Two lenses: Around a note (depth 1–3, the default from a note's Map button) and Everything. Marks by outcome (hollow circle unmarked, filled circle successful, diamond failed), size by connections, directed links / sub-notes / attempts with arrows; tap a note for a preview sheet; Fit; every note reachable by TalkBack and a "Map as list" view. The model (`core/MapModel.kt`) is checked against the web's shared fixture (`map_model.json`), the layout (`core/Graph.kt`, a line-for-line d3-force port) against d3's own positions; layout runs off the main thread. "New attempt" on a note calls the web's `new_attempt()`; the note index reads `derived_from` when the migration is applied and works without it.
 - **Math** in the preview: remark-math's syntax (`$…$`, `$$` blocks), found by `core/MathText.kt` (checked against remark-math), drawn with JLaTeXMath.
 - **Continue with Google**: Credential Manager → Google ID token for the web OAuth client → Supabase `signInWith(IDToken)`. The Android OAuth client in GCP project "benchjot" matches package `app.benchjot` + the SHA-1 of `app/debug-ci.keystore`; a new keystore needs a new client.
 

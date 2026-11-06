@@ -27,9 +27,12 @@ import app.benchjot.data.Backend
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
-/** Loads `block` now and again after every write anywhere (the web's SWR revalidation). Keeps the last value while reloading. */
+/**
+ * Loads `block` now and again after every write anywhere (the web's SWR revalidation). Keeps the last value while reloading.
+ * `action` names what failed in the error text ("Couldn’t load the map. …"), as the web's userMessage(e, action).
+ */
 @Composable
-fun <T> rememberLive(vararg keys: Any?, block: suspend () -> T): LiveData<T> {
+fun <T> rememberLive(vararg keys: Any?, action: String? = null, block: suspend () -> T): LiveData<T> {
     val version by Backend.version.collectAsState()
     val state = remember(*keys) { LiveData<T>() }
     LaunchedEffect(*keys, version) {
@@ -39,7 +42,7 @@ fun <T> rememberLive(vararg keys: Any?, block: suspend () -> T): LiveData<T> {
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
-            state.error = Accounts.message(e)
+            state.error = Accounts.message(e, action)
         }
         state.loaded = true
     }
