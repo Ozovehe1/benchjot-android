@@ -67,15 +67,20 @@ const fold = await load("src/lib/code-fold.ts");
 const { CODE_FOLD_CASES } = await load("tests/fixtures/code-fold.ts");
 write("code_fold.json", { fold_lines: fold.FOLD_LINES, cases: CODE_FOLD_CASES.map((code) => ({ code, lines: fold.lineCount(code), folds: fold.folds(code), closed: fold.foldLabel(code, false), open: fold.foldLabel(code, true) })) });
 
-// The note body's format bar: the shared cases with the web's own answers (core MarkdownFormat.kt),
-// and the buttons in the web's order.
-const markdownFormat = await load("src/lib/markdown-format.ts");
-const { MARKDOWN_FORMAT_CASES, parseCase } = await load("tests/fixtures/markdown-format.ts");
-write("markdown_format.json", MARKDOWN_FORMAT_CASES.map(([input, format]) => {
-  const i = parseCase(input);
-  return { input: i, format, output: markdownFormat.applyFormat(i.text, i.start, i.end, format) };
-}));
-write("markdown_format_buttons.json", markdownFormat.MARKDOWN_FORMATS);
+// The note body's format bar and live view: the web's hand-written cases as it writes them
+// (tests/fixtures/*.json, the authority for both platforms; core MarkdownFormat.kt and LiveMarkdown.kt
+// must match), and the buttons in the web's order with the ones in the "+" sheet.
+// (Read from the source text: markdown-format.ts imports live-markdown without an extension, which
+// plain node can't load.)
+const mdSrc = readFileSync(join(web, "src/lib/markdown-format.ts"), "utf8");
+const constList = (name) => {
+  const m = new RegExp(`export const ${name}[^=]*=\\s*\\[([^\\]]*)\\]`).exec(mdSrc);
+  if (!m) throw new Error(`${name} not found in markdown-format.ts`);
+  return [...m[1].matchAll(/"([^"]+)"/g)].map((x) => x[1]);
+};
+for (const f of ["markdown_format.json", "live_markdown.json"]) copyFileSync(join(web, "tests/fixtures", f), join(out, f));
+write("markdown_format_buttons.json", constList("MARKDOWN_FORMATS"));
+write("markdown_format_sheet.json", constList("SHEET_FORMATS"));
 
 // Which links in a note body open (http, https, mailto): the web's own answers (core isOpenableLink).
 const { isOpenableLink } = await load("src/lib/safe-next.ts");

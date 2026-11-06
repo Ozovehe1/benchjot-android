@@ -29,19 +29,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.TextRange
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.benchjot.core.Autosaver
 import app.benchjot.core.CodeFile
@@ -50,7 +45,6 @@ import app.benchjot.core.Entry
 import app.benchjot.core.NoteIndexItem
 import app.benchjot.core.OUTCOME_CHOICES
 import app.benchjot.core.Outcome
-import app.benchjot.core.applyFormat
 import app.benchjot.core.SaveRegistry
 import app.benchjot.core.SaveState
 import app.benchjot.core.ancestors
@@ -105,10 +99,12 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     val registry = remember(entry.id) { SaveRegistry() }
     val keys = remember { CodeKeysController() }
     var title by remember(entry.id) { mutableStateOf(entry.title) }
-    var body by remember(entry.id) { mutableStateOf(TextFieldValue(entry.notes)) }
+    // The note body: one live Markdown block (its own text, selection and undo history).
+    val body = remember(entry.id) { MarkdownBlockState(entry.notes) }
+    // The one format bar acts on the focused Markdown block; the "+" sheet outlives that focus.
+    val formatBar = remember { FormatBarController() }
+    var sheetFor by remember { mutableStateOf<MarkdownBlockState?>(null) }
     var helper by remember { mutableStateOf(false) }
-    // The format bar shows only while the body is being edited.
-    var bodyFocused by remember { mutableStateOf(false) }
     var preview by remember { mutableStateOf(false) }
     var projectId by remember(entry.id) { mutableStateOf(entry.projectId) }
     var parentId by remember(entry.id) { mutableStateOf(entry.parentId) }
@@ -120,7 +116,6 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
     var picking by remember { mutableStateOf(false) }
     var choosingProject by remember { mutableStateOf(false) }
     var confirmDelete by remember { mutableStateOf(false) }
-    val bodyFocus = remember { FocusRequester() }
     val titleFocus = remember { FocusRequester() }
 
     val projects = rememberLive { Backend.projects() }
@@ -184,13 +179,14 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
         scope.launch { try { Backend.createSnippets(entry.id, count, files) } catch (e: Exception) { uploadError = Accounts.message(e, "upload") } }
     }
 
-    // [[ link autocomplete, pinned above the keyboard.
-    val caret = if (body.selection.collapsed) body.selection.start else -1
-    val typing = if (caret >= 0 && !preview) linkQueryAt(body.text, caret) else null
+    // [[ link autocomplete, pinned above the keyboard, in the Markdown block last typed in.
+    val linkBlock = formatBar.last ?: body
+    val caret = if (linkBlock.value.selection.collapsed) linkBlock.value.selection.start else -1
+    val typing = if (caret >= 0 && !preview) linkQueryAt(linkBlock.text, caret) else null
     var dismissed by remember { mutableStateOf<Int?>(null) }
     val suggestions = if (typing != null && typing.start != dismissed) linkSuggestions(typing.query, notesIndex, entry.id) else emptyList()
 
-    CompositionLocalProvider(LocalCodeKeys provides keys) {
+    CompositionLocalProvider(LocalCodeKeys provides keys, LocalFormatBar provides formatBar) {
         Box(Modifier.fillMaxSize()) {
             PageColumn(Modifier.fillMaxSize().verticalScroll(rememberRestoredScrollState(entry.id)).padding(bottom = 96.dp)) {
                 TopBar(
@@ -217,7 +213,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                     textStyle = Type.xl.copy(color = t.fg),
                     cursorBrush = SolidColor(t.fg),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-                    keyboardActions = KeyboardActions(onNext = { bodyFocus.requestFocus() }),
+                    keyboardActions = KeyboardActions(onNext = { runCatching { body.focus.requestFocus() } }),
                     modifier = Modifier.fillMaxWidth().padding(top = if (path.isEmpty()) 24.dp else 8.dp).focusRequester(titleFocus).semantics { contentDescription = "Title" },
                     decorationBox = { inner -> Box { if (title.isEmpty()) Text("Title", style = Type.xl, color = t.faint); inner() } },
                 )
@@ -255,14 +251,7 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                 if (preview) {
                     RenderedBody(body.text, notesIndex) { openNote(it) }
                 } else {
-                    BasicTextField(
-                        value = body,
-                        onValueChange = { body = it },
-                        textStyle = TextStyle(fontSize = 15.sp, lineHeight = 28.sp, color = t.fg),
-                        cursorBrush = SolidColor(t.fg),
-                        modifier = Modifier.fillMaxWidth().padding(top = 16.dp).heightIn(min = 96.dp).focusRequester(bodyFocus).onFocusChanged { bodyFocused = it.isFocused }.semantics { contentDescription = NOTE_LABEL },
-                        decorationBox = { inner -> Box { if (body.text.isEmpty()) Text(NOTE_LABEL, style = TextStyle(fontSize = 15.sp, lineHeight = 28.sp), color = t.faint); inner() } },
-                    )
+                    MarkdownBlockEditor(body, NOTE_LABEL, Modifier.padding(top = 16.dp))
                 }
 
                 // Code
@@ -299,21 +288,24 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                         suggestions.forEach { n ->
                             PageColumn {
                                 TextBtn(displayTitle(n.title), {
-                                    val next = completeLink(body.text, typing.start, caret, n)
-                                    body = TextFieldValue(next.text, TextRange(next.caret))
+                                    val next = completeLink(linkBlock.text, typing.start, caret, n)
+                                    linkBlock.replace(next.text, next.caret)
                                 }, Modifier.fillMaxWidth(), strong = true, style = Type.body)
                             }
                         }
                         PageColumn { TextBtn("Close", { dismissed = typing.start }, style = Type.xs) }
                     }
-                } else if (bodyFocused && !preview) {
-                    FormatBar { f ->
-                        val e = applyFormat(body.text, body.selection.min, body.selection.max, f)
-                        body = TextFieldValue(e.text, TextRange(e.start, e.end))
-                    }
+                } else if (formatBar.target != null && !preview) {
+                    formatBar.target?.let { b -> FormatBar(b, onMore = { sheetFor = b }) }
                 } else {
                     keys.target?.let { CodeKeysRow(it) }
                 }
+            }
+            sheetFor?.let { b ->
+                FormatSheet(
+                    onPick = { f -> sheetFor = null; b.apply(f); runCatching { b.focus.requestFocus() } },
+                    onDismiss = { sheetFor = null },
+                )
             }
             if (helper) {
                 val code = snippets.value.orEmpty()

@@ -1,9 +1,16 @@
 [
-  "bold",
-  "italic",
   "heading",
+  "bold",
   "list",
+  "checklist",
+  "italic",
+  "strike",
+  "quote",
+  "indent",
+  "outdent",
   "code",
   "math",
-  "link"
+  "link",
+  "divider",
+  "table"
 ]

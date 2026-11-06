@@ -1,0 +1,1422 @@
+{
+  "rules": [
+    "Active lines = lines touched by [activeFrom, activeTo]; activeFrom < 0 means no line is active.",
+    "Markers on active lines are 'marker' (dimmed), elsewhere 'hide'. Inline tokens use the whole-active-line variant.",
+    "h1/h2/h3/quote cover the line content after the marker. bullet/ordered/check_open/check_done cover the list MARKER on inactive lines (draw the glyph, number or tappable checkbox there); on active lines that range is 'marker'.",
+    "A done item's content is also 'done' (struck, dimmed). Leading list indent on inactive lines is 'indent' (2 spaces a level).",
+    "divider: the whole '---' line, 'marker' on its active line. fence and table: whole lines, never parsed or hidden.",
+    "Inline: code and math hide only their single markers; wikilink shows only the title ([[ and |id]] are markers); link shows its label ([ and ](url) are markers); bold/italic/strike nest.",
+    "'_' italic never opens or closes inside a word; math needs non-space after the opening and before the closing $, and $$ is not inline math.",
+    "Spans are sorted by from, then longer first, then kind; empty spans are never emitted."
+  ],
+  "liveSpans": [
+    {
+      "name": "plain text has no spans",
+      "text": "hello world",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "h1 off the active line",
+      "text": "# Title\nbody",
+      "activeFrom": 9,
+      "activeTo": 9,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "hide"
+        },
+        {
+          "from": 2,
+          "to": 7,
+          "kind": "h1"
+        }
+      ]
+    },
+    {
+      "name": "h1 on the active line shows its marker",
+      "text": "# Title\nbody",
+      "activeFrom": 3,
+      "activeTo": 3,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "marker"
+        },
+        {
+          "from": 2,
+          "to": 7,
+          "kind": "h1"
+        }
+      ]
+    },
+    {
+      "name": "h2 and h3",
+      "text": "## Two\n### Three",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 3,
+          "kind": "hide"
+        },
+        {
+          "from": 3,
+          "to": 6,
+          "kind": "h2"
+        },
+        {
+          "from": 7,
+          "to": 11,
+          "kind": "hide"
+        },
+        {
+          "from": 11,
+          "to": 16,
+          "kind": "h3"
+        }
+      ]
+    },
+    {
+      "name": "#### is not a live heading",
+      "text": "#### Four",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "# without a space is text",
+      "text": "#tag",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "bold inactive",
+      "text": "a **b** c",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 2,
+          "to": 4,
+          "kind": "hide"
+        },
+        {
+          "from": 4,
+          "to": 5,
+          "kind": "bold"
+        },
+        {
+          "from": 5,
+          "to": 7,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "bold active",
+      "text": "a **b** c",
+      "activeFrom": 0,
+      "activeTo": 0,
+      "spans": [
+        {
+          "from": 2,
+          "to": 4,
+          "kind": "marker"
+        },
+        {
+          "from": 4,
+          "to": 5,
+          "kind": "bold"
+        },
+        {
+          "from": 5,
+          "to": 7,
+          "kind": "marker"
+        }
+      ]
+    },
+    {
+      "name": "italic underscore and star",
+      "text": "_i_ and *j*",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 1,
+          "kind": "hide"
+        },
+        {
+          "from": 1,
+          "to": 2,
+          "kind": "italic"
+        },
+        {
+          "from": 2,
+          "to": 3,
+          "kind": "hide"
+        },
+        {
+          "from": 8,
+          "to": 9,
+          "kind": "hide"
+        },
+        {
+          "from": 9,
+          "to": 10,
+          "kind": "italic"
+        },
+        {
+          "from": 10,
+          "to": 11,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "snake_case is not italic",
+      "text": "snake_case_name",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "strike",
+      "text": "~~gone~~",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "hide"
+        },
+        {
+          "from": 2,
+          "to": 6,
+          "kind": "strike"
+        },
+        {
+          "from": 6,
+          "to": 8,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "inline code is not parsed inside",
+      "text": "`**x**`",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 1,
+          "kind": "hide"
+        },
+        {
+          "from": 1,
+          "to": 6,
+          "kind": "code"
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "math inactive",
+      "text": "e = $mc^2$",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 4,
+          "to": 5,
+          "kind": "hide"
+        },
+        {
+          "from": 5,
+          "to": 9,
+          "kind": "math"
+        },
+        {
+          "from": 9,
+          "to": 10,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "math active shows source",
+      "text": "e = $mc^2$",
+      "activeFrom": 2,
+      "activeTo": 2,
+      "spans": [
+        {
+          "from": 4,
+          "to": 5,
+          "kind": "marker"
+        },
+        {
+          "from": 5,
+          "to": 9,
+          "kind": "math"
+        },
+        {
+          "from": 9,
+          "to": 10,
+          "kind": "marker"
+        }
+      ]
+    },
+    {
+      "name": "dollar amounts with spaces are not math",
+      "text": "costs $5 and $ 6",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "link",
+      "text": "see [docs](https://x.y)",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 4,
+          "to": 5,
+          "kind": "hide"
+        },
+        {
+          "from": 5,
+          "to": 9,
+          "kind": "link"
+        },
+        {
+          "from": 9,
+          "to": 23,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "wikilink with id shows only the title",
+      "text": "go [[Plan|0b6f2c1e-7a2d-4f1e-9a51-3c2d1e0f9a8b]] now",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 3,
+          "to": 5,
+          "kind": "hide"
+        },
+        {
+          "from": 5,
+          "to": 9,
+          "kind": "wikilink"
+        },
+        {
+          "from": 9,
+          "to": 48,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "wikilink without id",
+      "text": "go [[Plan]]",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 3,
+          "to": 5,
+          "kind": "hide"
+        },
+        {
+          "from": 5,
+          "to": 9,
+          "kind": "wikilink"
+        },
+        {
+          "from": 9,
+          "to": 11,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "bold inside a link label",
+      "text": "[**b**](u)",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 1,
+          "kind": "hide"
+        },
+        {
+          "from": 1,
+          "to": 6,
+          "kind": "link"
+        },
+        {
+          "from": 1,
+          "to": 3,
+          "kind": "hide"
+        },
+        {
+          "from": 3,
+          "to": 4,
+          "kind": "bold"
+        },
+        {
+          "from": 4,
+          "to": 6,
+          "kind": "hide"
+        },
+        {
+          "from": 6,
+          "to": 10,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "nested italic in bold",
+      "text": "**a _b_**",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "hide"
+        },
+        {
+          "from": 2,
+          "to": 7,
+          "kind": "bold"
+        },
+        {
+          "from": 4,
+          "to": 5,
+          "kind": "hide"
+        },
+        {
+          "from": 5,
+          "to": 6,
+          "kind": "italic"
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "kind": "hide"
+        },
+        {
+          "from": 7,
+          "to": 9,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "bullet inactive",
+      "text": "- one",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "bullet"
+        }
+      ]
+    },
+    {
+      "name": "star bullet active",
+      "text": "* one",
+      "activeFrom": 0,
+      "activeTo": 0,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "marker"
+        }
+      ]
+    },
+    {
+      "name": "nested bullets",
+      "text": "- a\n  - b\n    - c",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "bullet"
+        },
+        {
+          "from": 4,
+          "to": 6,
+          "kind": "indent"
+        },
+        {
+          "from": 6,
+          "to": 8,
+          "kind": "bullet"
+        },
+        {
+          "from": 10,
+          "to": 14,
+          "kind": "indent"
+        },
+        {
+          "from": 14,
+          "to": 16,
+          "kind": "bullet"
+        }
+      ]
+    },
+    {
+      "name": "ordered",
+      "text": "1. a\n10. b",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 3,
+          "kind": "ordered"
+        },
+        {
+          "from": 5,
+          "to": 9,
+          "kind": "ordered"
+        }
+      ]
+    },
+    {
+      "name": "checklist open and done",
+      "text": "- [ ] todo\n- [x] done",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 6,
+          "kind": "check_open"
+        },
+        {
+          "from": 11,
+          "to": 17,
+          "kind": "check_done"
+        },
+        {
+          "from": 17,
+          "to": 21,
+          "kind": "done"
+        }
+      ]
+    },
+    {
+      "name": "checklist active line",
+      "text": "- [ ] todo\n- [x] done",
+      "activeFrom": 12,
+      "activeTo": 12,
+      "spans": [
+        {
+          "from": 0,
+          "to": 6,
+          "kind": "check_open"
+        },
+        {
+          "from": 11,
+          "to": 17,
+          "kind": "marker"
+        },
+        {
+          "from": 17,
+          "to": 21,
+          "kind": "done"
+        }
+      ]
+    },
+    {
+      "name": "nested checklist",
+      "text": "- [ ] a\n  - [x] b",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 6,
+          "kind": "check_open"
+        },
+        {
+          "from": 8,
+          "to": 10,
+          "kind": "indent"
+        },
+        {
+          "from": 10,
+          "to": 16,
+          "kind": "check_done"
+        },
+        {
+          "from": 16,
+          "to": 17,
+          "kind": "done"
+        }
+      ]
+    },
+    {
+      "name": "empty checklist item",
+      "text": "- [ ] ",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 6,
+          "kind": "check_open"
+        }
+      ]
+    },
+    {
+      "name": "quote",
+      "text": "> wise **words**",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "hide"
+        },
+        {
+          "from": 2,
+          "to": 16,
+          "kind": "quote"
+        },
+        {
+          "from": 7,
+          "to": 9,
+          "kind": "hide"
+        },
+        {
+          "from": 9,
+          "to": 14,
+          "kind": "bold"
+        },
+        {
+          "from": 14,
+          "to": 16,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "divider inactive",
+      "text": "a\n\n---",
+      "activeFrom": 0,
+      "activeTo": 0,
+      "spans": [
+        {
+          "from": 3,
+          "to": 6,
+          "kind": "divider"
+        }
+      ]
+    },
+    {
+      "name": "divider active",
+      "text": "a\n\n---",
+      "activeFrom": 4,
+      "activeTo": 4,
+      "spans": [
+        {
+          "from": 3,
+          "to": 6,
+          "kind": "marker"
+        }
+      ]
+    },
+    {
+      "name": "fence is not parsed",
+      "text": "```py\n# not a heading\n- **x**\n```\n**y**",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 5,
+          "kind": "fence"
+        },
+        {
+          "from": 6,
+          "to": 21,
+          "kind": "fence"
+        },
+        {
+          "from": 22,
+          "to": 29,
+          "kind": "fence"
+        },
+        {
+          "from": 30,
+          "to": 33,
+          "kind": "fence"
+        },
+        {
+          "from": 34,
+          "to": 36,
+          "kind": "hide"
+        },
+        {
+          "from": 36,
+          "to": 37,
+          "kind": "bold"
+        },
+        {
+          "from": 37,
+          "to": 39,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "unclosed fence runs to the end",
+      "text": "```\n# x",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 3,
+          "kind": "fence"
+        },
+        {
+          "from": 4,
+          "to": 7,
+          "kind": "fence"
+        }
+      ]
+    },
+    {
+      "name": "table lines are monospace source",
+      "text": "| a | b |\n| --- | --- |\n| **1** | 2 |",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 9,
+          "kind": "table"
+        },
+        {
+          "from": 10,
+          "to": 23,
+          "kind": "table"
+        },
+        {
+          "from": 24,
+          "to": 37,
+          "kind": "table"
+        }
+      ]
+    },
+    {
+      "name": "selection over two lines makes both active",
+      "text": "# A\n# B\n# C",
+      "activeFrom": 1,
+      "activeTo": 5,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "marker"
+        },
+        {
+          "from": 2,
+          "to": 3,
+          "kind": "h1"
+        },
+        {
+          "from": 4,
+          "to": 6,
+          "kind": "marker"
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "kind": "h1"
+        },
+        {
+          "from": 8,
+          "to": 10,
+          "kind": "hide"
+        },
+        {
+          "from": 10,
+          "to": 11,
+          "kind": "h1"
+        }
+      ]
+    },
+    {
+      "name": "cursor at line end is still that line",
+      "text": "# A\n**b**",
+      "activeFrom": 3,
+      "activeTo": 3,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "marker"
+        },
+        {
+          "from": 2,
+          "to": 3,
+          "kind": "h1"
+        },
+        {
+          "from": 4,
+          "to": 6,
+          "kind": "hide"
+        },
+        {
+          "from": 6,
+          "to": 7,
+          "kind": "bold"
+        },
+        {
+          "from": 7,
+          "to": 9,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "unclosed bold is text",
+      "text": "**open",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "empty markers are text",
+      "text": "**** and __",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": []
+    },
+    {
+      "name": "inline in list item",
+      "text": "- [x] **done** $x$",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 6,
+          "kind": "check_done"
+        },
+        {
+          "from": 6,
+          "to": 18,
+          "kind": "done"
+        },
+        {
+          "from": 6,
+          "to": 8,
+          "kind": "hide"
+        },
+        {
+          "from": 8,
+          "to": 12,
+          "kind": "bold"
+        },
+        {
+          "from": 12,
+          "to": 14,
+          "kind": "hide"
+        },
+        {
+          "from": 15,
+          "to": 16,
+          "kind": "hide"
+        },
+        {
+          "from": 16,
+          "to": 17,
+          "kind": "math"
+        },
+        {
+          "from": 17,
+          "to": 18,
+          "kind": "hide"
+        }
+      ]
+    },
+    {
+      "name": "heading with wikilink",
+      "text": "# See [[Plan|0b6f2c1e-7a2d-4f1e-9a51-3c2d1e0f9a8b]]",
+      "activeFrom": -1,
+      "activeTo": -1,
+      "spans": [
+        {
+          "from": 0,
+          "to": 2,
+          "kind": "hide"
+        },
+        {
+          "from": 2,
+          "to": 51,
+          "kind": "h1"
+        },
+        {
+          "from": 6,
+          "to": 8,
+          "kind": "hide"
+        },
+        {
+          "from": 8,
+          "to": 12,
+          "kind": "wikilink"
+        },
+        {
+          "from": 12,
+          "to": 51,
+          "kind": "hide"
+        }
+      ]
+    }
+  ],
+  "toggleCheck": [
+    {
+      "text": "- [ ] a",
+      "lineStart": 0,
+      "output": "- [x] a"
+    },
+    {
+      "text": "- [x] a",
+      "lineStart": 0,
+      "output": "- [ ] a"
+    },
+    {
+      "text": "- [X] a",
+      "lineStart": 0,
+      "output": "- [ ] a"
+    },
+    {
+      "text": "x\n  - [ ] b",
+      "lineStart": 2,
+      "output": "x\n  - [x] b"
+    },
+    {
+      "text": "- [ ] a\n- [ ] b",
+      "lineStart": 8,
+      "output": "- [ ] a\n- [x] b"
+    },
+    {
+      "text": "* [ ] star",
+      "lineStart": 0,
+      "output": "* [x] star"
+    },
+    {
+      "text": "- a",
+      "lineStart": 0,
+      "output": "- a"
+    },
+    {
+      "text": "plain [ ] text",
+      "lineStart": 0,
+      "output": "plain [ ] text"
+    },
+    {
+      "text": "```\n- [ ] a\n```",
+      "lineStart": 4,
+      "output": "```\n- [ ] a\n```"
+    }
+  ],
+  "continueList": [
+    {
+      "input": {
+        "text": "- a",
+        "caret": 3
+      },
+      "output": {
+        "text": "- a\n- ",
+        "start": 6,
+        "end": 6
+      }
+    },
+    {
+      "input": {
+        "text": "* a",
+        "caret": 3
+      },
+      "output": {
+        "text": "* a\n* ",
+        "start": 6,
+        "end": 6
+      }
+    },
+    {
+      "input": {
+        "text": "1. a",
+        "caret": 4
+      },
+      "output": {
+        "text": "1. a\n2. ",
+        "start": 8,
+        "end": 8
+      }
+    },
+    {
+      "input": {
+        "text": "9. a",
+        "caret": 4
+      },
+      "output": {
+        "text": "9. a\n10. ",
+        "start": 9,
+        "end": 9
+      }
+    },
+    {
+      "input": {
+        "text": "- [ ] a",
+        "caret": 7
+      },
+      "output": {
+        "text": "- [ ] a\n- [ ] ",
+        "start": 14,
+        "end": 14
+      }
+    },
+    {
+      "input": {
+        "text": "- [x] a",
+        "caret": 7
+      },
+      "output": {
+        "text": "- [x] a\n- [ ] ",
+        "start": 14,
+        "end": 14
+      }
+    },
+    {
+      "input": {
+        "text": "  - b",
+        "caret": 5
+      },
+      "output": {
+        "text": "  - b\n  - ",
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "text": "a\n    1. b\nc",
+        "caret": 10
+      },
+      "output": {
+        "text": "a\n    1. b\n    2. \nc",
+        "start": 18,
+        "end": 18
+      }
+    },
+    {
+      "input": {
+        "text": "- abcd",
+        "caret": 4
+      },
+      "output": {
+        "text": "- ab\n- cd",
+        "start": 7,
+        "end": 7
+      }
+    },
+    {
+      "input": {
+        "text": "- ",
+        "caret": 2
+      },
+      "output": {
+        "text": "",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "input": {
+        "text": "1. ",
+        "caret": 3
+      },
+      "output": {
+        "text": "",
+        "start": 0,
+        "end": 0
+      }
+    },
+    {
+      "input": {
+        "text": "a\n  - [ ] \nb",
+        "caret": 10
+      },
+      "output": {
+        "text": "a\n\nb",
+        "start": 2,
+        "end": 2
+      }
+    },
+    {
+      "input": {
+        "text": "- a",
+        "caret": 1
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "text": "plain",
+        "caret": 5
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "text": "1.",
+        "caret": 2
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "text": "# head",
+        "caret": 6
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "text": "```\n- a",
+        "caret": 7
+      },
+      "output": null
+    }
+  ],
+  "formatState": [
+    {
+      "input": {
+        "text": "plain",
+        "start": 5,
+        "end": 5
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "a **b** c",
+        "start": 5,
+        "end": 5
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": true,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "a **b** c",
+        "start": 8,
+        "end": 8
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "# Title",
+        "start": 4,
+        "end": 4
+      },
+      "expected": {
+        "heading": 1,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "### x",
+        "start": 5,
+        "end": 5
+      },
+      "expected": {
+        "heading": 3,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "- [ ] a",
+        "start": 7,
+        "end": 7
+      },
+      "expected": {
+        "heading": 0,
+        "list": "check",
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "2. a",
+        "start": 4,
+        "end": 4
+      },
+      "expected": {
+        "heading": 0,
+        "list": "ordered",
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "> q",
+        "start": 3,
+        "end": 3
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": true,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "x _i_",
+        "start": 4,
+        "end": 4
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": true,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "~~s~~",
+        "start": 3,
+        "end": 3
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": true,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "`c`",
+        "start": 2,
+        "end": 2
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": true,
+        "math": false,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "$x$",
+        "start": 2,
+        "end": 2
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": true,
+        "link": false
+      }
+    },
+    {
+      "input": {
+        "text": "[docs](u)",
+        "start": 3,
+        "end": 3
+      },
+      "expected": {
+        "heading": 0,
+        "list": null,
+        "quote": false,
+        "bold": false,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": true
+      }
+    },
+    {
+      "input": {
+        "text": "- **b**",
+        "start": 5,
+        "end": 5
+      },
+      "expected": {
+        "heading": 0,
+        "list": "bullet",
+        "quote": false,
+        "bold": true,
+        "italic": false,
+        "strike": false,
+        "code": false,
+        "math": false,
+        "link": false
+      }
+    }
+  ],
+  "checkShortcut": [
+    {
+      "input": {
+        "text": "[] ",
+        "caret": 3
+      },
+      "output": {
+        "text": "- [ ] ",
+        "start": 6,
+        "end": 6
+      }
+    },
+    {
+      "input": {
+        "text": "a\n  [] ",
+        "caret": 7
+      },
+      "output": {
+        "text": "a\n  - [ ] ",
+        "start": 10,
+        "end": 10
+      }
+    },
+    {
+      "input": {
+        "text": "x [] ",
+        "caret": 5
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "text": "```\n[] ",
+        "caret": 7
+      },
+      "output": null
+    },
+    {
+      "input": {
+        "text": "[]",
+        "caret": 2
+      },
+      "output": null
+    }
+  ]
+}
