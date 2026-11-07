@@ -51,20 +51,30 @@ import app.benchjot.core.AssistAction
 import app.benchjot.core.AssistError
 import app.benchjot.core.AssistInput
 import app.benchjot.core.AssistTask
+import app.benchjot.core.HelperAnswer
+import app.benchjot.core.HelperCell
+import app.benchjot.core.HelperLimits
+import app.benchjot.core.HelperPlace
+import app.benchjot.core.helperRequest
+import app.benchjot.core.noteContext
+import app.benchjot.core.readHelperReply
 import app.benchjot.core.OnDeviceModel
 import app.benchjot.core.megabytes
 import app.benchjot.core.readCodeAnswer
 import app.benchjot.core.timeLeft
+import app.benchjot.data.Accounts
+import app.benchjot.data.WebApi
 import app.benchjot.llm.LocalModel
-import app.benchjot.llm.LocalRequest
 import app.benchjot.llm.LocalResult
 import app.benchjot.llm.ModelState
 import app.benchjot.llm.ModelStore
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
-// The on-device helper: one bottom sheet, opened from the note's toolbar. It writes code into
-// the note or answers from the note, on the phone. The note is read only when you ask, and code
-// it writes goes into the note only when you tap Insert; it is never run for you.
+// The note's helper: one bottom sheet, opened from the note's toolbar. It writes code for the note or
+// answers from the note, where the user picked: on the phone (the on-device model) or online (the
+// web's /api/helper, Groq, sharing Fix's limit). Only the user switches between them. The note is
+// read only when you ask, and code goes into the note only when you tap Insert; it is never run for you.
 
 private sealed interface Answer {
     data object None : Answer
@@ -72,17 +82,26 @@ private sealed interface Answer {
     data class Code(val code: String, val summary: String, val cutShort: Boolean) : Answer
     data class Prose(val text: String, val cutShort: Boolean) : Answer
     data class Error(val error: AssistError, val partial: String) : Answer
+    /** The online helper's failure, as the shared error table (or the route) says it. */
+    data class Failed(val message: String) : Answer
 }
+
+private const val PLACE_PREFS = "helper"
+private const val KEY_PLACE = "place"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelperSheet(
     noteTitle: String,
-    noteText: () -> String,
+    noteBody: () -> String,
+    cells: () -> List<HelperCell>,
     language: String,
     onInsertCode: (code: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val context = LocalContext.current
+    val prefs = remember { context.getSharedPreferences(PLACE_PREFS, android.content.Context.MODE_PRIVATE) }
+    var place by remember { mutableStateOf(HelperPlace.of(prefs.getString(KEY_PLACE, null))) }
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val model by ModelStore.state.collectAsState()
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet, containerColor = t.bg, contentColor = t.fg, scrimColor = t.bg.copy(alpha = 0.6f)) {
@@ -90,13 +109,16 @@ fun HelperSheet(
             Modifier.fillMaxWidth().padding(horizontal = 20.dp).navigationBarsPadding().imePadding().animateContentSize(tween(200)),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Helper", Modifier.weight(1f), style = Type.xl, color = t.fg)
-                Text("On your phone", style = Type.xs, color = t.faint)
-            }
-            AnimatedContent(model is ModelState.Ready, transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) }, label = "helper") { ready ->
+            Text("Helper", style = Type.xl, color = t.fg)
+            Segmented(HelperPlace.entries.map { it to it.label }, place, {
+                place = it
+                prefs.edit().putString(KEY_PLACE, it.id).apply()
+            }, name = { "Run the helper: $it" })
+            val ready = place == HelperPlace.Online || model is ModelState.Ready
+            AnimatedContent(place to ready, transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) }, label = "helper") { (where, canAsk) ->
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (ready) Ask(noteTitle, noteText, language, onInsertCode) else ModelDownload(model)
+                    if (where == HelperPlace.Online) Muted("Sends this note to the server when you ask. Shares Fix’s daily limit.")
+                    if (canAsk) Ask(where, noteTitle, noteBody, cells, language, onInsertCode) else ModelDownload(model)
                 }
             }
             Gap(8.dp)
@@ -105,7 +127,7 @@ fun HelperSheet(
 }
 
 @Composable
-private fun Ask(noteTitle: String, noteText: () -> String, language: String, onInsertCode: (String) -> Unit) {
+private fun Ask(place: HelperPlace, noteTitle: String, noteBody: () -> String, cells: () -> List<HelperCell>, language: String, onInsertCode: (String) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val clipboard = LocalClipboardManager.current
@@ -113,39 +135,66 @@ private fun Ask(noteTitle: String, noteText: () -> String, language: String, onI
     var input by remember { mutableStateOf("") }
     var task by remember { mutableStateOf(AssistTask.Write) }
     var answer by remember { mutableStateOf<Answer>(Answer.None) }
-    var request by remember { mutableStateOf<LocalRequest?>(null) }
-    DisposableEffect(Unit) { onDispose { request?.stop?.invoke() } } // closing the sheet stops the model
+    var stop by remember { mutableStateOf<(() -> Unit)?>(null) }
+    DisposableEffect(Unit) { onDispose { stop?.invoke() } } // closing the sheet stops the request
+    val maxInput = if (place == HelperPlace.Online) HelperLimits.MAX_REQUEST_CHARS else AssistTask.Ask.maxInputChars
 
-    fun send(text: String, kind: AssistTask) {
-        val q = text.trim().take(kind.maxInputChars)
-        if (q.isEmpty() || answer is Answer.Working) return
-        task = kind
+    fun settle(a: Answer) {
+        answer = a
+        if (a !is Answer.Error && a !is Answer.Failed) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        stop = null
+    }
+
+    fun onPhone(q: String, kind: AssistTask) {
         val input = when (kind) {
-            AssistTask.Ask -> AssistInput.Ask(noteTitle, noteText().take(AssistTask.Ask.maxInputChars), q) // read now, on this tap only
+            // Read now, on this tap only.
+            AssistTask.Ask -> AssistInput.Ask(noteTitle, noteContext(noteBody(), cells(), AssistTask.Ask.maxInputChars).first, q)
             else -> AssistInput.Write(language, q)
         }
-        answer = Answer.Working(kind, "Thinking…", "")
         val r = LocalModel.generate(context, scope, input,
             onPhase = { p -> (answer as? Answer.Working)?.let { answer = it.copy(phase = p) } },
             onText = { s -> (answer as? Answer.Working)?.let { answer = it.copy(phase = "", text = s) } },
         )
-        request = r
+        stop = r.stop
         scope.launch {
-            answer = when (val res = r.result.await()) {
+            settle(when (val res = r.result.await()) {
                 is LocalResult.Failed -> Answer.Error(res.error, res.text)
                 is LocalResult.Stopped -> if (res.text.isBlank()) Answer.None else Answer.Prose(res.text, cutShort = true)
                 is LocalResult.Done -> if (kind == AssistTask.Ask) Answer.Prose(res.text.trim(), res.cutShort) else {
                     val read = readCodeAnswer(res.text)
                     if (read == null) Answer.Error(AssistError.NoCode, res.text) else Answer.Code(read.first.code, read.first.summary, res.cutShort || !read.second)
                 }
-            }
-            if (answer !is Answer.Error) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            request = null
+            })
         }
     }
 
+    fun online(q: String, kind: AssistTask) {
+        val request = helperRequest(kind, q, language, noteTitle, noteBody(), cells()) // read now, on this tap only
+        val job = scope.launch {
+            settle(try {
+                when (val a = readHelperReply(kind, language, WebApi.helper(request))) {
+                    is HelperAnswer.Code -> Answer.Code(a.code, a.summary, cutShort = false)
+                    is HelperAnswer.Prose -> Answer.Prose(a.text, cutShort = false)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Answer.Failed(Accounts.message(e, "helper"))
+            })
+        }
+        stop = { job.cancel(); answer = Answer.None; stop = null } // a stopped request's late answer is dropped
+    }
+
+    fun send(text: String, kind: AssistTask) {
+        val q = text.trim().take(if (place == HelperPlace.Online) HelperLimits.MAX_REQUEST_CHARS else kind.maxInputChars)
+        if (q.isEmpty() || answer is Answer.Working) return
+        task = kind
+        answer = Answer.Working(kind, "Thinking…", "")
+        if (place == HelperPlace.Online) online(q, kind) else onPhone(q, kind)
+    }
+
     Segmented(listOf(AssistTask.Write to "Write code", AssistTask.Ask to "Ask this note"), task, { task = it })
-    PromptField(input, { input = it }, if (task == AssistTask.Ask) "Ask about this note" else "Describe the code to write") { send(input, task) }
+    PromptField(input, { input = it.take(maxInput) }, if (task == AssistTask.Ask) "Ask about this note" else "Describe the code to write") { send(input, task) }
     if (input.isBlank() && answer is Answer.None) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ASSIST_SUGGESTIONS.forEach { (label, kind) -> Chip(label) { input = label; send(label, kind) } }
@@ -161,7 +210,7 @@ private fun Ask(noteTitle: String, noteText: () -> String, language: String, onI
             } else {
                 AnswerText(a.text, mono = a.task != AssistTask.Ask)
             }
-            FilledBtn("Stop", { request?.stop?.invoke() }, variant = ButtonVariant.Neutral)
+            FilledBtn("Stop", { stop?.invoke() }, variant = ButtonVariant.Neutral)
         }
         is Answer.Code -> {
             CodeCard(a.code, language)
@@ -182,6 +231,10 @@ private fun Ask(noteTitle: String, noteText: () -> String, language: String, onI
             }
         }
         is Answer.Error -> ErrorRow(a.error, onRetry = { answer = Answer.None; send(input, task) })
+        is Answer.Failed -> {
+            Muted(a.message, Modifier.semantics { liveRegion = LiveRegionMode.Assertive }, color = t.fg)
+            FilledBtn(AssistAction.Retry.label, { answer = Answer.None; send(input, task) })
+        }
     }
 }
 
@@ -189,7 +242,7 @@ private fun Ask(noteTitle: String, noteText: () -> String, language: String, onI
 private fun PromptField(value: String, onChange: (String) -> Unit, placeholder: String, onSend: () -> Unit) {
     BasicTextField(
         value = value,
-        onValueChange = { onChange(it.take(AssistTask.Ask.maxInputChars)) },
+        onValueChange = onChange,
         textStyle = Type.body.copy(color = t.fg),
         cursorBrush = SolidColor(t.fg),
         maxLines = 6,

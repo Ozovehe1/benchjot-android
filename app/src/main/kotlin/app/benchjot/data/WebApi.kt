@@ -4,6 +4,8 @@ import app.benchjot.BuildConfig
 import app.benchjot.core.FixAnswer
 import app.benchjot.core.FixRequest
 import app.benchjot.core.FriendlyException
+import app.benchjot.core.HelperReply
+import app.benchjot.core.HelperRequest
 import app.benchjot.core.ServerRunResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
@@ -21,7 +23,8 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-// The web app's API routes (/api/run for Pro server runs, /api/fix for Fix), called
+// The web app's API routes (/api/run for Pro server runs, /api/fix for Fix, /api/helper for the
+// Online helper; Fix and the helper share one limit, counted on the server), called
 // with the user's Supabase access token as a Bearer header. The server checks the
 // plan; the app only decides which buttons to show.
 
@@ -62,4 +65,7 @@ object WebApi {
 
     suspend fun fix(request: FixRequest): FixAnswer =
         post("/api/fix", request, FixRequest.serializer(), FixAnswer.serializer())
+
+    suspend fun helper(request: HelperRequest): HelperReply =
+        post("/api/helper", request, HelperRequest.serializer(), HelperReply.serializer())
 }
