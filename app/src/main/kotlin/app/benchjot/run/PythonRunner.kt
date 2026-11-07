@@ -11,6 +11,7 @@ import android.os.Looper
 import android.os.Message
 import android.os.Messenger
 import android.os.Process
+import app.benchjot.core.FriendlyException
 import app.benchjot.core.RUN_TIMEOUT_MS
 import app.benchjot.core.RunError
 import app.benchjot.core.RunEvents
@@ -24,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 /**
@@ -146,6 +148,51 @@ object PythonRunner {
             }
         }
         return RunHandle(done) { inbox.trySend(stop) }
+    }
+
+    /**
+     * A kept figure's SVG or PDF (bj_capture.render), made by the ":python" process after any run
+     * already queued there. `madeWith`: the matplotlib version that kept it (from the manifest);
+     * another version can't load it and says so. Throws [FriendlyException] with the user's message.
+     */
+    suspend fun renderFigure(context: Context, figure: ByteArray, format: String, madeWith: String?): ByteArray {
+        val dir = java.io.File(context.cacheDir, "py-render").apply { mkdirs() }
+        val id = withContext(Dispatchers.Main) { nextId++ }
+        val src = java.io.File(dir, "$id.mpl")
+        val dest = java.io.File(dir, "$id.$format")
+        try {
+            withContext(Dispatchers.IO) { src.writeBytes(figure) }
+            val reply = withContext(Dispatchers.Main) {
+                val inbox = Channel<Message>(Channel.UNLIMITED)
+                listeners[id] = inbox
+                try {
+                    val messenger = withTimeoutOrNull(30_000) { bind(context).messenger.await() }
+                        ?: throw FriendlyException("Python didn't start, so the file couldn't be made. Try again.")
+                    messenger.send(Message.obtain(null, PyProtocol.RENDER, id, 0).apply {
+                        data = Bundle().apply {
+                            putString(PyProtocol.SRC, src.path)
+                            putString(PyProtocol.FORMAT, format)
+                            putString(PyProtocol.DEST, dest.path)
+                            putString(PyProtocol.MADE_WITH, madeWith)
+                        }
+                        replyTo = replies
+                    })
+                    // Waits behind a run in progress too: that run's own time limit bounds it.
+                    var msg = inbox.receive()
+                    while (msg.what != PyProtocol.RENDERED && msg.what != PyProtocol.ERROR && msg.what != GONE) msg = inbox.receive()
+                    msg
+                } finally {
+                    listeners.remove(id)
+                }
+            }
+            return when (reply.what) {
+                PyProtocol.RENDERED -> withContext(Dispatchers.IO) { dest.readBytes() }
+                PyProtocol.ERROR -> throw FriendlyException(reply.data.getString(PyProtocol.TEXT).orEmpty().ifEmpty { "This figure's ${format.uppercase()} couldn't be made. Run the code again to make it." })
+                else -> throw FriendlyException("Python was stopped while making the file. Try the download again.")
+            }
+        } finally {
+            withContext(Dispatchers.IO) { src.delete(); dest.delete() }
+        }
     }
 
     /** The error of a run whose process died by itself, with what native code said before it went. */

@@ -584,14 +584,14 @@
         {
           "format": "svg",
           "label": "SVG",
-          "how": "file",
-          "file": "0.svg"
+          "how": "figure",
+          "file": "0.mpl"
         },
         {
           "format": "pdf",
           "label": "PDF",
-          "how": "file",
-          "file": "0.pdf"
+          "how": "figure",
+          "file": "0.mpl"
         }
       ]
     }
@@ -621,14 +621,14 @@
         {
           "format": "svg",
           "label": "SVG",
-          "how": "file",
-          "file": "0.svg"
+          "how": "figure",
+          "file": "0.mpl"
         },
         {
           "format": "pdf",
           "label": "PDF",
-          "how": "file",
-          "file": "0.pdf"
+          "how": "figure",
+          "file": "0.mpl"
         }
       ]
     }
@@ -1101,14 +1101,14 @@
         {
           "format": "svg",
           "label": "SVG",
-          "how": "file",
-          "file": "0.svg"
+          "how": "figure",
+          "file": "0.mpl"
         },
         {
           "format": "pdf",
           "label": "PDF",
-          "how": "file",
-          "file": "0.pdf"
+          "how": "figure",
+          "file": "0.mpl"
         }
       ]
     }
@@ -1138,14 +1138,14 @@
         {
           "format": "svg",
           "label": "SVG",
-          "how": "file",
-          "file": "0.svg"
+          "how": "figure",
+          "file": "0.mpl"
         },
         {
           "format": "pdf",
           "label": "PDF",
-          "how": "file",
-          "file": "0.pdf"
+          "how": "figure",
+          "file": "0.mpl"
         }
       ]
     }

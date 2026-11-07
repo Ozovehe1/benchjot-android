@@ -20,6 +20,8 @@ data class OutputItem(
     val height: Int = 0,
     val title: String = "",
     val name: String? = null,
+    /** image with a kept figure ([FIGURE_FILE]): the matplotlib version that kept it (it loads only in the same one). */
+    val matplotlib: String? = null,
     /** chart: plotly | vega-lite | bokeh */
     val lib: String? = null,
     val version: String? = null,
@@ -53,6 +55,10 @@ data class Manifest(val version: Int = 1, val items: List<OutputItem> = emptyLis
 private val FILE_NAME = Regex("""^\d{1,3}\.[a-z0-9]{2,5}$""")
 private val DIR = Regex("""^[0-9a-f-]{36}/[0-9a-f-]{36}/[0-9a-f-]{36}$""")
 val IMAGE_FORMATS = listOf("png", "svg", "pdf", "jpg", "gif", "webp", "bmp")
+/** A matplotlib figure kept at run time (bj_capture.FIG_FILE): its SVG and PDF are made from it on Download. */
+const val FIGURE_FILE = "mpl"
+/** The formats made from a kept figure (bj_capture.VECTOR_FORMATS). */
+val FIGURE_FORMATS = listOf("svg", "pdf")
 const val MAX_OUTPUTS = 30
 
 /** The checks the web's zod contract makes that matter on the phone: file names and kinds. Throws ValidationError. */
@@ -86,6 +92,7 @@ private val LABEL = mapOf("png" to "PNG", "jpg" to "JPG", "webp" to "WebP", "svg
  * One way to download an output (the web's DownloadFormat). File: a stored file as is.
  * Convert: re-encoded on the phone from `from` (JPG / WebP over a solid background).
  * Render: drawn again at download time (charts from their spec, a table's preview as CSV).
+ * Figure: made by matplotlib from the figure kept at run time (`file`), in the phone's own Python.
  */
 data class DownloadFormat(val format: String, val label: String, val how: String, val file: String? = null, val from: String? = null)
 
@@ -114,7 +121,9 @@ fun downloadFormats(item: OutputItem): List<DownloadFormat> {
             } else {
                 file("jpg"); file("webp")
             }
-            for (format in listOf("svg", "pdf", "gif", "bmp")) file(format)
+            val kept = f[FIGURE_FILE]
+            for (format in FIGURE_FORMATS) if (!file(format) && kept != null) out += DownloadFormat(format, LABEL.getValue(format), "figure", file = kept)
+            for (format in listOf("gif", "bmp")) file(format)
         }
     }
     return out

@@ -55,8 +55,22 @@ class OutputsTest {
         val saved = SavedOutputs(m.version, m.items, m.notes, dir)
         assertEquals(saved, toLastRun(emptyList(), r, "browser", "x", outputs = saved).outputs)
         assertEquals(null, toLastRun(emptyList(), r, "browser", "x", outputs = saved.copy(items = emptyList())).outputs)
-        assertEquals(listOf("$dir/0.png", "$dir/0.svg", "$dir/0.pdf").sorted(), outputPaths(saved).sorted())
+        // A figure is its PNG and the kept figure (SVG / PDF are made from it on Download).
+        assertEquals(listOf("$dir/0.png", "$dir/0.mpl").sorted(), outputPaths(saved).sorted())
         assertEquals("png", displayFile(m.items.single())?.substringAfter('.'))
+        assertTrue(m.items.single().matplotlib!!.matches(Regex("""\d+\.\d+.*""")))
+    }
+
+    @Test
+    fun figureSvgAndPdfComeFromTheKeptFigureOrTheStoredFiles() {
+        val kept = manifest("matplotlib").items.single()
+        assertEquals(
+            listOf("png:file:0.png", "jpg:convert:null", "webp:convert:null", "svg:figure:0.mpl", "pdf:figure:0.mpl"),
+            downloadFormats(kept).map { "${it.format}:${it.how}:${it.file}" },
+        )
+        // Server runs, figures that couldn't be kept and runs from before: the stored files.
+        val stored = kept.copy(matplotlib = null, files = mapOf("png" to "0.png", "svg" to "0.svg", "pdf" to "0.pdf"))
+        assertEquals(listOf("png:file", "jpg:convert", "webp:convert", "svg:file", "pdf:file"), downloadFormats(stored).map { "${it.format}:${it.how}" })
     }
 
     @Test(expected = ValidationError::class)

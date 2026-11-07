@@ -73,10 +73,14 @@ import kotlinx.coroutines.withContext
 // pinch-zoom images, interactive native charts, every table row; a format picker to
 // save it to Downloads or share it.
 
-/** The bytes of one output in one format: a stored file, re-encoded from one, or drawn now. */
-suspend fun exportBytes(item: OutputItem, files: OutputFiles, f: DownloadFormat, chart: ChartState?, density: Float): ByteArray = withContext(Dispatchers.Default) {
+/** Makes a kept figure's SVG / PDF: (figure file bytes, format, matplotlib that kept it) -> bytes. */
+typealias FigureRenderer = suspend (ByteArray, String, String?) -> ByteArray
+
+/** The bytes of one output in one format: a stored file, re-encoded from one, made from the kept figure, or drawn now. */
+suspend fun exportBytes(item: OutputItem, files: OutputFiles, f: DownloadFormat, chart: ChartState?, density: Float, figure: FigureRenderer): ByteArray = withContext(Dispatchers.Default) {
     when (f.how) {
         "file" -> files.bytes(f.file!!)
+        "figure" -> figure(files.bytes(f.file!!), f.format, item.matplotlib)
         "convert" -> {
             val src = files.bytes(f.from!!)
             val bmp = BitmapFactory.decodeByteArray(src, 0, src.size) ?: error("Couldn't decode the image")
@@ -288,7 +292,9 @@ fun OutputViewer(
                     busy = true; message = null
                     scope.launch {
                         try {
-                            val bytes = exportBytes(item, files, f, (chart as? LoadedChart.Ready)?.state, density)
+                            val bytes = exportBytes(item, files, f, (chart as? LoadedChart.Ready)?.state, density) { data, format, made ->
+                                app.benchjot.run.PythonRunner.renderFigure(context, data, format, made)
+                            }
                             then(bytes, outputDownloadName(base, index, f.format), MIME[f.format] ?: "application/octet-stream")
                         } catch (e: Exception) {
                             message = app.benchjot.data.Accounts.message(e, "download")
