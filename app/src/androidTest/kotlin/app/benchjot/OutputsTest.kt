@@ -127,9 +127,45 @@ class OutputsTest {
         val m = checkManifest(json.decodeFromString(Manifest.serializer(), File(dir, "manifest.json").readText()))
         val kinds = m.items.map { it.kind + ":" + (it.lib ?: it.source ?: "") }
         assertEquals(listOf("image:matplotlib", "table:", "chart:plotly", "chart:vega-lite", "chart:bokeh", "image:matplotlib", "image:pil"), kinds)
-        // Matplotlib figures come as PNG + SVG + PDF; every file the manifest names exists.
-        assertEquals(setOf("png", "svg", "pdf"), m.items[0].files.keys)
+        // Matplotlib figures come as PNG + the kept figure (SVG / PDF are made from it on Download);
+        // every file the manifest names exists.
+        assertEquals(setOf("png", "mpl"), m.items[0].files.keys)
+        assertTrue(m.items[0].matplotlib.orEmpty().isNotEmpty())
         for (item in m.items) for (name in item.files.values) assertTrue("missing $name", File(dir, name).length() > 0)
+        dir.deleteRecursively()
+    }
+
+    // The user's case (smaller): a 3D surface, saved only as PNG at run time; SVG and PDF are made on
+    // Download by the phone's Python from the kept figure, through the viewer's own export path.
+    @Test fun figureSvgAndPdfAreMadeOnDownload() {
+        val dir = File(context.cacheDir, "test-fig-${System.nanoTime()}")
+        val code = """
+            import numpy as np
+            import matplotlib.pyplot as plt
+            x, y = np.meshgrid(np.linspace(-5, 5, 60), np.linspace(-5, 5, 60))
+            fig = plt.figure(figsize=(8, 6))
+            ax = fig.add_subplot(111, projection="3d")
+            ax.plot_surface(x, y, np.sin(np.sqrt(x**2 + y**2)), cmap="viridis")
+            ax.set_zlabel("z")
+            plt.show()
+        """.trimIndent()
+        val (r, _) = runPython(code, dir)
+        assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
+        val m = checkManifest(json.decodeFromString(Manifest.serializer(), File(dir, "manifest.json").readText()))
+        val item = m.items.single()
+        val files = OutputFiles.Live(LocalOutputs(m, dir))
+        val formats = downloadFormats(item)
+        assertEquals(listOf("png:file", "jpg:convert", "webp:convert", "svg:figure", "pdf:figure"), formats.map { "${it.format}:${it.how}" })
+        val render: app.benchjot.ui.FigureRenderer = { data, format, made -> app.benchjot.run.PythonRunner.renderFigure(context, data, format, made) }
+        for ((format, sig) in listOf("svg" to "<?xml", "pdf" to "%PDF")) {
+            val bytes = runBlocking { exportBytes(item, files, formats.single { it.format == format }, null, 2f, render) }
+            assertTrue("$format: ${String(bytes.copyOfRange(0, 8), Charsets.ISO_8859_1)}", String(bytes.copyOfRange(0, 8), Charsets.ISO_8859_1).startsWith(sig))
+        }
+        // A figure kept by another matplotlib (the browser's) can't load here, and says so.
+        val other = runCatching { runBlocking { exportBytes(item.copy(matplotlib = "2.0.0"), files, formats.single { it.format == "svg" }, null, 2f, render) } }.exceptionOrNull()
+        assertTrue("$other", other is app.benchjot.core.FriendlyException && other.message!!.contains("matplotlib 2.0"))
+        // The run after a render still runs.
+        assertEquals("ok\n", runPython("print('ok')").second)
         dir.deleteRecursively()
     }
 
@@ -166,7 +202,7 @@ class OutputsTest {
         assertEquals(listOf("png", "jpg", "webp", "svg", "pdf", "json"), formats.map { it.format })
         val sig = mapOf("png" to "\u0089PNG", "jpg" to "\u00ff\u00d8\u00ff", "webp" to "RIFF", "svg" to "<svg", "pdf" to "%PDF", "json" to "{")
         for (f in formats) {
-            val bytes = exportBytes(item, files, f, chart, 2f)
+            val bytes = exportBytes(item, files, f, chart, 2f) { _, _, _ -> error("a chart has no kept figure") }
             val head = String(bytes.copyOfRange(0, minOf(bytes.size, 64)), Charsets.ISO_8859_1)
             assertTrue("${f.format}: ${head.take(16)}", head.trimStart().startsWith(sig.getValue(f.format)) || (f.format == "svg" && head.contains("<svg")))
         }

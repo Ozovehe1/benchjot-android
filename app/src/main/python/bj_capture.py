@@ -5,8 +5,11 @@ all run user code through `run()`, so every platform captures the same outputs:
 
   image  matplotlib figures (and everything drawn on them: seaborn, pandas .plot,
          scikit-learn displays), PIL images, and image files the code writes.
-         Figures are saved at run time as PNG + SVG + PDF, so later downloads are
-         re-encodings of the source figure, never of a screenshot.
+         A figure is drawn once at run time, as PNG, and kept as itself (FIG_FILE, its
+         pickle): SVG and PDF are made from that on Download (render()), in a Python with
+         the same matplotlib, so they are the source figure, never a screenshot, and
+         cost the run nothing. The server runner (main()) saves PNG + SVG + PDF instead:
+         no browser or phone has its matplotlib to load its figures with.
   table  pandas DataFrame / Series (a preview inline, the full table as CSV).
   chart  interactive figures as their own JSON spec: Plotly (fig.to_json()),
          Altair / Vega-Lite (chart.to_dict()) and Bokeh (json_item()).
@@ -36,6 +39,8 @@ TABLE_COLS = 30
 CELL_CHARS = 200
 MAX_CSV_BYTES = 5 * 1024 * 1024
 FIG_DPI = 150
+FIG_FILE = "mpl"  # a matplotlib figure kept for SVG / PDF on Download: gzip of its pickle
+VECTOR_FORMATS = ("svg", "pdf")
 IMAGE_EXTS = {".png": "png", ".jpg": "jpg", ".jpeg": "jpg", ".gif": "gif", ".webp": "webp", ".svg": "svg", ".bmp": "bmp"}
 FILE_SCAN_LIMIT = 2000
 
@@ -43,8 +48,9 @@ _session = None
 
 
 class _Session:
-    def __init__(self, out_dir):
+    def __init__(self, out_dir, vectors=False):
         self.dir = out_dir
+        self.vectors = vectors  # save figures' SVG + PDF at run time (server) instead of FIG_FILE
         self.items = []
         self.total = 0
         self.emitted = set()  # ids of matplotlib figures already shown
@@ -116,25 +122,112 @@ def _bbox_extra(fig):
         return {}
 
 
+def _png(fig, extra):
+    """The figure as PNG at FIG_DPI, cropped as savefig(bbox_inches="tight") crops it.
+
+    savefig's tight crop draws the figure twice (once to measure it, once to save); this
+    draws it once, measures the crop on that drawing and cuts it out of the pixels. When
+    the crop reaches past the canvas (a legend placed outside it) or the saved look is
+    configured differently from the drawn one, savefig does it as before."""
+    import io
+
+    import matplotlib
+    from matplotlib.backends.backend_agg import FigureCanvasAgg
+
+    rc = matplotlib.rcParams
+    if isinstance(fig.canvas, FigureCanvasAgg) and not rc["savefig.transparent"] and rc["savefig.facecolor"] == "auto" and rc["savefig.edgecolor"] == "auto":
+        data = _png_one_draw(fig, extra)
+        if data is not None:
+            return data
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=FIG_DPI, bbox_inches="tight", **extra)
+    return buf.getvalue()
+
+
+def _png_one_draw(fig, extra):
+    """_png's one-draw path; None when something drawn lies outside the canvas.
+
+    Only the padding may reach past the canvas (a figure filled to its edges by
+    tight_layout): savefig paints the figure's background there, and so does this."""
+    import io
+
+    import matplotlib
+    import numpy as np
+    from matplotlib.colors import to_rgba
+    from matplotlib.image import imsave
+
+    if fig.patch.get_visible() and fig.patch.get_linewidth() > 0:
+        return None  # a framed figure: savefig draws the frame around the crop
+    dpi = fig.dpi
+    fig.dpi = FIG_DPI
+    try:
+        canvas = fig.canvas
+        canvas.draw()
+        tight = fig.get_tightbbox(canvas.get_renderer(), bbox_extra_artists=extra.get("bbox_extra_artists"))
+        width, height = canvas.get_width_height(physical=True)
+        tx0, ty0, tx1, ty1 = (v * FIG_DPI for v in tight.extents)  # pixels, from the bottom left
+        if tx0 < -0.5 or ty0 < -0.5 or tx1 > width + 0.5 or ty1 > height + 0.5:
+            return None
+        box = tight.padded(extra.get("pad_inches", matplotlib.rcParams["savefig.pad_inches"]))
+        w, h = int(box.width * FIG_DPI), int(box.height * FIG_DPI)  # savefig's canvas size for this crop
+        # savefig moves the crop's bottom left to the origin and cuts its canvas to (w, h).
+        left, top = round(box.x0 * FIG_DPI), round(height - box.y0 * FIG_DPI) - h
+        drawn = np.asarray(canvas.buffer_rgba())
+        bg = to_rgba(fig.patch.get_facecolor()) if fig.patch.get_visible() else (0, 0, 0, 0)
+        pixels = np.empty((h, w, 4), dtype=np.uint8)
+        pixels[:] = [round(c * 255) for c in bg]
+        sx, sy = max(left, 0), max(top, 0)
+        ex, ey = min(left + w, width), min(top + h, height)
+        if ex > sx and ey > sy:
+            pixels[sy - top : ey - top, sx - left : ex - left] = drawn[sy:ey, sx:ex]
+    finally:
+        fig.dpi = dpi
+    buf = io.BytesIO()
+    imsave(buf, pixels, format="png", origin="upper", dpi=FIG_DPI)
+    return buf.getvalue()
+
+
+def _vectors(fig, extra):
+    """{format: bytes} for VECTOR_FORMATS; a format the backend can't make is skipped with a note."""
+    import io
+
+    files = {}
+    for fmt in VECTOR_FORMATS:
+        buf = io.BytesIO()
+        try:
+            fig.savefig(buf, format=fmt, dpi=FIG_DPI, bbox_inches="tight", **extra)
+        except Exception as e:
+            _session.note(f"Couldn't save a figure as {fmt.upper()}: {e}")
+            continue
+        files[fmt] = buf.getvalue()
+    return files
+
+
+def _kept_figure(fig):
+    """FIG_FILE bytes for fig, or None when it couldn't be loaded again later: it doesn't
+    pickle (a lambda in it), or it refers to the user's own code (__main__), which a later
+    Python doesn't have."""
+    import gzip
+    import pickle
+
+    try:
+        data = pickle.dumps(fig, protocol=pickle.HIGHEST_PROTOCOL)
+    except Exception:
+        return None
+    if b"__main__" in data:
+        return None
+    return gzip.compress(data, compresslevel=6, mtime=0)
+
+
 def _figure(fig, source="matplotlib"):
     s = _session
     if s is None or id(fig) in s.emitted:
         return
     s.emitted.add(id(fig))
-    import io
+    import matplotlib
 
-    files = {}
     extra = _bbox_extra(fig)
-    for fmt in ("png", "svg", "pdf"):
-        buf = io.BytesIO()
-        try:
-            fig.savefig(buf, format=fmt, dpi=FIG_DPI, bbox_inches="tight", **extra)
-        except Exception as e:  # a backend without that format: keep the others
-            if fmt == "png":
-                raise
-            s.note(f"Couldn't save a figure as {fmt.upper()}: {e}")
-            continue
-        files[fmt] = buf.getvalue()
+    files = {"png": _png(fig, extra)}
     w, h = _png_size(files["png"])
     title = ""
     try:
@@ -143,13 +236,65 @@ def _figure(fig, source="matplotlib"):
             title = fig.axes[0].get_title()
     except Exception:
         pass
-    s.add({"kind": "image", "source": source, "width": w, "height": h, "title": title}, files)
+    item = {"kind": "image", "source": source, "width": w, "height": h, "title": title}
+    # Closed first: a figure pickled while pyplot holds it registers itself with pyplot when loaded.
     try:
         import matplotlib.pyplot as plt
 
         plt.close(fig)
     except Exception:
         pass
+    kept = None if s.vectors else _kept_figure(fig)
+    if kept is not None:
+        files[FIG_FILE] = kept
+        item["matplotlib"] = matplotlib.__version__
+    else:  # the server, or a figure that can't be kept: its SVG and PDF now
+        files.update(_vectors(fig, extra))
+    s.add(item, files)
+
+
+class RenderError(ValueError):
+    """A kept figure this Python can't draw; the message is for the user."""
+
+
+def _minor(version):
+    return tuple(version.split(".")[:2])
+
+
+def render(data, fmt, made_with=None):
+    """SVG or PDF bytes of a figure kept at run time (FIG_FILE), cropped as at run time.
+    `made_with`: the matplotlib version that kept it (the manifest item's "matplotlib");
+    figures load only in the same matplotlib (major.minor)."""
+    import gzip
+    import io
+    import pickle
+
+    import matplotlib
+
+    if fmt not in VECTOR_FORMATS:
+        raise RenderError(f"Figures are made as {' or '.join(f.upper() for f in VECTOR_FORMATS)} here, not {fmt}.")
+    if made_with and _minor(made_with) != _minor(matplotlib.__version__):
+        raise RenderError(
+            f"This figure was made with matplotlib {'.'.join(_minor(made_with))} and this device has {'.'.join(_minor(matplotlib.__version__))}, "
+            f"so its {fmt.upper()} can only be made where the code ran. Open the note there, or run the code again here."
+        )
+    try:
+        fig = pickle.loads(gzip.decompress(data))
+    except ModuleNotFoundError:
+        raise  # a library the figure refers to (pandas' date axes): the runner may load it and try again
+    except Exception as e:
+        raise RenderError(f"This figure couldn't be loaded to make its {fmt.upper()} ({type(e).__name__}). Run the code again to make it.") from e
+    buf = io.BytesIO()
+    fig.savefig(buf, format=fmt, dpi=FIG_DPI, bbox_inches="tight", **_bbox_extra(fig))
+    return buf.getvalue()
+
+
+def render_file(src, fmt, dest, made_with=None):
+    """render() between files, for the runners (the browser's worker and the phone)."""
+    with open(src, "rb") as f:
+        data = render(f.read(), fmt, made_with)
+    with open(dest, "wb") as f:
+        f.write(data)
 
 
 def _pil(img):
@@ -519,10 +664,10 @@ def _finish(cwd, before):
     _written_images(cwd, before, _session.dir)
 
 
-def _begin(out_dir, globals_):
+def _begin(out_dir, globals_, vectors):
     global _session
     os.makedirs(out_dir, exist_ok=True)
-    _session = _Session(out_dir)
+    _session = _Session(out_dir, vectors)
     _prepare_matplotlib()
     _install_hooks()
     cwd = os.getcwd()
@@ -553,14 +698,15 @@ def _finish_and_save(cwd, before):
     return _session.save()
 
 
-async def run(code, out_dir, filename="<exec>", globals_=None):
+async def run(code, out_dir, filename="<exec>", globals_=None, vectors=False):
     """Runs `code` as __main__, captures its rich outputs into out_dir; returns the manifest dict.
+    `vectors`: save figures' SVG and PDF now rather than keeping them for render().
 
     For runners inside an event loop (Pyodide). Exceptions from the user's code propagate
     (after the outputs made before them are saved), so each runner reports errors as before.
     """
     global _session
-    cwd, before, g = _begin(out_dir, globals_)
+    cwd, before, g = _begin(out_dir, globals_, vectors)
     try:
         body, last = _compile(code, filename)
         r = eval(body, g)
@@ -577,13 +723,13 @@ async def run(code, out_dir, filename="<exec>", globals_=None):
         _session = None
 
 
-def run_sync(code, out_dir, filename="<exec>", globals_=None):
+def run_sync(code, out_dir, filename="<exec>", globals_=None, vectors=False):
     """The same for runners without an event loop (server, Android): the code runs outside any
     loop, so it may call asyncio.run itself; only top-level await starts one."""
     import asyncio
 
     global _session
-    cwd, before, g = _begin(out_dir, globals_)
+    cwd, before, g = _begin(out_dir, globals_, vectors)
     try:
         body, last = _compile(code, filename)
         r = eval(body, g)
@@ -633,14 +779,15 @@ def bundle(out_dir):
 
 
 def main(argv):
-    """python3 bj_capture.py <file.py> <out_dir>: the server runner. Prints the bundle after BUNDLE_MARK."""
+    """python3 bj_capture.py <file.py> <out_dir>: the server runner. Prints the bundle after BUNDLE_MARK.
+    Figures come with their SVG and PDF: their kept form would need the server's matplotlib."""
     path, out_dir = argv[1], argv[2]
     with open(path, encoding="utf-8") as f:
         code = f.read()
     status = 0
     sys.argv = [path]
     try:
-        run_sync(code, out_dir, filename=path)
+        run_sync(code, out_dir, filename=path, vectors=True)
     except SystemExit as e:
         status = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)
     except BaseException as e:

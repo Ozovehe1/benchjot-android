@@ -2,12 +2,12 @@
  "items": [
   {
    "files": {
-    "pdf": "0.pdf",
-    "png": "0.png",
-    "svg": "0.svg"
+    "mpl": "0.mpl",
+    "png": "0.png"
    },
    "height": 0,
    "kind": "image",
+   "matplotlib": "3.11.2",
    "source": "matplotlib",
    "title": "Training loss",
    "width": 0

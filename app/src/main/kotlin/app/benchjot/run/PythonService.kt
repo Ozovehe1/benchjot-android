@@ -31,6 +31,15 @@ class PythonService : Service() {
             val code = msg.data.getString(PyProtocol.CODE).orEmpty()
             val outDir = msg.data.getString(PyProtocol.OUT_DIR).orEmpty()
             worker.execute { runOne(reply, id, code, outDir) }
+        } else if (msg.what == PyProtocol.RENDER) {
+            val reply = msg.replyTo
+            val id = msg.arg1
+            val d = msg.data
+            val src = d.getString(PyProtocol.SRC).orEmpty()
+            val format = d.getString(PyProtocol.FORMAT).orEmpty()
+            val dest = d.getString(PyProtocol.DEST).orEmpty()
+            val made = d.getString(PyProtocol.MADE_WITH)
+            worker.execute { renderOne(reply, id, src, format, dest, made) }
         }
         true
     }
@@ -51,6 +60,26 @@ class PythonService : Service() {
             android.util.Log.e("PythonService", "run failed", e)
             // bj_runner reports the user's own errors itself; this is Python failing to start or the bridge.
             emit.error(app.benchjot.core.messageFor(app.benchjot.core.ErrorKind.Unknown, "runner_start"))
+        } finally {
+            emit.close()
+        }
+    }
+
+    /** A kept figure's SVG / PDF (bj_runner.render) into `dest`, after any run before it (one Python thread). */
+    private fun renderOne(reply: Messenger, id: Int, src: String, format: String, dest: String, madeWith: String?) {
+        val emit = Emitter(reply, id)
+        emit.send(PyProtocol.PID) { putInt(PyProtocol.PID_KEY, Process.myPid()) }
+        try {
+            if (!Python.isStarted()) Python.start(AndroidPlatform(applicationContext))
+            val work = java.io.File(filesDir, "python-home").path
+            Python.getInstance().getModule("bj_runner").callAttr("render", src, format, dest, madeWith, work)
+            emit.send(PyProtocol.RENDERED)
+        } catch (e: com.chaquo.python.PyException) {
+            android.util.Log.w("PythonService", "render failed", e)
+            emit.send(PyProtocol.ERROR) { putString(PyProtocol.TEXT, PyProtocol.renderErrorText(e.message.orEmpty())) }
+        } catch (e: Throwable) {
+            android.util.Log.e("PythonService", "render failed", e)
+            emit.send(PyProtocol.ERROR) { putString(PyProtocol.TEXT, "") }
         } finally {
             emit.close()
         }
@@ -105,17 +134,30 @@ internal object PyProtocol {
     const val OUT = 5
     const val DONE = 6
     const val ERROR = 7
+    /** Make a kept figure's SVG / PDF (SRC, FORMAT, DEST, MADE_WITH); answered by RENDERED or ERROR (TEXT: the user's message, or empty). */
+    const val RENDER = 8
+    const val RENDERED = 9
 
     const val CODE = "code"
     const val TEXT = "text"
     const val STREAM = "stream"
     const val PID_KEY = "pid"
+    const val SRC = "src"
+    const val FORMAT = "format"
+    const val DEST = "dest"
+    const val MADE_WITH = "made_with"
     /** Where bj_capture writes the run's figures, tables and charts (the app reads them after the run). */
     const val OUT_DIR = "out_dir"
 
     /** The Python process's native stderr (fd 2) and faulthandler's tracebacks, one run's worth: what a
      *  native crash said, read by the app when the process dies (PythonRunner). */
     fun nativeStderr(context: android.content.Context) = java.io.File(context.cacheDir, "python-native-stderr.txt")
+
+    /** A bj_capture.RenderError's message (meant for the user) from Chaquopy's "RenderError: ..."; empty for any other error. */
+    fun renderErrorText(message: String): String {
+        val last = message.trim().lineSequence().lastOrNull().orEmpty()
+        return listOf("bj_capture.RenderError: ", "RenderError: ").firstOrNull { last.startsWith(it) }?.let { last.removePrefix(it) }.orEmpty()
+    }
 
     /** The tail of [nativeStderr], for the error of a run whose process died; empty if it said nothing. */
     fun crashReport(context: android.content.Context, maxChars: Int = 4000): String =

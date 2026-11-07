@@ -81,6 +81,18 @@ def capture_native_stderr(path):
     faulthandler.enable(file=2, all_threads=True)
 
 
+def _matplotlib_home(work_dir):
+    """Where matplotlib keeps its config and font cache: the same folder for runs and renders."""
+    os.makedirs(work_dir, exist_ok=True)
+    os.environ.setdefault("MPLCONFIGDIR", os.path.join(work_dir, ".matplotlib"))
+
+
+def render(src, fmt, dest, made_with, work_dir):
+    """A kept figure's SVG / PDF on Download (bj_capture.render_file); RenderError's message is the user's."""
+    _matplotlib_home(work_dir)
+    bj_capture.render_file(src, fmt, dest, made_with)
+
+
 def run(code, emit, out_dir, work_dir, native_stderr=None):
     if native_stderr:
         capture_native_stderr(native_stderr)
@@ -89,9 +101,8 @@ def run(code, emit, out_dir, work_dir, native_stderr=None):
     sys.stdout, sys.stderr, sys.stdin = out, err, _NoStdin()
     try:
         # Files the code writes land here (kept between runs, like Pyodide's home folder).
-        os.makedirs(work_dir, exist_ok=True)
+        _matplotlib_home(work_dir)
         os.chdir(work_dir)
-        os.environ.setdefault("MPLCONFIGDIR", os.path.join(work_dir, ".matplotlib"))
         emit.start()
         globals_ = {"__name__": "__main__", "__builtins__": builtins}
         bj_capture.run_sync(code, out_dir, "<exec>", globals_)
