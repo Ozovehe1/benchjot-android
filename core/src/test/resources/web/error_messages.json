@@ -33,6 +33,9 @@
     "username": "Couldn’t save your username.",
     "fix": "Fix couldn’t finish.",
     "helper": "The helper couldn’t finish.",
+    "history_load": "Couldn’t load the earlier turns.",
+    "history_save": "Couldn’t save this turn.",
+    "history_clear": "Couldn’t clear it.",
     "run_server": "The server run couldn’t finish.",
     "runner_start": "The runner couldn’t start."
   },

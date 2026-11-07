@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -27,6 +28,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,9 +56,20 @@ import app.benchjot.core.AssistInput
 import app.benchjot.core.AssistTask
 import app.benchjot.core.HelperAnswer
 import app.benchjot.core.HelperCell
+import app.benchjot.core.HelperHistoryLimits
 import app.benchjot.core.HelperLimits
 import app.benchjot.core.HelperPlace
+import app.benchjot.core.HelperReply
+import app.benchjot.core.FriendlyException
+import app.benchjot.core.HistoryTurn
+import app.benchjot.core.SavedHistory
+import app.benchjot.core.SavedTurn
+import app.benchjot.core.checkedCode
+import app.benchjot.core.helperHistory
 import app.benchjot.core.helperRequest
+import app.benchjot.core.isLanguageId
+import app.benchjot.core.reply
+import app.benchjot.core.taskId
 import app.benchjot.core.noteContext
 import app.benchjot.core.readHelperReply
 import app.benchjot.core.OnDeviceModel
@@ -63,6 +77,8 @@ import app.benchjot.core.megabytes
 import app.benchjot.core.readCodeAnswer
 import app.benchjot.core.timeLeft
 import app.benchjot.data.Accounts
+import app.benchjot.data.Backend
+import app.benchjot.data.HelperCache
 import app.benchjot.data.WebApi
 import app.benchjot.llm.LocalModel
 import app.benchjot.llm.LocalResult
@@ -75,15 +91,83 @@ import kotlinx.coroutines.launch
 // answers from the note, where the user picked: on the phone (the on-device model) or online (the
 // web's /api/helper, Groq, sharing Fix's limit). Only the user switches between them. The note is
 // read only when you ask, and code goes into the note only when you tap Insert; it is never run for you.
+// Each answered turn is saved with the note (Supabase, synced with the web) and shown again when the
+// Helper reopens; the phone keeps a copy of the last read (HelperCache). Older turns are condensed by
+// the database into the note's summary, shown first. Clear deletes them.
 
+/** The request in flight, or how it failed. Answers become turns ([ShownTurn]). */
 private sealed interface Answer {
     data object None : Answer
     data class Working(val task: AssistTask, val phase: String, val text: String) : Answer
-    data class Code(val code: String, val summary: String, val cutShort: Boolean) : Answer
-    data class Prose(val text: String, val cutShort: Boolean) : Answer
     data class Error(val error: AssistError, val partial: String) : Answer
-    /** The online helper's failure, as the shared error table (or the route) says it. */
+    /** A failure in plain words: the shared error table (online), or a refused answer (wrong language). */
     data class Failed(val message: String) : Answer
+}
+
+/** An answered turn as shown. [saved] once in helper_turns; a stopped answer ([save] false) stays on this phone only. */
+private data class ShownTurn(val key: Long, val task: String, val request: String, val reply: HelperReply, val cutShort: Boolean = false, val saved: SavedTurn? = null, val save: Boolean = true)
+
+/**
+ * The note's helper history while the sheet is open: the copy on the phone first, then Supabase's.
+ * Saving and clearing go to Supabase, then to the copy. Failures are said in [notice], never thrown.
+ */
+private class HistoryState(private val context: android.content.Context, private val entryId: String, private val scope: kotlinx.coroutines.CoroutineScope) {
+    private var nextKey = 1L
+    var summary by mutableStateOf("")
+    val turns = mutableStateListOf<ShownTurn>()
+    var notice by mutableStateOf<String?>(null)
+
+    private fun show(h: SavedHistory) {
+        summary = h.summary
+        val unsaved = turns.filter { it.saved == null }
+        turns.clear()
+        turns.addAll(h.turns.map { ShownTurn(nextKey++, it.task, it.request, it.answer, saved = it) })
+        turns.addAll(unsaved)
+    }
+
+    private fun cache() = HelperCache.write(context, entryId, SavedHistory(summary, turns.mapNotNull { it.saved }))
+
+    fun load() {
+        HelperCache.read(context, entryId)?.let(::show)
+        scope.launch {
+            runCatching { Backend.helperHistory(entryId) }
+                .onSuccess { show(it); cache() }
+                .onFailure { notice = Accounts.message(it, "history_load") }
+        }
+    }
+
+    /** The answered turns, oldest first, as the online request sends them back. */
+    fun answered(): List<HistoryTurn> = turns.map { HistoryTurn(it.task, it.request, it.reply) }
+
+    fun add(task: String, request: String, reply: HelperReply, cutShort: Boolean, save: Boolean) {
+        val turn = ShownTurn(nextKey++, task, request, reply, cutShort, save = save)
+        turns.add(turn)
+        if (!save) return
+        scope.launch {
+            runCatching { Backend.saveHelperTurn(entryId, task, request, reply) }
+                .onSuccess { row -> turns.indexOfFirst { it.key == turn.key }.takeIf { it >= 0 }?.let { turns[it] = turn.copy(saved = row) }; cache() }
+                .onFailure { notice = Accounts.message(it, "history_save") }
+        }
+    }
+
+    fun clear(turn: ShownTurn) {
+        notice = null
+        val row = turn.saved ?: run { turns.removeAll { it.key == turn.key }; return }
+        scope.launch {
+            runCatching { Backend.deleteHelperTurn(row.id) }
+                .onSuccess { turns.removeAll { it.key == turn.key }; cache() }
+                .onFailure { notice = Accounts.message(it, "history_clear") }
+        }
+    }
+
+    fun clearSummary() {
+        notice = null
+        scope.launch {
+            runCatching { Backend.deleteHelperSummary(entryId) }
+                .onSuccess { summary = ""; cache() }
+                .onFailure { notice = Accounts.message(it, "history_clear") }
+        }
+    }
 }
 
 private const val PLACE_PREFS = "helper"
@@ -92,14 +176,18 @@ private const val KEY_PLACE = "place"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HelperSheet(
+    entryId: String,
     noteTitle: String,
     noteBody: () -> String,
     cells: () -> List<HelperCell>,
     language: String,
-    onInsertCode: (code: String) -> Unit,
+    onInsertCode: (code: String, language: String) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val context = LocalContext.current
+    // Saves run in the app's scope, so closing the sheet right after an answer still saves it.
+    val history = remember(entryId) { HistoryState(context, entryId, Backend.scope) }
+    LaunchedEffect(history) { history.load() } // each open reads it again (it may have changed on the web)
     val prefs = remember { context.getSharedPreferences(PLACE_PREFS, android.content.Context.MODE_PRIVATE) }
     var place by remember { mutableStateOf(HelperPlace.of(prefs.getString(KEY_PLACE, null))) }
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -118,7 +206,7 @@ fun HelperSheet(
             AnimatedContent(place to ready, transitionSpec = { fadeIn(tween(200)) togetherWith fadeOut(tween(200)) }, label = "helper") { (where, canAsk) ->
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     if (where == HelperPlace.Online) Muted("Sends this note to the server when you ask. Shares Fix’s daily limit.")
-                    if (canAsk) Ask(where, noteTitle, noteBody, cells, language, onInsertCode) else ModelDownload(model)
+                    if (canAsk) Ask(where, history, noteTitle, noteBody, cells, language, onInsertCode) else ModelDownload(model)
                 }
             }
             Gap(8.dp)
@@ -127,7 +215,7 @@ fun HelperSheet(
 }
 
 @Composable
-private fun Ask(place: HelperPlace, noteTitle: String, noteBody: () -> String, cells: () -> List<HelperCell>, language: String, onInsertCode: (String) -> Unit) {
+private fun Ask(place: HelperPlace, history: HistoryState, noteTitle: String, noteBody: () -> String, cells: () -> List<HelperCell>, language: String, onInsertCode: (String, String) -> Unit) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val clipboard = LocalClipboardManager.current
@@ -141,14 +229,30 @@ private fun Ask(place: HelperPlace, noteTitle: String, noteBody: () -> String, c
 
     fun settle(a: Answer) {
         answer = a
-        if (a !is Answer.Error && a !is Answer.Failed) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
         stop = null
+    }
+
+    /** An answer: shown as a turn, and saved unless it was stopped part-way. */
+    fun answered(kind: AssistTask, q: String, a: HelperAnswer, cutShort: Boolean = false, save: Boolean = true) {
+        history.add(taskId(kind), q, a.reply(language), cutShort, save)
+        haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+        settle(Answer.None)
+    }
+
+    /** Code from the phone's model, checked like the route's (a Python cell never gets JavaScript). */
+    fun phoneCode(kind: AssistTask, q: String, text: String, cutShort: Boolean) {
+        val read = readCodeAnswer(text) ?: return settle(Answer.Error(AssistError.NoCode, text))
+        try {
+            answered(kind, q, checkedCode(language, read.first.code, read.first.summary), cutShort || !read.second)
+        } catch (e: FriendlyException) {
+            settle(Answer.Failed(e.message.orEmpty()))
+        }
     }
 
     fun onPhone(q: String, kind: AssistTask) {
         val input = when (kind) {
-            // Read now, on this tap only.
-            AssistTask.Ask -> AssistInput.Ask(noteTitle, noteContext(noteBody(), cells(), AssistTask.Ask.maxInputChars).first, q)
+            // Read now, on this tap only. The phone gets the note's summary, not its turns (its context is small).
+            AssistTask.Ask -> AssistInput.Ask(noteTitle, noteContext(noteBody(), cells(), AssistTask.Ask.maxInputChars).first, q, language, history.summary)
             else -> AssistInput.Write(language, q)
         }
         val r = LocalModel.generate(context, scope, input,
@@ -157,30 +261,31 @@ private fun Ask(place: HelperPlace, noteTitle: String, noteBody: () -> String, c
         )
         stop = r.stop
         scope.launch {
-            settle(when (val res = r.result.await()) {
-                is LocalResult.Failed -> Answer.Error(res.error, res.text)
-                is LocalResult.Stopped -> if (res.text.isBlank()) Answer.None else Answer.Prose(res.text, cutShort = true)
-                is LocalResult.Done -> if (kind == AssistTask.Ask) Answer.Prose(res.text.trim(), res.cutShort) else {
-                    val read = readCodeAnswer(res.text)
-                    if (read == null) Answer.Error(AssistError.NoCode, res.text) else Answer.Code(read.first.code, read.first.summary, res.cutShort || !read.second)
+            when (val res = r.result.await()) {
+                is LocalResult.Failed -> settle(Answer.Error(res.error, res.text))
+                // A stopped answer is shown, marked, and kept off the saved history.
+                is LocalResult.Stopped -> if (res.text.isBlank()) settle(Answer.None) else answered(kind, q, HelperAnswer.Prose(res.text.trim()), cutShort = true, save = false)
+                is LocalResult.Done -> when {
+                    // Ask answers in words, or with a fenced program when asked for a change.
+                    kind == AssistTask.Ask && readCodeAnswer(res.text) == null ->
+                        if (res.text.isBlank()) settle(Answer.Error(AssistError.NoCode, res.text)) else answered(kind, q, HelperAnswer.Prose(res.text.trim()), res.cutShort)
+                    else -> phoneCode(kind, q, res.text, res.cutShort)
                 }
-            })
+            }
         }
     }
 
     fun online(q: String, kind: AssistTask) {
-        val request = helperRequest(kind, q, language, noteTitle, noteBody(), cells()) // read now, on this tap only
+        // Read now, on this tap only; the note's summary and last turns go with it.
+        val request = helperRequest(kind, q, language, noteTitle, noteBody(), cells(), helperHistory(history.summary, history.answered()))
         val job = scope.launch {
-            settle(try {
-                when (val a = readHelperReply(kind, language, WebApi.helper(request))) {
-                    is HelperAnswer.Code -> Answer.Code(a.code, a.summary, cutShort = false)
-                    is HelperAnswer.Prose -> Answer.Prose(a.text, cutShort = false)
-                }
+            try {
+                answered(kind, q, readHelperReply(kind, language, WebApi.helper(request)))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                Answer.Failed(Accounts.message(e, "helper"))
-            })
+                settle(Answer.Failed(Accounts.message(e, "helper")))
+            }
         }
         stop = { job.cancel(); answer = Answer.None; stop = null } // a stopped request's late answer is dropped
     }
@@ -194,8 +299,9 @@ private fun Ask(place: HelperPlace, noteTitle: String, noteBody: () -> String, c
     }
 
     Segmented(listOf(AssistTask.Write to "Write code", AssistTask.Ask to "Ask this note"), task, { task = it })
+    HistoryList(history, language, onInsertCode, onCopy = { clipboard.setText(AnnotatedString(it)) })
     PromptField(input, { input = it.take(maxInput) }, if (task == AssistTask.Ask) "Ask about this note" else "Describe the code to write") { send(input, task) }
-    if (input.isBlank() && answer is Answer.None) {
+    if (input.isBlank() && answer is Answer.None && history.turns.isEmpty() && history.summary.isEmpty()) {
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ASSIST_SUGGESTIONS.forEach { (label, kind) -> Chip(label) { input = label; send(label, kind) } }
         }
@@ -212,28 +318,53 @@ private fun Ask(place: HelperPlace, noteTitle: String, noteBody: () -> String, c
             }
             FilledBtn("Stop", { stop?.invoke() }, variant = ButtonVariant.Neutral)
         }
-        is Answer.Code -> {
-            CodeCard(a.code, language)
-            if (a.summary.isNotEmpty()) Muted(a.summary)
-            if (a.cutShort) Muted("The answer was cut short. Check the end before you run it.", color = t.faint)
-            Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                FilledBtn("Insert into note", { onInsertCode(a.code); answer = Answer.None; input = "" })
-                TextBtn("Copy", { clipboard.setText(AnnotatedString(a.code)) })
-                TextBtn("Clear", { answer = Answer.None })
-            }
-        }
-        is Answer.Prose -> {
-            AnswerText(a.text, mono = false)
-            if (a.cutShort) Muted("Stopped before the end.", color = t.faint)
-            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                TextBtn("Copy", { clipboard.setText(AnnotatedString(a.text)) })
-                TextBtn("Clear", { answer = Answer.None })
-            }
-        }
         is Answer.Error -> ErrorRow(a.error, onRetry = { answer = Answer.None; send(input, task) })
         is Answer.Failed -> {
             Muted(a.message, Modifier.semantics { liveRegion = LiveRegionMode.Assertive }, color = t.fg)
             FilledBtn(AssistAction.Retry.label, { answer = Answer.None; send(input, task) })
+        }
+    }
+    history.notice?.let { Muted(it, Modifier.semantics { liveRegion = LiveRegionMode.Assertive }, color = t.fg) }
+    Muted("Turns are saved with this note for ${HelperHistoryLimits.DAYS} days, then kept as a short summary. Clear deletes them.", color = t.faint)
+}
+
+/** The summary and the answered turns, oldest first, newest in view; each with its own Insert, Copy and Clear. */
+@Composable
+private fun HistoryList(history: HistoryState, language: String, onInsertCode: (String, String) -> Unit, onCopy: (String) -> Unit) {
+    if (history.summary.isEmpty() && history.turns.isEmpty()) return
+    val scroll = rememberScrollState()
+    LaunchedEffect(history.turns.size) { scroll.animateScrollTo(scroll.maxValue) }
+    Column(Modifier.fillMaxWidth().heightIn(max = 440.dp).verticalScroll(scroll), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (history.summary.isNotEmpty()) {
+            Text("Earlier, condensed after ${HelperHistoryLimits.DAYS} days", style = Type.xs, color = t.faint)
+            Muted(history.summary)
+            TextBtn("Clear", { history.clearSummary() })
+        }
+        history.turns.forEach { turn ->
+            Text(
+                turn.request,
+                Modifier.align(Alignment.End).background(t.tint, RoundedCornerShape(8.dp)).padding(horizontal = 12.dp, vertical = 8.dp),
+                style = Type.sm, color = t.fg,
+            )
+            val r = turn.reply
+            if (r.kind == "code") {
+                val lang = r.language.takeIf { isLanguageId(it) } ?: language
+                CodeCard(r.code, lang)
+                if (r.summary.isNotEmpty()) Muted(r.summary)
+                if (turn.cutShort) Muted("The answer was cut short. Check the end before you run it.", color = t.faint)
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                    FilledBtn("Insert into note", { onInsertCode(r.code, lang) })
+                    TextBtn("Copy", { onCopy(r.code) })
+                    TextBtn("Clear", { history.clear(turn) })
+                }
+            } else {
+                AnswerText(r.text, mono = false)
+                if (turn.cutShort) Muted("Stopped before the end.", color = t.faint)
+                Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                    TextBtn("Copy", { onCopy(r.text) })
+                    TextBtn("Clear", { history.clear(turn) })
+                }
+            }
         }
     }
 }

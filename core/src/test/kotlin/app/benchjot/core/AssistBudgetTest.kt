@@ -107,6 +107,22 @@ class AssistBudgetTest {
         assertTrue(AssistBudget.plan(AssistInput.Raw(AssistTask.Ask, "r".repeat(4_000)), perChar) is AssistPlan.TooLarge)
     }
 
+    @Test fun theSummaryIsCutToItsShareThenDroppedBeforeTheNote() {
+        val summary = (1..200).joinToString("\n") { "2026-10-01 Ask: question $it — answer $it" }
+        val kept = AssistBudget.summaryWithin(summary, HelperHistoryLimits.PHONE_SUMMARY_TOKENS, perChar)
+        assertTrue(kept.length <= HelperHistoryLimits.PHONE_SUMMARY_TOKENS)
+        assertTrue(summary.endsWith(kept) && kept.startsWith("2026-"))
+        // Room for the note and the trimmed summary: both go.
+        val small = fits(AssistBudget.plan(AssistInput.Ask("T", "short note", "q", "python", summary), perChar), perChar)
+        assertTrue(small.prompt.contains(kept) && small.prompt.contains("short note") && small.trimmed)
+        // A note that only just fits loses the summary, not its own lines.
+        val room = OnDeviceModel.CONTEXT_TOKENS - AssistBudget.SAFETY_TOKENS - AssistBudget.MIN_REPLY_TOKENS - AssistPrompts.ask("T", "", "q", "python").length
+        val note = (1..room / 10).joinToString("\n") { "line ${"%04d".format(it)}" }.take(room - 5)
+        val big = fits(AssistBudget.plan(AssistInput.Ask("T", note, "q", "python", summary), perChar), perChar)
+        assertFalse(big.prompt.contains("<earlier>"))
+        assertTrue(big.prompt.contains(note))
+    }
+
     @Test fun askKeepsTheNotesStartAndSaysItWasCut() {
         val note = program(160, width = 49) // 7,999 chars
         val r = fits(AssistBudget.plan(AssistInput.Ask("Run 3", note, "What changed?"), perChar), perChar)

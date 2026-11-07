@@ -23,7 +23,8 @@ sealed interface AssistInput {
     data class Write(val language: String, val request: String) : AssistInput {
         override val task get() = AssistTask.Write
     }
-    data class Ask(val noteTitle: String, val noteText: String, val question: String) : AssistInput {
+    /** [summary]: the note's condensed earlier turns; trimmed to [HelperHistoryLimits.PHONE_SUMMARY_TOKENS], dropped before the note is cut. */
+    data class Ask(val noteTitle: String, val noteText: String, val question: String, val language: String = DEFAULT_LANGUAGE, val summary: String = "") : AssistInput {
         override val task get() = AssistTask.Ask
     }
     /** A prompt already in the model's chat format; it fits or is TooLarge, never trimmed. */
@@ -91,13 +92,25 @@ object AssistBudget {
         fun tooLarge() = AssistPlan.TooLarge(lastPromptTokens)
     }
 
-    // Ask: keep the note's beginning, cut whole lines from its end.
+    // Ask: the summary first cut to its newest lines within its token share, then dropped, then
+    // the note's beginning kept and whole lines cut from its end.
     private fun planAsk(input: AssistInput.Ask, b: Fitter): AssistPlan {
         val need = b.minReply()
-        b.fit(AssistPrompts.ask(input.noteTitle, input.noteText, input.question), need)?.let { return it }
+        fun prompt(note: String, summary: String) = AssistPrompts.ask(input.noteTitle, note, input.question, input.language, summary)
+        val summary = summaryWithin(input.summary, HelperHistoryLimits.PHONE_SUMMARY_TOKENS, b.counter)
+        b.fit(prompt(input.noteText, summary), need, trimmed = summary != input.summary.trim())?.let { return it }
+        if (summary.isNotEmpty()) b.fit(prompt(input.noteText, ""), need, trimmed = true)?.let { return it }
         val lines = input.noteText.split("\n")
-        fun attempt(keep: Int) = b.fit(AssistPrompts.ask(input.noteTitle, lines.take(keep).joinToString("\n") + "\n" + NOTE_CUT, input.question), need, trimmed = true)
+        fun attempt(keep: Int) = b.fit(prompt(lines.take(keep).joinToString("\n") + "\n" + NOTE_CUT, ""), need, trimmed = true)
         return largestFitting(lines.size - 1, ::attempt) ?: b.tooLarge()
+    }
+
+    /** The summary's newest whole lines that count at most [maxTokens] ('' when none fit). */
+    fun summaryWithin(summary: String, maxTokens: Int, counter: TokenCounter): String {
+        val lines = summary.trim().split("\n").filter { it.isNotBlank() }
+        var keep = 0
+        while (keep < lines.size && counter.count(lines.takeLast(keep + 1).joinToString("\n")) <= maxTokens) keep++
+        return lines.takeLast(keep).joinToString("\n")
     }
 
     // Fix: the answer rewrites the code shown, so it needs room for that code too.

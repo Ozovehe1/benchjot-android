@@ -51,6 +51,9 @@ val ACTION_TEXT: Map<String, String> = mapOf(
     "username" to "Couldn’t save your username.",
     "fix" to "Fix couldn’t finish.",
     "helper" to "The helper couldn’t finish.",
+    "history_load" to "Couldn’t load the earlier turns.",
+    "history_save" to "Couldn’t save this turn.",
+    "history_clear" to "Couldn’t clear it.",
     "run_server" to "The server run couldn’t finish.",
     "runner_start" to "The runner couldn’t start.",
 )
