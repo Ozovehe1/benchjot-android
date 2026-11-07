@@ -213,6 +213,7 @@ internal object LlmProtocol {
     private const val TITLE = "title"
     private const val NOTE = "note"
     private const val QUESTION = "question"
+    private const val SUMMARY = "summary"
     private const val WINDOW_FIRST = "window_first"
     private const val WINDOW_LAST = "window_last"
     private const val WINDOW_TOTAL = "window_total"
@@ -224,7 +225,7 @@ internal object LlmProtocol {
                 input.cursorLine?.let { b.putInt(CURSOR_LINE, it) }
             }
             is AssistInput.Write -> { b.putString(KIND, "write"); b.putString(LANGUAGE, input.language); b.putString(REQUEST, input.request) }
-            is AssistInput.Ask -> { b.putString(KIND, "ask"); b.putString(TITLE, input.noteTitle); b.putString(NOTE, input.noteText); b.putString(QUESTION, input.question) }
+            is AssistInput.Ask -> { b.putString(KIND, "ask"); b.putString(TITLE, input.noteTitle); b.putString(NOTE, input.noteText); b.putString(QUESTION, input.question); b.putString(LANGUAGE, input.language); b.putString(SUMMARY, input.summary) }
             is AssistInput.Raw -> { b.putString(KIND, "raw"); b.putString(TASK, input.task.name); b.putString(PROMPT, input.prompt) }
         }
     }
@@ -235,7 +236,7 @@ internal object LlmProtocol {
         return when (b.getString(KIND)) {
             "fix" -> AssistInput.Fix(s(LANGUAGE), s(CODE), s(ERROR_TEXT), if (b.containsKey(CURSOR_LINE)) b.getInt(CURSOR_LINE) else null)
             "write" -> AssistInput.Write(s(LANGUAGE), s(REQUEST))
-            "ask" -> AssistInput.Ask(s(TITLE), s(NOTE), s(QUESTION))
+            "ask" -> AssistInput.Ask(s(TITLE), s(NOTE), s(QUESTION), s(LANGUAGE).ifEmpty { app.benchjot.core.DEFAULT_LANGUAGE }, s(SUMMARY))
             "raw" -> AssistTask.entries.firstOrNull { it.name == b.getString(TASK) }?.let { AssistInput.Raw(it, s(PROMPT)) }
             else -> null
         }

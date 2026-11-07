@@ -15,6 +15,10 @@ import app.benchjot.core.SourcedLink
 import app.benchjot.core.DEFAULT_LANGUAGE
 import app.benchjot.core.CodeFile
 import app.benchjot.core.searchTerms
+import app.benchjot.core.HelperReply
+import app.benchjot.core.SavedHistory
+import app.benchjot.core.SavedTurn
+import app.benchjot.core.stored
 import app.benchjot.core.NOTE_INDEX_COLUMNS
 import app.benchjot.core.isMissingFromSchema
 import io.github.jan.supabase.auth.Auth
@@ -53,6 +57,9 @@ class DataError(message: String, val status: Int? = null, val code: String? = nu
 
 @Serializable
 private data class IdRow(val id: String)
+
+@Serializable
+private data class SummaryRow(val summary: String)
 
 @Serializable
 data class Profile(val plan: String? = null, val username: String? = null)
@@ -247,5 +254,42 @@ object Backend {
     suspend fun deleteSnippet(id: String) {
         requireRows(client.from("snippets").delete { select(Columns.list("id")); filter { eq("id", id) } }.decodeList<IdRow>())
         changed()
+    }
+
+    // ------------------------------------------------------------------ helper history
+    // The note's saved helper turns (helper_turns) and the summary the database condensed from older
+    // ones (helper_summaries). Owner only (RLS). The helper writes only these, never the note.
+
+    /** The note's summary and its saved turns, oldest first; rows the app can't read are skipped. */
+    suspend fun helperHistory(entryId: String): SavedHistory {
+        val turns = allRows { from, to ->
+            client.from("helper_turns").select(Columns.list("id", "task", "request", "answer", "created_at")) {
+                filter { eq("entry_id", entryId) }
+                order("created_at", Order.ASCENDING)
+                order("id", Order.ASCENDING)
+                range(from, to)
+            }.decodeList<SavedTurn>()
+        }
+        val summary = client.from("helper_summaries").select(Columns.list("summary")) { filter { eq("entry_id", entryId) } }.decodeList<SummaryRow>().firstOrNull()?.summary.orEmpty()
+        return SavedHistory(summary, turns.filter { it.readable })
+    }
+
+    /** Saves one answered turn with the note; returns the saved row. */
+    suspend fun saveHelperTurn(entryId: String, task: String, request: String, answer: HelperReply): SavedTurn =
+        client.from("helper_turns").insert(buildJsonObject {
+            put("entry_id", entryId)
+            put("task", task)
+            put("request", request)
+            put("answer", answer.stored())
+        }) { select(Columns.list("id", "task", "request", "answer", "created_at")) }.decodeSingle<SavedTurn>()
+
+    /** Clear: deletes one saved turn. */
+    suspend fun deleteHelperTurn(id: String) {
+        client.from("helper_turns").delete { filter { eq("id", id) } }
+    }
+
+    /** Clear on the summary: deletes the note's condensed earlier turns. */
+    suspend fun deleteHelperSummary(entryId: String) {
+        client.from("helper_summaries").delete { filter { eq("entry_id", entryId) } }
     }
 }

@@ -352,14 +352,15 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
                 val code = snippets.value.orEmpty()
                 val lang = helperLanguage(code.map { it.language })
                 HelperSheet(
+                    entryId = entry.id,
                     noteTitle = displayTitle(title),
-                    // Read on the tap that asks, never before: the note's text, its code cells and their last errors.
+                    // Read on the tap that asks, never before: the note's text, and each code cell with its notes and last run.
                     noteBody = { body.text },
                     cells = { helperCells(code) },
                     language = lang,
-                    onInsertCode = { c ->
+                    onInsertCode = { c, codeLanguage ->
                         scope.launch {
-                            runCatching { Backend.createSnippets(entry.id, count, listOf(CodeFile("", lang, c))) }
+                            runCatching { Backend.createSnippets(entry.id, count, listOf(CodeFile("", codeLanguage, c))) }
                                 .onFailure { uploadError = Accounts.message(it, "upload") }
                         }
                         helper = false

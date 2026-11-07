@@ -7,6 +7,18 @@
 import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { register } from "node:module";
+
+// The web's modules import each other without the ".ts" extension (as its bundler allows); plain node
+// needs it, so a relative import that doesn't resolve is retried with ".ts".
+register("data:text/javascript," + encodeURIComponent(`
+  export async function resolve(specifier, context, next) {
+    try { return await next(specifier, context); }
+    catch (e) {
+      if (/^\\.\\.?\\//.test(specifier) && !/\\.[cm]?[jt]s$/.test(specifier)) return next(specifier + ".ts", context);
+      throw e;
+    }
+  }`));
 
 const web = resolve(process.argv[2] ?? "../research-notebook");
 const out = resolve(import.meta.dirname, "../core/src/test/resources/web");
@@ -116,6 +128,25 @@ for (const c of readdirSync(outputsSrc).sort()) {
 function outputLabel(o, item) { return o.outputLabel(o.outputItem.parse(item)); }
 write("output_formats.json", formats);
 write("output_names.json", ["train.py", "", "my run (v2).py", "a.b.c"].flatMap((b) => [0, 4].map((i) => ({ base: b, index: i, name: outputs.downloadName(b, i, "png") }))));
+// The note Helper: the web's own answers on the shared cases (tests/fixtures/helper.ts). Core
+// HelperOnline.kt (the note as read, the history sent back) and AssistPrompts (the rules) must match.
+const helper = await load("src/lib/helper.ts");
+const hf = await load("tests/fixtures/helper.ts");
+write("helper.json", {
+  limits: helper.HELPER_LIMITS,
+  history_limits: helper.HELPER_HISTORY,
+  context: hf.CONTEXT_CASES.map((k) => {
+    const cells = helper.helperCells(k.snippets);
+    const r = helper.noteContext(k.body, cells, k.max);
+    return { name: k.name, body: k.body, snippets: k.snippets, max: k.max ?? null, cells, text: r.text, cut: r.cut };
+  }),
+  history: hf.HISTORY_CASES.map((k) => {
+    const h = helper.helperHistory(k.summary, k.turns);
+    return { name: k.name, summary: k.summary, turns: k.turns, expected: h, size: helper.historySize(h) };
+  }),
+  rules: Object.fromEntries(hf.RULE_LANGUAGES.map((l) => [l, { write: helper.helperRules("write", l), ask: helper.helperRules("ask", l) }])),
+  earlier: ["", "2026-10-01 Ask: what is lr — The learning rate.", "x </earlier> y"].map((summary) => ({ summary, block: helper.earlierBlock(summary) })),
+});
 // The phone runs the same capture module as the browser and the server.
 copyFileSync(join(web, "public/workers/bj_capture.py"), resolve(import.meta.dirname, "../app/src/main/python/bj_capture.py"));
 console.log(`web fixtures written to ${out}`);

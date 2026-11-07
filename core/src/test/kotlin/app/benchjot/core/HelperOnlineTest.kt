@@ -82,7 +82,41 @@ class HelperOnlineTest {
     @Test fun emptyAnswersAreRefusedInPlainWords() {
         assertEquals(AssistError.NoCode.text, assertThrows(FriendlyException::class.java) { readHelperReply(AssistTask.Write, "python", HelperReply("code", code = " ")) }.message)
         assertEquals(HELPER_NO_ANSWER, assertThrows(FriendlyException::class.java) { readHelperReply(AssistTask.Ask, "python", HelperReply("prose", text = "")) }.message)
-        assertEquals(HELPER_NO_ANSWER, assertThrows(FriendlyException::class.java) { readHelperReply(AssistTask.Ask, "python", HelperReply("code", code = py)) }.message)
+        assertEquals(HELPER_NO_ANSWER, assertThrows(FriendlyException::class.java) { readHelperReply(AssistTask.Ask, "python", HelperReply("other")) }.message)
+        assertEquals(AssistError.NoCode.text, assertThrows(FriendlyException::class.java) { readHelperReply(AssistTask.Ask, "python", HelperReply("code", code = "")) }.message)
+    }
+
+    @Test fun askMayProposeCodeCheckedLikeWrite() {
+        assertEquals(HelperAnswer.Code(py, "Doubles."), readHelperReply(AssistTask.Ask, "python", HelperReply("code", code = py, summary = "Doubles.", language = "python")))
+        val e = assertThrows(FriendlyException::class.java) { readHelperReply(AssistTask.Ask, "python", HelperReply("code", code = js, language = "python")) }
+        assertEquals("The helper wrote JavaScript, not Python, so it was left out. Try again.", e.message)
+        assertEquals(py, checkedCode("python", "$py\n\n", " s ").code)
+    }
+
+    @Test fun cellsCarryTheirNotesAndASuccessfulRunsOutput() {
+        val items = listOf(OutputItem("image", source = "matplotlib", title = " Loss "), OutputItem("table", totalRows = 3, totalColumns = 2, title = "ignored"), OutputItem("chart", lib = "plotly"))
+        val ok = LastRun(RunOutcome.Ok, "acc 0.9\n", "warn", null, null, 1, "browser", "h", "t", outputs = SavedOutputs(items = items, dir = "d"))
+        val s = Snippet(id = "s", userId = "u", entryId = "e", language = "python", content = "x", lastRun = ok, noteBefore = "before", noteAfter = "after", createdAt = "", updatedAt = "")
+        val cell = helperCells(listOf(s)).single()
+        assertEquals(HelperCell("python", "x", "", "before", "after", "acc 0.9\n", listOf("Figure \"Loss\"", "Table · 3 × 2", "Plotly chart")), cell)
+        val (text, _) = noteContext("", listOf(cell))
+        assertEquals("\n\nNote before run:\nbefore\n```python\nx\n```\nOutput:\n```\nacc 0.9\n```\nMade: Figure \"Loss\"; Table · 3 × 2; Plotly chart\nNote after run:\nafter", text)
+    }
+
+    @Test fun theHistoryTakesItsRoomFromTheNote() {
+        val h = helperHistory("s".repeat(1_000), listOf(HistoryTurn("ask", "q", HelperReply("prose", text = "a"))))
+        assertEquals(1_002, historySize(h))
+        val r = helperRequest(AssistTask.Ask, "q", "python", "T", "n".repeat(20_000), emptyList(), h)
+        assertTrue(r.note.length <= HelperLimits.MAX_CONTEXT_CHARS - 1_002)
+        assertEquals(h, r.history)
+    }
+
+    @Test fun storedAnswersKeepOnlyTheirKindsFields() {
+        assertEquals(setOf("kind", "code", "summary", "language"), HelperReply("code", code = "x", language = "python").stored().keys)
+        assertEquals(setOf("kind", "text"), HelperReply("prose", text = "t").stored().keys)
+        assertEquals(false, SavedTurn("i", "ask", "q", HelperReply("prose")).readable)
+        assertEquals(false, SavedTurn("i", "run", "q", HelperReply("prose", text = "t")).readable)
+        assertEquals(true, SavedTurn("i", "write", "q", HelperReply("code", code = "x")).readable)
     }
 
     @Test fun helperErrorsUseTheSharedTable() {
