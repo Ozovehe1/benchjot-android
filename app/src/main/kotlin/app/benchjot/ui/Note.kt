@@ -42,7 +42,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import app.benchjot.core.Autosaver
 import app.benchjot.core.CodeFile
-import app.benchjot.core.DEFAULT_LANGUAGE
+import app.benchjot.core.helperCells
+import app.benchjot.core.helperLanguage
 import app.benchjot.core.Entry
 import app.benchjot.core.NoteIndexItem
 import app.benchjot.core.OUTCOME_CHOICES
@@ -349,13 +350,14 @@ private fun Editor(entry: Entry, pro: Boolean, nav: NavHostController) {
             }
             if (helper) {
                 val code = snippets.value.orEmpty()
+                val lang = helperLanguage(code.map { it.language })
                 HelperSheet(
                     noteTitle = displayTitle(title),
-                    // Read on the tap that asks, never before: the note's text and its code blocks.
-                    noteText = { (listOf(body.text) + code.map { "```${it.language}\n${it.content}\n```" }).joinToString("\n\n") },
-                    language = code.lastOrNull()?.language?.takeIf { it != "text" } ?: DEFAULT_LANGUAGE,
+                    // Read on the tap that asks, never before: the note's text, its code cells and their last errors.
+                    noteBody = { body.text },
+                    cells = { helperCells(code) },
+                    language = lang,
                     onInsertCode = { c ->
-                        val lang = code.lastOrNull()?.language?.takeIf { it != "text" } ?: DEFAULT_LANGUAGE
                         scope.launch {
                             runCatching { Backend.createSnippets(entry.id, count, listOf(CodeFile("", lang, c))) }
                                 .onFailure { uploadError = Accounts.message(it, "upload") }

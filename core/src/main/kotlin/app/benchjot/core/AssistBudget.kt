@@ -155,16 +155,16 @@ object AssistBudget {
     }
 
     /**
-     * The error's last lines, at most [ASSIST_ERROR_TAIL_CHARS] chars, cut at a line start. A last
+     * The error's last lines, at most [max] chars (the phone's [ASSIST_ERROR_TAIL_CHARS] unless said), cut at a line start. A last
      * line longer than that alone keeps its end. The flag says whether anything was cut.
      */
-    internal fun errorTail(error: String): Pair<List<String>, Boolean> {
+    internal fun errorTail(error: String, max: Int = ASSIST_ERROR_TAIL_CHARS): Pair<List<String>, Boolean> {
         val lines = error.trimEnd().split("\n")
         val kept = ArrayDeque<String>()
         var chars = 0
         for (line in lines.asReversed()) {
-            if (kept.isNotEmpty() && chars + line.length + 1 > ASSIST_ERROR_TAIL_CHARS) break
-            kept.addFirst(if (kept.isEmpty()) line.takeLast(ASSIST_ERROR_TAIL_CHARS) else line)
+            if (kept.isNotEmpty() && chars + line.length + 1 > max) break
+            kept.addFirst(if (kept.isEmpty()) line.takeLast(max) else line)
             chars += kept.first().length + 1
         }
         return kept.toList() to (kept.size < lines.size || kept.first().length < lines[lines.size - kept.size].length)
