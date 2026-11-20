@@ -1,0 +1,338 @@
+name: Android
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      test_user:
+        description: "Throwaway test account username (signed-in smoke test)"
+        required: false
+      test_pass:
+        description: "Its password"
+        required: false
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write # to publish the APK as a release
+  actions: read # scripts/restore-artifact.sh: build caches from earlier runs
+
+jobs:
+  ruff:
+    # Ruff built from source for Android (bionic), cached per version and build script.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: cache
+        uses: actions/cache@v4
+        with:
+          path: app/src/main/jniLibs
+          key: ruff-android-${{ hashFiles('scripts/ruff.lock', 'scripts/build-ruff-android.sh') }}
+      - name: Build Ruff for Android
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: bash scripts/build-ruff-android.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ruff-android
+          path: app/src/main/jniLibs
+
+  python-armv7:
+    # Python 3.13 + its native packages (scripts/python-armv7-packages.txt) for 32-bit ARM phones, which Chaquopy only publishes for 64-bit
+    # (scripts/build-python-armv7.sh). Cached per Python version and inputs as an artifact named by its key, which
+    # every branch and main can restore (scripts/restore-artifact.sh), so a merge doesn't rebuild it.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: key
+        run: echo "key=python-armv7-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-armv7.sh', 'scripts/python-armv7-packages.txt', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
+      - id: cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/restore-artifact.sh "${{ steps.key.outputs.key }}" build/python-armv7 >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-java@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Build CPython, Chaquopy runtime and the native packages that don't link NumPy (pillow, kiwisolver, ...) for armeabi-v7a
+        if: steps.cache.outputs.hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq patchelf
+          bash scripts/build-python-armv7.sh
+      - uses: actions/upload-artifact@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          name: ${{ steps.key.outputs.key }}
+          path: build/python-armv7
+          retention-days: 90
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-armv7
+          path: build/python-armv7
+
+  python-sci:
+    # The NumPy-2 scientific stack (scripts/python-sci-packages.txt: OpenBLAS, numpy, contourpy, matplotlib,
+    # pandas, scipy, scikit-learn) cross-built for each ABI the app ships (scripts/build-python-sci.sh).
+    # Cached per ABI and inputs the same way as python-armv7.
+    needs: python-armv7
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        abi: [armeabi-v7a, arm64-v8a, x86_64]
+    steps:
+      - uses: actions/checkout@v4
+      - id: key
+        run: echo "key=python-sci-${{ matrix.abi }}-$(grep -oE 'version = "3\.[0-9]+"' app/build.gradle.kts | grep -oE '3\.[0-9]+')-${{ hashFiles('scripts/build-python-sci.sh', 'scripts/python-sci-packages.txt', 'gradle/libs.versions.toml') }}" >> "$GITHUB_OUTPUT"
+      - id: cache
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash scripts/restore-artifact.sh "${{ steps.key.outputs.key }}" build/python-sci/${{ matrix.abi }} >> "$GITHUB_OUTPUT"
+      - uses: actions/download-artifact@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          name: python-armv7
+          path: build/python-armv7
+      - uses: actions/setup-python@v5
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-java@v4 # sdkmanager installs the NDK
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Cross-build OpenBLAS, numpy, contourpy, matplotlib, pandas, scipy and scikit-learn
+        if: steps.cache.outputs.hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq patchelf pkg-config
+          bash scripts/build-python-sci.sh ${{ matrix.abi }}
+      - uses: actions/upload-artifact@v4
+        if: steps.cache.outputs.hit != 'true'
+        with:
+          name: ${{ steps.key.outputs.key }}
+          path: build/python-sci/${{ matrix.abi }}/*.whl
+          retention-days: 90
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-sci-${{ matrix.abi }}
+          path: build/python-sci/${{ matrix.abi }}/*.whl
+
+  build:
+    needs: [ruff, python-armv7, python-sci]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-armv7
+          path: build/python-armv7
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: python-sci-*
+          path: build/python-sci/wheels
+          merge-multiple: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Chaquopy builds the app's Python with the same Python version it embeds.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: No WebView in the sources
+        run: bash scripts/check-no-webview.sh
+
+      - name: Web parity (fixtures, transpiler and Ruff match the web app's current code)
+        run: |
+          git clone --depth 1 https://github.com/Ozovehe1/benchjot.git /tmp/web
+          (cd /tmp/web && npm ci --ignore-scripts --no-audit --no-fund --silent) # the web modules import their own deps (zod)
+          node --experimental-strip-types scripts/web-fixtures.mjs /tmp/web
+          node --experimental-strip-types scripts/web-engines.mjs /tmp/web
+          git status --short
+          git add -N core/src/test/resources/web app/src/main/assets/sample
+          git diff --exit-code -- core/src/test/resources/web engine/src/test/resources/web engine/src/main/resources/engine app/src/main/python/bj_capture.py app/src/main/assets/sample || { echo "::error::The web app changed. Run scripts/web-fixtures.mjs and scripts/web-engines.mjs, update the app to match, commit."; exit 1; }
+
+      - name: Ruff (official binary for the host tests; the Android build from the ruff job)
+        run: bash scripts/fetch-ruff.sh host
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ruff-android
+          path: app/src/main/jniLibs
+
+      - name: Unit tests (core rules, JS engine, Ruff vs the web's WASM)
+        run: ./gradlew --no-daemon :core:test :engine:test :app:testDebugUnitTest
+
+      # One APK per chip type, as apps outside Google Play do (Play splits them itself): each phone
+      # downloads only its own Python packages. arm64-v8a is the main download; armeabi-v7a is for
+      # older 32-bit phones.
+      - name: "Build APKs (phones: arm64-v8a and armeabi-v7a; armeabi-v7a debug; emulator x86_64 release, debug and instrumented tests)"
+        run: |
+          mkdir -p apks
+          ./gradlew --no-daemon -Pabi=arm64-v8a :app:assembleRelease
+          cp app/build/outputs/apk/release/app-release.apk apks/app-release-arm64-v8a.apk
+          ./gradlew --no-daemon -Pabi=armeabi-v7a :app:assembleRelease :app:assembleDebug
+          cp app/build/outputs/apk/release/app-release.apk apks/app-release-armeabi-v7a.apk
+          cp app/build/outputs/apk/debug/app-debug.apk apks/app-debug-armeabi-v7a.apk
+          ./gradlew --no-daemon -Pabi=x86_64 :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest
+          cp app/build/outputs/apk/release/app-release.apk apks/app-release-x86_64.apk
+          cp app/build/outputs/apk/debug/app-debug.apk apks/app-debug-x86_64.apk
+          cp app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk apks/
+
+      - name: No WebView in the APK
+        run: |
+          bash scripts/check-no-webview.sh apks/app-release-arm64-v8a.apk
+          bash scripts/check-no-webview.sh apks/app-release-armeabi-v7a.apk
+
+      - name: Every engine is in the APKs for each ABI (Python, numpy, Ruff; by ELF header)
+        run: |
+          python3 scripts/check-apk-abis.py apks/app-release-arm64-v8a.apk arm64-v8a
+          python3 scripts/check-apk-abis.py apks/app-release-armeabi-v7a.apk armeabi-v7a
+          python3 scripts/check-apk-abis.py apks/app-debug-armeabi-v7a.apk armeabi-v7a
+          python3 scripts/check-apk-abis.py apks/app-release-x86_64.apk x86_64
+
+      - name: APK size
+        run: |
+          for f in apks/app-release-*.apk; do ls -l "$f" | awk '{printf "%s: %.1f MB\n", $9, $5/1048576}'; done | tee -a "$GITHUB_STEP_SUMMARY"
+          unzip -l apks/app-release-arm64-v8a.apk | sort -k1 -n -r | head -16
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchjot-apk
+          path: apks/
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: benchjot-apk
+          path: apks
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Mask test account
+        if: ${{ inputs.test_pass != '' }}
+        run: echo "::add-mask::${{ inputs.test_pass }}"
+      - name: Instrumented engine tests + emulator smoke test
+        env:
+          BJ_USER: ${{ inputs.test_user }}
+          BJ_PASS: ${{ inputs.test_pass }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: bash scripts/emulator-checks.sh apks
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-screenshots
+          path: smoke/
+
+  armv7:
+    # The 32-bit ARM engines running: the armeabi-v7a debug APK on an x86_64 Android 11
+    # image, whose ARM translation (ndk_translation) runs 32-bit ARM apps; the app must
+    # install as armeabi-v7a (scripts/instrumented.sh checks) and pass the same tests.
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: benchjot-apk
+          path: apks
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Instrumented engine tests as armeabi-v7a
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect
+          script: bash scripts/instrumented.sh apks/app-debug-armeabi-v7a.apk apks/app-debug-androidTest.apk armeabi-v7a
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: armv7-logs
+          path: smoke/
+
+  release:
+    # Only an APK that passed the emulator checks is published.
+    needs: [build, smoke, armv7]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: benchjot-apk
+          path: apks
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="build-${GITHUB_RUN_NUMBER}"
+          cp apks/app-release-arm64-v8a.apk benchjot.apk
+          cp apks/app-release-armeabi-v7a.apk benchjot-32bit.apk
+          gh release create "$TAG" benchjot.apk benchjot-32bit.apk \
+            --title "Benchjot for Android 0.1.${GITHUB_RUN_NUMBER}" \
+            --notes "Built from ${GITHUB_SHA::7}. benchjot.apk is for 64-bit phones (arm64-v8a: almost every Android phone of the last several years); benchjot-32bit.apk is for older 32-bit phones (armeabi-v7a). Each carries Python 3.13 with numpy, pandas, matplotlib, seaborn, scipy, scikit-learn, Pillow, Plotly, Altair and Bokeh for its own chip only; figures, tables and charts open on their own screen and download as PNG, JPG, WebP, SVG, PDF, CSV or JSON. Install it on your phone (allow installs from your browser or Files app). Signed with the repo's sideload key, so each build installs over the last." \
+            --latest
+      - name: The web's APK link reaches this release (benchjot.apk, full release, latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # GitHub can take a few seconds to point releases/latest at a new release.
+          for i in 1 2 3 4 5 6; do bash scripts/check-release.sh "build-${GITHUB_RUN_NUMBER}" && exit 0; sleep 10; done
+          exit 1
+      # Only the newest release is kept (the owner's choice): once this one is live and its download
+      # link checked, every older release and tag is deleted, so old builds and the old commits
+      # their tags point at don't pile up. The download link always serves the newest.
+      - name: Delete older releases and tags
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          KEEP="build-${GITHUB_RUN_NUMBER}"
+          for tag in $(gh api --paginate "repos/$GITHUB_REPOSITORY/tags" --jq '.[].name'); do
+            [ "$tag" = "$KEEP" ] && continue
+            if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
+            else
+              gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/tags/$tag"
+            fi
+            echo "deleted $tag"
+          done
+          # Releases left without a tag (drafts) go too.
+          for id in $(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq ".[] | select(.tag_name != \"$KEEP\") | .id"); do
+            gh api -X DELETE "repos/$GITHUB_REPOSITORY/releases/$id"
+          done

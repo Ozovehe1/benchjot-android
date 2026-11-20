@@ -1,0 +1,63 @@
+{
+  "version": "0.17.3",
+  "settings": {
+    "line-length": 100,
+    "indent-width": 4,
+    "lint": {
+      "select": [
+        "E4",
+        "E7",
+        "E9",
+        "F",
+        "B"
+      ]
+    }
+  },
+  "samples": [
+    {
+      "code": "import os\nimport sys\nprint(1)\n",
+      "fixable": 2,
+      "fixed": "print(1)\n"
+    },
+    {
+      "code": "x = f\"a\"\nprint(x)\n",
+      "fixable": 1,
+      "fixed": "x = \"a\"\nprint(x)\n"
+    },
+    {
+      "code": "def f():\n    y = 2\n    return 1\n",
+      "fixable": 1,
+      "fixed": "def f():\n    return 1\n"
+    },
+    {
+      "code": "s = \"🌍\"; import json\nprint(s)\n",
+      "fixable": 1,
+      "fixed": "s = \"🌍\" \nprint(s)\n"
+    },
+    {
+      "code": "import os, sys\nprint(sys.argv)\n",
+      "fixable": 2,
+      "fixed": "import sys\nprint(sys.argv)\n"
+    },
+    {
+      "code": "print(1)\n",
+      "fixable": 0,
+      "fixed": "print(1)\n"
+    },
+    {
+      "code": "def f(:\n",
+      "fixable": 0,
+      "fixed": "def f(:\n"
+    },
+    {
+      "code": "from math import *\nimport re\nprint(pi)\n",
+      "fixable": 1,
+      "fixed": "from math import *\nprint(pi)\n"
+    },
+    {
+      "code": "try:\n    pass\nexcept:\n    pass\nl = lambda: 0\n",
+      "fixable": 1,
+      "fixed": "try:\n    pass\nexcept:\n    pass\ndef l():\n    return 0\n"
+    }
+  ]
+}

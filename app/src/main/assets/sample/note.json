@@ -1,0 +1,532 @@
+{
+  "note": {
+    "title": "Do 4 layers beat 2? Balls vs handwritten digits",
+    "notes": "**Question** Does a 4-layer network beat a 2-layer one? On a simple task (red/blue balls), on a hierarchical one (handwritten digits), and on data the networks never saw.\n\n**Setup** Each 4-layer net is compared with a 2-layer net of the same width and one with the same number of weights; digits also get a 4-layer convolutional net. Same optimiser and number of weight updates; each net's learning rate chosen on validation; 10 seeds; Welch's t-test.\n\n**Result** On familiar data, depth makes no real difference once the nets are the same size. Under shift (moved digits, another dataset) 4 dense layers do slightly better than 2. The large gains come from convolution: +18 points on shifted digits, +4.7 on USPS. No network extrapolates the spiral.",
+    "outcome": "success"
+  },
+  "cells": [
+    {
+      "id": "sample-balls",
+      "filename": "balls.py",
+      "language": "python",
+      "content": "# 2-layer vs 4-layer networks on red/blue balls. Same data, same optimiser, same number of\n# weight updates. Each network gets the learning rate that works best for it on a validation\n# set; the test sets are used once, at the end, over 10 fresh seeds.\nimport math\nimport matplotlib.pyplot as plt, numpy as np, pandas as pd, torch, torch.nn as nn\nfrom scipy import stats\nfrom sklearn.datasets import make_moons\n\ntorch.set_num_threads(4)\nEPOCHS, BATCH, N_TRAIN = 100, 64, 2000\nLRS, TUNE_SEEDS, SEEDS = (3e-4, 1e-3, 3e-3, 1e-2), (100, 101), range(10)\nWIDTH = 16\n\n\ndef spirals(n, noise=0.2, seed=0, part=(0.0, 1.0)):\n    \"\"\"Two interleaved spirals, two turns each. `part` keeps a stretch of each arm (0 = centre, 1 = tip).\"\"\"\n    r = np.random.default_rng(seed)\n    t = np.sqrt(r.uniform(part[0] ** 2, part[1] ** 2, n // 2)) * 4 * np.pi\n    arm = np.c_[t * np.cos(t), t * np.sin(t)]\n    X = np.r_[arm, -arm] + r.normal(0, noise, (n, 2))\n    return X, np.r_[np.zeros(n // 2), np.ones(n // 2)].astype(int)\n\n\ndef moons(n, noise=0.2, seed=0):\n    return make_moons(n, noise=noise, random_state=seed)\n\n\n# Each task: training data, validation, and the tests of generalisation (data the nets never saw).\nTASKS = {\n    \"moons\": dict(make=moons, noise=0.2, tests={\"test (same distribution)\": dict(), \"noisier balls\": dict(noise=0.3)}),\n    \"spirals\": dict(make=spirals, noise=0.2, tests={\"test (same distribution)\": dict(), \"noisier balls\": dict(noise=0.3)}),\n}\n\ncount = lambda sizes: sum(a * b + b for a, b in zip(sizes, sizes[1:]))\ndeep = [WIDTH] * 3\nsame_weights = round((count([2, *deep, 2]) - 2) / 5)  # one hidden layer: 2h + h + 2h + 2 weights\nARCHS = {\"2-layer, same width\": [WIDTH], \"4-layer\": deep, \"2-layer, same weights\": [same_weights]}\n\n\ndef tensors(X, y, scale):\n    return torch.tensor((X - scale[0]) / scale[1], dtype=torch.float32), torch.tensor(y)\n\n\ndef mlp(hidden):\n    layers, prev = [], 2\n    for h in hidden:\n        layers += [nn.Linear(prev, h), nn.ReLU()]\n        prev = h\n    return nn.Sequential(*layers, nn.Linear(prev, 2))\n\n\n@torch.no_grad()\ndef accuracy(net, X, y):\n    return (net(X).argmax(1) == y).float().mean().item()\n\n\ndef train(hidden, lr, seed, X, y):\n    \"\"\"The same number of weight updates whatever the training set's size (EPOCHS over N_TRAIN points).\"\"\"\n    torch.manual_seed(seed)\n    net = mlp(hidden)\n    opt, loss = torch.optim.Adam(net.parameters(), lr=lr), nn.CrossEntropyLoss()\n    steps, done = EPOCHS * math.ceil(N_TRAIN / BATCH), 0\n    while done < steps:\n        for idx in torch.randperm(len(X)).split(BATCH):\n            opt.zero_grad()\n            loss(net(X[idx]), y[idx]).backward()\n            opt.step()\n            done += 1\n            if done == steps:\n                break\n    return net\n\n\ndef ci95(a):\n    return stats.t.ppf(0.975, len(a) - 1) * np.std(a, ddof=1) / math.sqrt(len(a))\n\n\nrows, verdicts, nets = [], [], {}\nfor task, spec in TASKS.items():\n    X, y = spec[\"make\"](N_TRAIN + 500, noise=spec[\"noise\"], seed=0)\n    scale = (X[:N_TRAIN].mean(0), X[:N_TRAIN].std(0))\n    Xtr, ytr = tensors(X[:N_TRAIN], y[:N_TRAIN], scale)\n    Xval, yval = tensors(X[N_TRAIN:], y[N_TRAIN:], scale)\n    tests = {name: tensors(*spec[\"make\"](1000, **{\"noise\": spec[\"noise\"], **kw}, seed=1), scale) for name, kw in spec[\"tests\"].items()}\n    small = tensors(*spec[\"make\"](200, noise=spec[\"noise\"], seed=2), scale)\n    if task == \"spirals\":  # trained on the inner 70% of each arm, tested on the outer 30%\n        inner = tensors(*spirals(N_TRAIN, seed=3, part=(0.0, 0.7)), scale)\n        outer = tensors(*spirals(1000, seed=4, part=(0.7, 1.0)), scale)\n    scores = {}\n    for name, hidden in ARCHS.items():\n        lr = max(LRS, key=lambda lr: np.mean([accuracy(train(hidden, lr, s, Xtr, ytr), Xval, yval) for s in TUNE_SEEDS]))\n        runs = {k: [] for k in [\"train\", *tests, \"trained on 200 points\"] + ([\"outer arm (extrapolation)\"] if task == \"spirals\" else [])}\n        for s in SEEDS:\n            net = train(hidden, lr, s, Xtr, ytr)\n            runs[\"train\"].append(accuracy(net, Xtr, ytr))\n            for t, (Xt, yt) in tests.items():\n                runs[t].append(accuracy(net, Xt, yt))\n            runs[\"trained on 200 points\"].append(accuracy(train(hidden, lr, s, *small), *tests[\"test (same distribution)\"]))\n            if task == \"spirals\":\n                runs[\"outer arm (extrapolation)\"].append(accuracy(train(hidden, lr, s, *inner), *outer))\n            if s == 0:\n                nets[task, name] = (net, scale)\n        scores[name] = runs\n        rows.append({\"task\": task, \"network\": name, \"weights\": count([2, *hidden, 2]), \"lr\": lr,\n                     **{k: f\"{np.mean(v):.3f} ± {ci95(v):.3f}\" for k, v in runs.items()}})\n        print(f\"{task}: {name} done (lr {lr:g})\", flush=True)\n    for other in (\"2-layer, same width\", \"2-layer, same weights\"):\n        for t in scores[\"4-layer\"]:\n            if t == \"train\":\n                continue\n            a, b = np.array(scores[\"4-layer\"][t]), np.array(scores[other][t])\n            p = stats.ttest_ind(a, b, equal_var=False).pvalue if (a.std() + b.std()) > 0 else 1.0\n            verdicts.append({\"task\": task, \"4-layer vs\": other, \"test\": t, \"difference\": round(a.mean() - b.mean(), 4), \"p (Welch)\": float(f\"{p:.2g}\"),\n                             \"verdict\": \"4-layer better\" if p < 0.01 and a.mean() > b.mean() else \"2-layer better\" if p < 0.01 else \"no clear difference\"})\n\nprint(\"\\nAccuracy, mean ± 95% CI over 10 seeds (each network at its own best learning rate):\")\ndisplay(pd.DataFrame(rows).set_index([\"task\", \"network\"]))\ndisplay(pd.DataFrame(verdicts).set_index([\"task\", \"4-layer vs\", \"test\"]))\n\nxx, yy = np.meshgrid(np.linspace(-2.2, 2.2, 200), np.linspace(-2.2, 2.2, 200))\ngrid = torch.tensor(np.c_[xx.ravel(), yy.ravel()], dtype=torch.float32)\nfig, axes = plt.subplots(2, 3, figsize=(10.5, 7), layout=\"constrained\")\nfor row, task in zip(axes, TASKS):\n    X, y = TASKS[task][\"make\"](600, noise=TASKS[task][\"noise\"], seed=1)\n    for ax, name in zip(row, ARCHS):\n        net, (mu, sd) = nets[task, name]\n        with torch.no_grad():\n            p = net(grid).softmax(1)[:, 1].reshape(xx.shape)\n        ax.contourf(xx, yy, p, levels=12, cmap=\"RdBu_r\", alpha=0.55)\n        Xs = (X - mu) / sd\n        ax.scatter(*Xs.T, c=y, cmap=\"RdBu_r\", edgecolors=\"k\", linewidths=0.3, s=9)\n        ax.set_title(f\"{task}: {name}\", fontsize=10)\n        ax.set_xticks([]), ax.set_yticks([])\nfig.suptitle(\"Decision boundaries (seed 0) on new test balls\")\nplt.show()\n",
+      "last_run": {
+        "outcome": "ok",
+        "ms": 436548,
+        "line": null,
+        "where": "server",
+        "ran_at": "2026-11-18T08:55:50.801Z",
+        "code_hash": "e85962bfc085",
+        "error_line": null,
+        "stdout": "moons: 2-layer, same width done (lr 0.001)\nmoons: 4-layer done (lr 0.001)\nmoons: 2-layer, same weights done (lr 0.0003)\nspirals: 2-layer, same width done (lr 0.01)\nspirals: 4-layer done (lr 0.003)\nspirals: 2-layer, same weights done (lr 0.01)\n\nAccuracy, mean ± 95% CI over 10 seeds (each network at its own best learning rate):\n",
+        "stderr": "",
+        "outputs": {
+          "version": 1,
+          "dir": "00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000001",
+          "notes": [
+            "An output was too large to keep."
+          ],
+          "items": [
+            {
+              "kind": "table",
+              "columns": [
+                "task",
+                "network",
+                "weights",
+                "lr",
+                "train",
+                "test (same distribution)",
+                "noisier balls",
+                "trained on 200 points",
+                "outer arm (extrapolation)"
+              ],
+              "rows": [
+                [
+                  "moons",
+                  "2-layer, same width",
+                  82,
+                  0.001,
+                  "0.962 ± 0.003",
+                  "0.960 ± 0.004",
+                  "0.898 ± 0.001",
+                  "0.950 ± 0.007",
+                  null
+                ],
+                [
+                  "moons",
+                  "4-layer",
+                  626,
+                  0.001,
+                  "0.968 ± 0.001",
+                  "0.966 ± 0.003",
+                  "0.896 ± 0.002",
+                  "0.959 ± 0.002",
+                  null
+                ],
+                [
+                  "moons",
+                  "2-layer, same weights",
+                  627,
+                  0.0003,
+                  "0.965 ± 0.001",
+                  "0.966 ± 0.001",
+                  "0.896 ± 0.001",
+                  "0.957 ± 0.001",
+                  null
+                ],
+                [
+                  "spirals",
+                  "2-layer, same width",
+                  82,
+                  0.01,
+                  "0.895 ± 0.049",
+                  "0.863 ± 0.056",
+                  "0.858 ± 0.055",
+                  "0.823 ± 0.044",
+                  "0.204 ± 0.012"
+                ],
+                [
+                  "spirals",
+                  "4-layer",
+                  626,
+                  0.003,
+                  "0.999 ± 0.000",
+                  "1.000 ± 0.000",
+                  "0.999 ± 0.001",
+                  "0.989 ± 0.006",
+                  "0.182 ± 0.019"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same weights",
+                  627,
+                  0.01,
+                  "0.997 ± 0.000",
+                  "0.997 ± 0.001",
+                  "0.996 ± 0.001",
+                  "0.987 ± 0.003",
+                  "0.209 ± 0.001"
+                ]
+              ],
+              "index_columns": 2,
+              "total_rows": 6,
+              "total_columns": 7,
+              "files": {
+                "csv": "0.csv"
+              }
+            },
+            {
+              "kind": "table",
+              "columns": [
+                "task",
+                "4-layer vs",
+                "test",
+                "difference",
+                "p (Welch)",
+                "verdict"
+              ],
+              "rows": [
+                [
+                  "moons",
+                  "2-layer, same width",
+                  "test (same distribution)",
+                  0.0067,
+                  0.0048,
+                  "4-layer better"
+                ],
+                [
+                  "moons",
+                  "2-layer, same width",
+                  "noisier balls",
+                  -0.0016,
+                  0.12,
+                  "no clear difference"
+                ],
+                [
+                  "moons",
+                  "2-layer, same width",
+                  "trained on 200 points",
+                  0.0091,
+                  0.013,
+                  "no clear difference"
+                ],
+                [
+                  "moons",
+                  "2-layer, same weights",
+                  "test (same distribution)",
+                  0.0009,
+                  0.5,
+                  "no clear difference"
+                ],
+                [
+                  "moons",
+                  "2-layer, same weights",
+                  "noisier balls",
+                  0.0003,
+                  0.76,
+                  "no clear difference"
+                ],
+                [
+                  "moons",
+                  "2-layer, same weights",
+                  "trained on 200 points",
+                  0.0021,
+                  0.052,
+                  "no clear difference"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same width",
+                  "test (same distribution)",
+                  0.1369,
+                  0.00038,
+                  "4-layer better"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same width",
+                  "noisier balls",
+                  0.141,
+                  0.00025,
+                  "4-layer better"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same width",
+                  "trained on 200 points",
+                  0.1664,
+                  0.000011,
+                  "4-layer better"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same width",
+                  "outer arm (extrapolation)",
+                  -0.0228,
+                  0.038,
+                  "no clear difference"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same weights",
+                  "test (same distribution)",
+                  0.0027,
+                  0.0000046,
+                  "4-layer better"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same weights",
+                  "noisier balls",
+                  0.0031,
+                  0.000026,
+                  "4-layer better"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same weights",
+                  "trained on 200 points",
+                  0.002,
+                  0.5,
+                  "no clear difference"
+                ],
+                [
+                  "spirals",
+                  "2-layer, same weights",
+                  "outer arm (extrapolation)",
+                  -0.0273,
+                  0.011,
+                  "no clear difference"
+                ]
+              ],
+              "index_columns": 3,
+              "total_rows": 14,
+              "total_columns": 3,
+              "files": {
+                "csv": "1.csv"
+              }
+            },
+            {
+              "kind": "image",
+              "source": "matplotlib",
+              "title": "Decision boundaries (seed 0) on new test balls",
+              "width": 1592,
+              "height": 1067,
+              "files": {
+                "png": "2.png",
+                "pdf": "2.pdf"
+              }
+            }
+          ]
+        }
+      },
+      "note_before": "Expect: no difference on moons (a simple curve); the 4-layer net ahead on spirals (the boundary folds many times), especially when extrapolating to the outer arm.",
+      "note_after": "Partly right. Moons: no difference. Spirals: 4 layers beat the small 2-layer net (1.000 vs 0.863), but a 2-layer net with the same weights nearly ties (0.997). Wrong about extrapolation: every net fails on the outer arm (about 0.2)."
+    },
+    {
+      "id": "sample-digits",
+      "filename": "digits.py",
+      "language": "python",
+      "content": "# network: ossci-datasets.s3.amazonaws.com, yann.lecun.com, www.csie.ntu.edu.tw\n# 2-layer vs 4-layer networks on handwritten digits (MNIST), plus a 4-layer convolutional\n# network as a reference for compositional features (strokes -> parts -> digits).\n# Same optimiser, batch and number of weight updates for all; each network's learning rate is\n# chosen on a validation set; the tests are used once, over 10 fresh seeds.\n# Generalisation: new writers (MNIST's test writers aren't in its training set), shifted, rotated\n# and noisy digits, training on 1% of the data, and another dataset entirely (USPS, never trained on).\nimport math\nimport matplotlib.pyplot as plt, numpy as np, pandas as pd, torch, torch.nn as nn, torch.nn.functional as F\nimport torchvision\nfrom torchvision.transforms.v2 import functional as TF\nfrom scipy import stats\n\ndev = \"cuda\" if torch.cuda.is_available() else \"cpu\"\nEPOCHS, BATCH, LRS, TUNE_SEED, SEEDS = 10, 128, (3e-4, 1e-3, 3e-3), 100, range(10)\nprint(\"device:\", dev)\n\n# The data: MNIST from torchvision (60,000 training images, 10,000 test images by other writers)\n# and USPS (2,007 test images: US postal envelopes, 16x16, scanned differently).\nmnist_tr = torchvision.datasets.MNIST(\"data\", train=True, download=True)\nmnist_te = torchvision.datasets.MNIST(\"data\", train=False, download=True)\nusps = torchvision.datasets.USPS(\"data\", train=False, download=True)\n\nX_all = mnist_tr.data.float().div(255).unsqueeze(1)\ny_all = mnist_tr.targets\nX_test, y_test = mnist_te.data.float().div(255).unsqueeze(1), mnist_te.targets\nMEAN, STD = X_all[:55000].mean().item(), X_all[:55000].std().item()\nnorm = lambda x: ((x - MEAN) / STD).to(dev)\nXtr, ytr = norm(X_all[:55000]), y_all[:55000].to(dev)\nXval, yval = norm(X_all[55000:]), y_all[55000:].to(dev)\n\n# USPS digits fill their 16x16 box; MNIST's sit in a 20x20 box centred in 28x28. Match that.\nu = torch.tensor(np.stack([np.asarray(img, dtype=np.float32) for img, _ in usps]) / 255).unsqueeze(1)\nu = F.pad(F.interpolate(u, size=20, mode=\"bilinear\", antialias=True), (4, 4, 4, 4))\ny_usps = torch.tensor([label for _, label in usps])\n\ng = torch.Generator().manual_seed(0)\nshift = torch.randint(-4, 5, (len(X_test), 2), generator=g)\nangle = torch.empty(len(X_test)).uniform_(-30, 30, generator=g)\nTESTS = {\n    \"new writers (MNIST test)\": (X_test, y_test),\n    \"shifted up to 4 px\": (torch.stack([torch.roll(x, tuple(s.tolist()), dims=(1, 2)) for x, s in zip(X_test, shift)]), y_test),\n    \"rotated up to 30°\": (torch.stack([TF.rotate(x, a.item()) for x, a in zip(X_test, angle)]), y_test),\n    \"noisy (σ = 0.3)\": ((X_test + 0.3 * torch.randn(X_test.shape, generator=g)).clamp(0, 1), y_test),\n    \"other dataset (USPS)\": (u, y_usps),\n}\nTESTS = {k: (norm(x), y.to(dev)) for k, (x, y) in TESTS.items()}\nfew = torch.randperm(55000, generator=g)[:550]  # 1% of the training images\n\n\nclass CNN(nn.Sequential):\n    \"\"\"4 weight layers: two convolutions (local strokes, then their combinations), two dense.\"\"\"\n\n    def __init__(self):\n        super().__init__(nn.Conv2d(1, 32, 3), nn.ReLU(), nn.MaxPool2d(2), nn.Conv2d(32, 64, 3), nn.ReLU(), nn.MaxPool2d(2),\n                         nn.Flatten(), nn.Linear(64 * 5 * 5, 128), nn.ReLU(), nn.Linear(128, 10))\n\n\ndef mlp(hidden):\n    layers, prev = [nn.Flatten()], 784\n    for h in hidden:\n        layers += [nn.Linear(prev, h), nn.ReLU()]\n        prev = h\n    return nn.Sequential(*layers, nn.Linear(prev, 10))\n\n\ncount = lambda sizes: sum(a * b + b for a, b in zip(sizes, sizes[1:]))\nsame_weights = round((count([784, 256, 256, 256, 10]) - 10) / (784 + 1 + 10))\nMODELS = {\n    \"2-layer, same width\": lambda: mlp([256]),\n    \"4-layer\": lambda: mlp([256, 256, 256]),\n    \"2-layer, same weights\": lambda: mlp([same_weights]),\n    \"4-layer convolutional\": CNN,\n}\n\n\n@torch.no_grad()\ndef accuracy(net, X, y):\n    net.eval()\n    return sum((net(X[i:i + 2000]).argmax(1) == y[i:i + 2000]).sum().item() for i in range(0, len(X), 2000)) / len(X)\n\n\ndef train(make, lr, seed, X=Xtr, y=ytr):\n    \"\"\"The same number of weight updates for every model and training-set size.\"\"\"\n    torch.manual_seed(seed)\n    net = make().to(dev)\n    opt = torch.optim.Adam(net.parameters(), lr=lr)\n    steps, done = EPOCHS * math.ceil(55000 / BATCH), 0\n    net.train()\n    while done < steps:\n        for idx in torch.randperm(len(X), device=dev).split(BATCH):\n            opt.zero_grad()\n            F.cross_entropy(net(X[idx]), y[idx]).backward()\n            opt.step()\n            done += 1\n            if done == steps:\n                break\n    return net\n\n\ndef ci95(a):\n    return stats.t.ppf(0.975, len(a) - 1) * np.std(a, ddof=1) / math.sqrt(len(a))\n\n\nrows, scores = [], {}\nfor name, make in MODELS.items():\n    lr = max(LRS, key=lambda lr: accuracy(train(make, lr, TUNE_SEED), Xval, yval))\n    runs = {k: [] for k in [\"train\", *TESTS, \"trained on 1% (550 images)\"]}\n    for s in SEEDS:\n        net = train(make, lr, s)\n        runs[\"train\"].append(accuracy(net, Xtr, ytr))\n        for t, (X, y) in TESTS.items():\n            runs[t].append(accuracy(net, X, y))\n        runs[\"trained on 1% (550 images)\"].append(accuracy(train(make, lr, s, Xtr[few], ytr[few]), *TESTS[\"new writers (MNIST test)\"]))\n    scores[name] = runs\n    weights = sum(p.numel() for p in make().parameters())\n    rows.append({\"network\": name, \"weights\": weights, \"lr\": lr, **{k: f\"{np.mean(v):.4f} ± {ci95(v):.4f}\" for k, v in runs.items()}})\n    print(f\"{name}: done (lr {lr:g}, {weights:,} weights)\", flush=True)\n\nverdicts = []\nfor a_name, b_name in [(\"4-layer\", \"2-layer, same width\"), (\"4-layer\", \"2-layer, same weights\"), (\"4-layer convolutional\", \"4-layer\")]:\n    for t in scores[a_name]:\n        if t == \"train\":\n            continue\n        a, b = np.array(scores[a_name][t]), np.array(scores[b_name][t])\n        p = stats.ttest_ind(a, b, equal_var=False).pvalue\n        verdicts.append({\"compare\": f\"{a_name} vs {b_name}\", \"test\": t, \"difference\": round(a.mean() - b.mean(), 4), \"p (Welch)\": float(f\"{p:.2g}\"),\n                         \"verdict\": f\"{a_name} better\" if p < 0.01 and a.mean() > b.mean() else f\"{b_name} better\" if p < 0.01 else \"no clear difference\"})\n\nprint(\"\\nAccuracy, mean ± 95% CI over 10 seeds (each network at its own best learning rate):\")\ndisplay(pd.DataFrame(rows).set_index(\"network\"))\ndisplay(pd.DataFrame(verdicts).set_index([\"compare\", \"test\"]))\n\ntests = [t for t in scores[\"4-layer\"] if t != \"train\"]\nfig, ax = plt.subplots(figsize=(10, 4.2), layout=\"constrained\")\nfor i, name in enumerate(MODELS):\n    m = [np.mean(scores[name][t]) for t in tests]\n    e = [ci95(scores[name][t]) for t in tests]\n    ax.errorbar(np.arange(len(tests)) + (i - 1.5) * 0.15, m, yerr=e, fmt=\"o\", capsize=3, label=name)\nax.set_xticks(range(len(tests)), [t.replace(\" (\", \"\\n(\") for t in tests], fontsize=8)\nax.set_ylabel(\"accuracy\")\nax.set_title(\"How well each network generalises (mean, 95% CI, 10 seeds)\")\nax.legend(fontsize=8)\nplt.show()\n\nfig, axes = plt.subplots(len(TESTS), 8, figsize=(8, 5.2), layout=\"constrained\")\nfor row, (t, (X, _)) in zip(axes, TESTS.items()):\n    for ax, x in zip(row, X[:8]):\n        ax.imshow((x[0] * STD + MEAN).cpu(), cmap=\"gray_r\")\n        ax.set_xticks([]), ax.set_yticks([])\n    row[0].set_ylabel(t.split(\" (\")[0], fontsize=7, rotation=0, ha=\"right\", va=\"center\")\nfig.suptitle(\"What the networks were tested on\")\nplt.show()\n",
+      "last_run": {
+        "outcome": "ok",
+        "ms": 611108,
+        "line": null,
+        "where": "server",
+        "ran_at": "2026-11-18T08:58:31.511Z",
+        "code_hash": "a8930adce77b2",
+        "error_line": null,
+        "stdout": "device: cuda\n2-layer, same width: done (lr 0.001, 203,530 weights)\n4-layer: done (lr 0.001, 335,114 weights)\n2-layer, same weights: done (lr 0.0003, 335,500 weights)\n4-layer convolutional: done (lr 0.0003, 225,034 weights)\n\nAccuracy, mean ± 95% CI over 10 seeds (each network at its own best learning rate):\n",
+        "stderr": "100%|██████████| 9.91M/9.91M [00:00<00:00, 12.5MB/s]\n100%|██████████| 28.9k/28.9k [00:00<00:00, 353kB/s]\n100%|██████████| 1.65M/1.65M [00:00<00:00, 3.14MB/s]\n100%|██████████| 4.54k/4.54k [00:00<00:00, 12.2MB/s]\n100%|██████████| 1.83M/1.83M [00:01<00:00, 1.49MB/s]\n",
+        "outputs": {
+          "version": 1,
+          "dir": "00000000-0000-0000-0000-000000000000/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002",
+          "notes": [],
+          "items": [
+            {
+              "kind": "table",
+              "columns": [
+                "network",
+                "weights",
+                "lr",
+                "train",
+                "new writers (MNIST test)",
+                "shifted up to 4 px",
+                "rotated up to 30°",
+                "noisy (σ = 0.3)",
+                "other dataset (USPS)",
+                "trained on 1% (550 images)"
+              ],
+              "rows": [
+                [
+                  "2-layer, same width",
+                  203530,
+                  0.001,
+                  "0.9960 ± 0.0010",
+                  "0.9781 ± 0.0012",
+                  "0.5036 ± 0.0059",
+                  "0.9046 ± 0.0037",
+                  "0.9329 ± 0.0055",
+                  "0.8754 ± 0.0105",
+                  "0.8757 ± 0.0016"
+                ],
+                [
+                  "4-layer",
+                  335114,
+                  0.001,
+                  "0.9935 ± 0.0015",
+                  "0.9776 ± 0.0019",
+                  "0.5209 ± 0.0072",
+                  "0.9092 ± 0.0057",
+                  "0.9405 ± 0.0050",
+                  "0.8857 ± 0.0087",
+                  "0.8756 ± 0.0019"
+                ],
+                [
+                  "2-layer, same weights",
+                  335500,
+                  0.0003,
+                  "0.9954 ± 0.0007",
+                  "0.9793 ± 0.0008",
+                  "0.4794 ± 0.0048",
+                  "0.9039 ± 0.0038",
+                  "0.9318 ± 0.0030",
+                  "0.8650 ± 0.0089",
+                  "0.8764 ± 0.0009"
+                ],
+                [
+                  "4-layer convolutional",
+                  225034,
+                  0.0003,
+                  "0.9957 ± 0.0006",
+                  "0.9899 ± 0.0006",
+                  "0.6996 ± 0.0067",
+                  "0.9444 ± 0.0034",
+                  "0.8465 ± 0.0392",
+                  "0.9329 ± 0.0087",
+                  "0.9276 ± 0.0024"
+                ]
+              ],
+              "index_columns": 1,
+              "total_rows": 4,
+              "total_columns": 9,
+              "files": {
+                "csv": "0.csv"
+              }
+            },
+            {
+              "kind": "table",
+              "columns": [
+                "compare",
+                "test",
+                "difference",
+                "p (Welch)",
+                "verdict"
+              ],
+              "rows": [
+                [
+                  "4-layer vs 2-layer, same width",
+                  "new writers (MNIST test)",
+                  -0.0005,
+                  0.62,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same width",
+                  "shifted up to 4 px",
+                  0.0173,
+                  0.00056,
+                  "4-layer better"
+                ],
+                [
+                  "4-layer vs 2-layer, same width",
+                  "rotated up to 30°",
+                  0.0046,
+                  0.15,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same width",
+                  "noisy (σ = 0.3)",
+                  0.0076,
+                  0.033,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same width",
+                  "other dataset (USPS)",
+                  0.0103,
+                  0.1,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same width",
+                  "trained on 1% (550 images)",
+                  -0.0001,
+                  0.93,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same weights",
+                  "new writers (MNIST test)",
+                  -0.0017,
+                  0.096,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same weights",
+                  "shifted up to 4 px",
+                  0.0415,
+                  1e-8,
+                  "4-layer better"
+                ],
+                [
+                  "4-layer vs 2-layer, same weights",
+                  "rotated up to 30°",
+                  0.0053,
+                  0.098,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer vs 2-layer, same weights",
+                  "noisy (σ = 0.3)",
+                  0.0087,
+                  0.0042,
+                  "4-layer better"
+                ],
+                [
+                  "4-layer vs 2-layer, same weights",
+                  "other dataset (USPS)",
+                  0.0207,
+                  0.0015,
+                  "4-layer better"
+                ],
+                [
+                  "4-layer vs 2-layer, same weights",
+                  "trained on 1% (550 images)",
+                  -0.0008,
+                  0.44,
+                  "no clear difference"
+                ],
+                [
+                  "4-layer convolutional vs 4-layer",
+                  "new writers (MNIST test)",
+                  0.0123,
+                  2.7e-8,
+                  "4-layer convolutional better"
+                ],
+                [
+                  "4-layer convolutional vs 4-layer",
+                  "shifted up to 4 px",
+                  0.1786,
+                  3.3e-19,
+                  "4-layer convolutional better"
+                ],
+                [
+                  "4-layer convolutional vs 4-layer",
+                  "rotated up to 30°",
+                  0.0352,
+                  4.9e-9,
+                  "4-layer convolutional better"
+                ],
+                [
+                  "4-layer convolutional vs 4-layer",
+                  "noisy (σ = 0.3)",
+                  -0.094,
+                  0.0004,
+                  "4-layer better"
+                ],
+                [
+                  "4-layer convolutional vs 4-layer",
+                  "other dataset (USPS)",
+                  0.0472,
+                  7.5e-8,
+                  "4-layer convolutional better"
+                ],
+                [
+                  "4-layer convolutional vs 4-layer",
+                  "trained on 1% (550 images)",
+                  0.0519,
+                  4.6e-18,
+                  "4-layer convolutional better"
+                ]
+              ],
+              "index_columns": 2,
+              "total_rows": 18,
+              "total_columns": 3,
+              "files": {
+                "csv": "1.csv"
+              }
+            },
+            {
+              "kind": "image",
+              "source": "matplotlib",
+              "title": "How well each network generalises (mean, 95% CI, 10 seeds)",
+              "width": 1517,
+              "height": 647,
+              "files": {
+                "png": "2.png",
+                "svg": "2.svg",
+                "pdf": "2.pdf"
+              }
+            },
+            {
+              "kind": "image",
+              "source": "matplotlib",
+              "title": "What the networks were tested on",
+              "width": 1217,
+              "height": 789,
+              "files": {
+                "png": "3.png",
+                "svg": "3.svg",
+                "pdf": "3.pdf"
+              }
+            }
+          ]
+        }
+      },
+      "note_before": "Expect: little difference between the dense nets on MNIST's own test set; the convolutional net clearly ahead on shifted digits and on USPS, where compositional features should generalise.",
+      "note_after": "Mostly right. The dense nets tie on new writers (0.978–0.979); the convolutional net leads on shifted digits (0.70 vs 0.52) and USPS (0.93 vs 0.89). Missed: 4 dense layers beat 2 under shift, and the convolutional net is worse on noisy digits (0.85 vs 0.94)."
+    }
+  ]
+}

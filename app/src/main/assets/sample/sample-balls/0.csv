@@ -1,0 +1,7 @@
+task,network,weights,lr,train,test (same distribution),noisier balls,trained on 200 points,outer arm (extrapolation)
+moons,"2-layer, same width",82,0.001,0.962 ± 0.003,0.960 ± 0.004,0.898 ± 0.001,0.950 ± 0.007,
+moons,4-layer,626,0.001,0.968 ± 0.001,0.966 ± 0.003,0.896 ± 0.002,0.959 ± 0.002,
+moons,"2-layer, same weights",627,0.0003,0.965 ± 0.001,0.966 ± 0.001,0.896 ± 0.001,0.957 ± 0.001,
+spirals,"2-layer, same width",82,0.01,0.895 ± 0.049,0.863 ± 0.056,0.858 ± 0.055,0.823 ± 0.044,0.204 ± 0.012
+spirals,4-layer,626,0.003,0.999 ± 0.000,1.000 ± 0.000,0.999 ± 0.001,0.989 ± 0.006,0.182 ± 0.019
+spirals,"2-layer, same weights",627,0.01,0.997 ± 0.000,0.997 ± 0.001,0.996 ± 0.001,0.987 ± 0.003,0.209 ± 0.001

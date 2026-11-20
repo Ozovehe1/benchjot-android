@@ -1,0 +1,19 @@
+compare,test,difference,p (Welch),verdict
+"4-layer vs 2-layer, same width",new writers (MNIST test),-0.0005,0.62,no clear difference
+"4-layer vs 2-layer, same width",shifted up to 4 px,0.0173,0.00056,4-layer better
+"4-layer vs 2-layer, same width",rotated up to 30°,0.0046,0.15,no clear difference
+"4-layer vs 2-layer, same width",noisy (σ = 0.3),0.0076,0.033,no clear difference
+"4-layer vs 2-layer, same width",other dataset (USPS),0.0103,0.1,no clear difference
+"4-layer vs 2-layer, same width",trained on 1% (550 images),-0.0001,0.93,no clear difference
+"4-layer vs 2-layer, same weights",new writers (MNIST test),-0.0017,0.096,no clear difference
+"4-layer vs 2-layer, same weights",shifted up to 4 px,0.0415,1e-08,4-layer better
+"4-layer vs 2-layer, same weights",rotated up to 30°,0.0053,0.098,no clear difference
+"4-layer vs 2-layer, same weights",noisy (σ = 0.3),0.0087,0.0042,4-layer better
+"4-layer vs 2-layer, same weights",other dataset (USPS),0.0207,0.0015,4-layer better
+"4-layer vs 2-layer, same weights",trained on 1% (550 images),-0.0008,0.44,no clear difference
+4-layer convolutional vs 4-layer,new writers (MNIST test),0.0123,2.7e-08,4-layer convolutional better
+4-layer convolutional vs 4-layer,shifted up to 4 px,0.1786,3.3e-19,4-layer convolutional better
+4-layer convolutional vs 4-layer,rotated up to 30°,0.0352,4.9e-09,4-layer convolutional better
+4-layer convolutional vs 4-layer,noisy (σ = 0.3),-0.094,0.0004,4-layer better
+4-layer convolutional vs 4-layer,other dataset (USPS),0.0472,7.5e-08,4-layer convolutional better
+4-layer convolutional vs 4-layer,trained on 1% (550 images),0.0519,4.6e-18,4-layer convolutional better

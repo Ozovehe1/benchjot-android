@@ -1,0 +1,15 @@
+{
+ "items": [
+  {
+   "files": {
+    "json": "0.json"
+   },
+   "kind": "chart",
+   "lib": "vega-lite",
+   "title": "",
+   "version": "6.3.0"
+  }
+ ],
+ "notes": [],
+ "version": 1
+}

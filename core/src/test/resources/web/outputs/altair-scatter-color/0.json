@@ -1,0 +1,96 @@
+{
+ "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json",
+ "config": {
+  "view": {
+   "continuousHeight": 300,
+   "continuousWidth": 300
+  }
+ },
+ "data": {
+  "name": "data-903541710d296ba4aa3fb56dc584b069"
+ },
+ "datasets": {
+  "data-903541710d296ba4aa3fb56dc584b069": [
+   {
+    "epoch": 1,
+    "split": "loss",
+    "value": 0.9
+   },
+   {
+    "epoch": 2,
+    "split": "loss",
+    "value": 0.6
+   },
+   {
+    "epoch": 3,
+    "split": "loss",
+    "value": 0.45
+   },
+   {
+    "epoch": 4,
+    "split": "loss",
+    "value": 0.4
+   },
+   {
+    "epoch": 5,
+    "split": "loss",
+    "value": 0.38
+   },
+   {
+    "epoch": 1,
+    "split": "val",
+    "value": 1.0
+   },
+   {
+    "epoch": 2,
+    "split": "val",
+    "value": 0.7
+   },
+   {
+    "epoch": 3,
+    "split": "val",
+    "value": 0.55
+   },
+   {
+    "epoch": 4,
+    "split": "val",
+    "value": 0.52
+   },
+   {
+    "epoch": 5,
+    "split": "val",
+    "value": 0.53
+   }
+  ]
+ },
+ "encoding": {
+  "color": {
+   "field": "split",
+   "type": "nominal"
+  },
+  "x": {
+   "field": "epoch",
+   "type": "quantitative"
+  },
+  "y": {
+   "field": "value",
+   "type": "quantitative"
+  }
+ },
+ "mark": {
+  "type": "point"
+ },
+ "params": [
+  {
+   "bind": "scales",
+   "name": "param_1e9efca18e7a2868",
+   "select": {
+    "encodings": [
+     "x",
+     "y"
+    ],
+    "type": "interval"
+   }
+  }
+ ]
+}

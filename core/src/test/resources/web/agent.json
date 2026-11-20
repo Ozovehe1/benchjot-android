@@ -1,0 +1,2724 @@
+{
+  "limits": {
+    "steps": 8,
+    "callsPerStep": 4,
+    "maxCodeChars": 30000,
+    "maxResultChars": 3000,
+    "maxHistoryCodeChars": 1500,
+    "maxMessageChars": 4000
+  },
+  "context": [
+    {
+      "name": "body only",
+      "body": "Hypothesis: warmup helps.",
+      "cells": [],
+      "max": null,
+      "text": "Hypothesis: warmup helps."
+    },
+    {
+      "name": "every part of a cell, in order",
+      "body": "Two parameters: lr and warmup.",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000001",
+          "position": 1,
+          "language": "python",
+          "content": "import matplotlib.pyplot as plt\nplt.plot([1, 2])\nprint('acc', 0.91)",
+          "note_before": "Try **lr = 0.1** first.",
+          "note_after": "Accuracy looks good; check [[Baseline|9f000000-0000-4000-8000-0000000000e2]].",
+          "last_run": {
+            "stdout": "acc 0.91\n",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "ok",
+            "outputs": {
+              "version": 1,
+              "dir": "9f000000-0000-4000-8000-000000000001/9f000000-0000-4000-8000-0000000000c1/9f000000-0000-4000-8000-0000000000a1",
+              "notes": [],
+              "items": [
+                {
+                  "kind": "image",
+                  "source": "matplotlib",
+                  "width": 640,
+                  "height": 480,
+                  "title": "Loss curve",
+                  "files": {
+                    "png": "0.png"
+                  }
+                },
+                {
+                  "kind": "table",
+                  "index_columns": 1,
+                  "columns": [
+                    "a",
+                    "b"
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      2
+                    ]
+                  ],
+                  "total_rows": 10,
+                  "total_columns": 2,
+                  "files": {
+                    "csv": "1.csv"
+                  }
+                },
+                {
+                  "kind": "chart",
+                  "lib": "plotly",
+                  "version": "5.24.1",
+                  "title": "",
+                  "files": {
+                    "json": "2.json"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "max": null,
+      "text": "Two parameters: lr and warmup.\n\n[Cell 1]\nNote before run:\nTry **lr = 0.1** first.\n```python\nimport matplotlib.pyplot as plt\nplt.plot([1, 2])\nprint('acc', 0.91)\n```\nOutput:\n```\nacc 0.91\n```\nShown in the note: a figure \"Loss curve\"; a table, 10 rows × 2 columns (columns: b); an interactive Plotly chart.\nTable · 10 × 2 (first 1 of 10 rows):\n```csv\na,b\n1,2\n```\nNote after run:\nAccuracy looks good; check [[Baseline|9f000000-0000-4000-8000-0000000000e2]]."
+    },
+    {
+      "name": "a failed run shows its error, not its output",
+      "body": "",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000002",
+          "position": 2,
+          "language": "python",
+          "content": "1/0",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "before\n",
+            "stderr": "Traceback\nZeroDivisionError: division by zero",
+            "error_line": "ZeroDivisionError: division by zero",
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "error"
+          }
+        }
+      ],
+      "max": null,
+      "text": "\n\n[Cell 1]\n```python\n1/0\n```\nLast error:\n```\nZeroDivisionError: division by zero\n```"
+    },
+    {
+      "name": "a stopped or timed-out run shows neither",
+      "body": "b",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000003",
+          "position": 3,
+          "language": "python",
+          "content": "while True: pass",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "partial",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "timeout"
+          }
+        },
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000004",
+          "position": 4,
+          "language": "r",
+          "content": "1",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "stopped"
+          }
+        }
+      ],
+      "max": null,
+      "text": "b\n\n[Cell 1]\n```python\nwhile True: pass\n```\nNo output to read: it ran out of time before it finished.\n\n[Cell 2]\n```r\n1\n```\nNo output to read: it was stopped before it finished."
+    },
+    {
+      "name": "a long output keeps its last lines and says so",
+      "body": "",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000005",
+          "position": 5,
+          "language": "python",
+          "content": "train()",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "epoch 0 loss 1.0000\nepoch 1 loss 0.5000\nepoch 2 loss 0.3333\nepoch 3 loss 0.2500\nepoch 4 loss 0.2000\nepoch 5 loss 0.1667\nepoch 6 loss 0.1429\nepoch 7 loss 0.1250\nepoch 8 loss 0.1111\nepoch 9 loss 0.1000\nepoch 10 loss 0.0909\nepoch 11 loss 0.0833\nepoch 12 loss 0.0769\nepoch 13 loss 0.0714\nepoch 14 loss 0.0667\nepoch 15 loss 0.0625\nepoch 16 loss 0.0588\nepoch 17 loss 0.0556\nepoch 18 loss 0.0526\nepoch 19 loss 0.0500\nepoch 20 loss 0.0476\nepoch 21 loss 0.0455\nepoch 22 loss 0.0435\nepoch 23 loss 0.0417\nepoch 24 loss 0.0400\nepoch 25 loss 0.0385\nepoch 26 loss 0.0370\nepoch 27 loss 0.0357\nepoch 28 loss 0.0345\nepoch 29 loss 0.0333\nepoch 30 loss 0.0323\nepoch 31 loss 0.0313\nepoch 32 loss 0.0303\nepoch 33 loss 0.0294\nepoch 34 loss 0.0286\nepoch 35 loss 0.0278\nepoch 36 loss 0.0270\nepoch 37 loss 0.0263\nepoch 38 loss 0.0256\nepoch 39 loss 0.0250\nepoch 40 loss 0.0244\nepoch 41 loss 0.0238\nepoch 42 loss 0.0233\nepoch 43 loss 0.0227\nepoch 44 loss 0.0222\nepoch 45 loss 0.0217\nepoch 46 loss 0.0213\nepoch 47 loss 0.0208\nepoch 48 loss 0.0204\nepoch 49 loss 0.0200\nepoch 50 loss 0.0196\nepoch 51 loss 0.0192\nepoch 52 loss 0.0189\nepoch 53 loss 0.0185\nepoch 54 loss 0.0182\nepoch 55 loss 0.0179\nepoch 56 loss 0.0175\nepoch 57 loss 0.0172\nepoch 58 loss 0.0169\nepoch 59 loss 0.0167\nepoch 60 loss 0.0164\nepoch 61 loss 0.0161\nepoch 62 loss 0.0159\nepoch 63 loss 0.0156\nepoch 64 loss 0.0154\nepoch 65 loss 0.0152\nepoch 66 loss 0.0149\nepoch 67 loss 0.0147\nepoch 68 loss 0.0145\nepoch 69 loss 0.0143\nepoch 70 loss 0.0141\nepoch 71 loss 0.0139\nepoch 72 loss 0.0137\nepoch 73 loss 0.0135\nepoch 74 loss 0.0133\nepoch 75 loss 0.0132\nepoch 76 loss 0.0130\nepoch 77 loss 0.0128\nepoch 78 loss 0.0127\nepoch 79 loss 0.0125\nepoch 80 loss 0.0123\nepoch 81 loss 0.0122\nepoch 82 loss 0.0120\nepoch 83 loss 0.0119\nepoch 84 loss 0.0118\nepoch 85 loss 0.0116\nepoch 86 loss 0.0115\nepoch 87 loss 0.0114\nepoch 88 loss 0.0112\nepoch 89 loss 0.0111\nepoch 90 loss 0.0110\nepoch 91 loss 0.0109\nepoch 92 loss 0.0108\nepoch 93 loss 0.0106\nepoch 94 loss 0.0105\nepoch 95 loss 0.0104\nepoch 96 loss 0.0103\nepoch 97 loss 0.0102\nepoch 98 loss 0.0101\nepoch 99 loss 0.0100\nepoch 100 loss 0.0099\nepoch 101 loss 0.0098\nepoch 102 loss 0.0097\nepoch 103 loss 0.0096\nepoch 104 loss 0.0095\nepoch 105 loss 0.0094\nepoch 106 loss 0.0093\nepoch 107 loss 0.0093\nepoch 108 loss 0.0092\nepoch 109 loss 0.0091\nepoch 110 loss 0.0090\nepoch 111 loss 0.0089\nepoch 112 loss 0.0088\nepoch 113 loss 0.0088\nepoch 114 loss 0.0087\nepoch 115 loss 0.0086\nepoch 116 loss 0.0085\nepoch 117 loss 0.0085\nepoch 118 loss 0.0084\nepoch 119 loss 0.0083\nepoch 120 loss 0.0083\nepoch 121 loss 0.0082\nepoch 122 loss 0.0081\nepoch 123 loss 0.0081\nepoch 124 loss 0.0080\nepoch 125 loss 0.0079\nepoch 126 loss 0.0079\nepoch 127 loss 0.0078\nepoch 128 loss 0.0078\nepoch 129 loss 0.0077\nepoch 130 loss 0.0076\nepoch 131 loss 0.0076\nepoch 132 loss 0.0075\nepoch 133 loss 0.0075\nepoch 134 loss 0.0074\nepoch 135 loss 0.0074\nepoch 136 loss 0.0073\nepoch 137 loss 0.0072\nepoch 138 loss 0.0072\nepoch 139 loss 0.0071\nepoch 140 loss 0.0071\nepoch 141 loss 0.0070\nepoch 142 loss 0.0070\nepoch 143 loss 0.0069\nepoch 144 loss 0.0069\nepoch 145 loss 0.0068\nepoch 146 loss 0.0068\nepoch 147 loss 0.0068\nepoch 148 loss 0.0067\nepoch 149 loss 0.0067\nepoch 150 loss 0.0066\nepoch 151 loss 0.0066\nepoch 152 loss 0.0065\nepoch 153 loss 0.0065\nepoch 154 loss 0.0065\nepoch 155 loss 0.0064\nepoch 156 loss 0.0064\nepoch 157 loss 0.0063\nepoch 158 loss 0.0063\nepoch 159 loss 0.0063\nepoch 160 loss 0.0062\nepoch 161 loss 0.0062\nepoch 162 loss 0.0061\nepoch 163 loss 0.0061\nepoch 164 loss 0.0061\nepoch 165 loss 0.0060\nepoch 166 loss 0.0060\nepoch 167 loss 0.0060\nepoch 168 loss 0.0059\nepoch 169 loss 0.0059\nepoch 170 loss 0.0058\nepoch 171 loss 0.0058\nepoch 172 loss 0.0058\nepoch 173 loss 0.0057\nepoch 174 loss 0.0057\nepoch 175 loss 0.0057\nepoch 176 loss 0.0056\nepoch 177 loss 0.0056\nepoch 178 loss 0.0056\nepoch 179 loss 0.0056\nepoch 180 loss 0.0055\nepoch 181 loss 0.0055\nepoch 182 loss 0.0055\nepoch 183 loss 0.0054\nepoch 184 loss 0.0054\nepoch 185 loss 0.0054\nepoch 186 loss 0.0053\nepoch 187 loss 0.0053\nepoch 188 loss 0.0053\nepoch 189 loss 0.0053\nepoch 190 loss 0.0052\nepoch 191 loss 0.0052\nepoch 192 loss 0.0052\nepoch 193 loss 0.0052\nepoch 194 loss 0.0051\nepoch 195 loss 0.0051\nepoch 196 loss 0.0051\nepoch 197 loss 0.0051\nepoch 198 loss 0.0050\nepoch 199 loss 0.0050\nepoch 200 loss 0.0050\nepoch 201 loss 0.0050\nepoch 202 loss 0.0049\nepoch 203 loss 0.0049\nepoch 204 loss 0.0049\nepoch 205 loss 0.0049\nepoch 206 loss 0.0048\nepoch 207 loss 0.0048\nepoch 208 loss 0.0048\nepoch 209 loss 0.0048\nepoch 210 loss 0.0047\nepoch 211 loss 0.0047\nepoch 212 loss 0.0047\nepoch 213 loss 0.0047\nepoch 214 loss 0.0047\nepoch 215 loss 0.0046\nepoch 216 loss 0.0046\nepoch 217 loss 0.0046\nepoch 218 loss 0.0046\nepoch 219 loss 0.0045\nepoch 220 loss 0.0045\nepoch 221 loss 0.0045\nepoch 222 loss 0.0045\nepoch 223 loss 0.0045\nepoch 224 loss 0.0044\nepoch 225 loss 0.0044\nepoch 226 loss 0.0044\nepoch 227 loss 0.0044\nepoch 228 loss 0.0044\nepoch 229 loss 0.0043\nepoch 230 loss 0.0043\nepoch 231 loss 0.0043\nepoch 232 loss 0.0043\nepoch 233 loss 0.0043\nepoch 234 loss 0.0043\nepoch 235 loss 0.0042\nepoch 236 loss 0.0042\nepoch 237 loss 0.0042\nepoch 238 loss 0.0042\nepoch 239 loss 0.0042\nepoch 240 loss 0.0041\nepoch 241 loss 0.0041\nepoch 242 loss 0.0041\nepoch 243 loss 0.0041\nepoch 244 loss 0.0041\nepoch 245 loss 0.0041\nepoch 246 loss 0.0040\nepoch 247 loss 0.0040\nepoch 248 loss 0.0040\nepoch 249 loss 0.0040\nepoch 250 loss 0.0040\nepoch 251 loss 0.0040\nepoch 252 loss 0.0040\nepoch 253 loss 0.0039\nepoch 254 loss 0.0039\nepoch 255 loss 0.0039\nepoch 256 loss 0.0039\nepoch 257 loss 0.0039\nepoch 258 loss 0.0039\nepoch 259 loss 0.0038\nepoch 260 loss 0.0038\nepoch 261 loss 0.0038\nepoch 262 loss 0.0038\nepoch 263 loss 0.0038\nepoch 264 loss 0.0038\nepoch 265 loss 0.0038\nepoch 266 loss 0.0037\nepoch 267 loss 0.0037\nepoch 268 loss 0.0037\nepoch 269 loss 0.0037\nepoch 270 loss 0.0037\nepoch 271 loss 0.0037\nepoch 272 loss 0.0037\nepoch 273 loss 0.0036\nepoch 274 loss 0.0036\nepoch 275 loss 0.0036\nepoch 276 loss 0.0036\nepoch 277 loss 0.0036\nepoch 278 loss 0.0036\nepoch 279 loss 0.0036\nepoch 280 loss 0.0036\nepoch 281 loss 0.0035\nepoch 282 loss 0.0035\nepoch 283 loss 0.0035\nepoch 284 loss 0.0035\nepoch 285 loss 0.0035\nepoch 286 loss 0.0035\nepoch 287 loss 0.0035\nepoch 288 loss 0.0035\nepoch 289 loss 0.0034\nepoch 290 loss 0.0034\nepoch 291 loss 0.0034\nepoch 292 loss 0.0034\nepoch 293 loss 0.0034\nepoch 294 loss 0.0034\nepoch 295 loss 0.0034\nepoch 296 loss 0.0034\nepoch 297 loss 0.0034\nepoch 298 loss 0.0033\nepoch 299 loss 0.0033",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "ok"
+          }
+        }
+      ],
+      "max": null,
+      "text": "\n\n[Cell 1]\n```python\ntrain()\n```\nOutput (only its last lines):\n```\nepoch 210 loss 0.0047\nepoch 211 loss 0.0047\nepoch 212 loss 0.0047\nepoch 213 loss 0.0047\nepoch 214 loss 0.0047\nepoch 215 loss 0.0046\nepoch 216 loss 0.0046\nepoch 217 loss 0.0046\nepoch 218 loss 0.0046\nepoch 219 loss 0.0045\nepoch 220 loss 0.0045\nepoch 221 loss 0.0045\nepoch 222 loss 0.0045\nepoch 223 loss 0.0045\nepoch 224 loss 0.0044\nepoch 225 loss 0.0044\nepoch 226 loss 0.0044\nepoch 227 loss 0.0044\nepoch 228 loss 0.0044\nepoch 229 loss 0.0043\nepoch 230 loss 0.0043\nepoch 231 loss 0.0043\nepoch 232 loss 0.0043\nepoch 233 loss 0.0043\nepoch 234 loss 0.0043\nepoch 235 loss 0.0042\nepoch 236 loss 0.0042\nepoch 237 loss 0.0042\nepoch 238 loss 0.0042\nepoch 239 loss 0.0042\nepoch 240 loss 0.0041\nepoch 241 loss 0.0041\nepoch 242 loss 0.0041\nepoch 243 loss 0.0041\nepoch 244 loss 0.0041\nepoch 245 loss 0.0041\nepoch 246 loss 0.0040\nepoch 247 loss 0.0040\nepoch 248 loss 0.0040\nepoch 249 loss 0.0040\nepoch 250 loss 0.0040\nepoch 251 loss 0.0040\nepoch 252 loss 0.0040\nepoch 253 loss 0.0039\nepoch 254 loss 0.0039\nepoch 255 loss 0.0039\nepoch 256 loss 0.0039\nepoch 257 loss 0.0039\nepoch 258 loss 0.0039\nepoch 259 loss 0.0038\nepoch 260 loss 0.0038\nepoch 261 loss 0.0038\nepoch 262 loss 0.0038\nepoch 263 loss 0.0038\nepoch 264 loss 0.0038\nepoch 265 loss 0.0038\nepoch 266 loss 0.0037\nepoch 267 loss 0.0037\nepoch 268 loss 0.0037\nepoch 269 loss 0.0037\nepoch 270 loss 0.0037\nepoch 271 loss 0.0037\nepoch 272 loss 0.0037\nepoch 273 loss 0.0036\nepoch 274 loss 0.0036\nepoch 275 loss 0.0036\nepoch 276 loss 0.0036\nepoch 277 loss 0.0036\nepoch 278 loss 0.0036\nepoch 279 loss 0.0036\nepoch 280 loss 0.0036\nepoch 281 loss 0.0035\nepoch 282 loss 0.0035\nepoch 283 loss 0.0035\nepoch 284 loss 0.0035\nepoch 285 loss 0.0035\nepoch 286 loss 0.0035\nepoch 287 loss 0.0035\nepoch 288 loss 0.0035\nepoch 289 loss 0.0034\nepoch 290 loss 0.0034\nepoch 291 loss 0.0034\nepoch 292 loss 0.0034\nepoch 293 loss 0.0034\nepoch 294 loss 0.0034\nepoch 295 loss 0.0034\nepoch 296 loss 0.0034\nepoch 297 loss 0.0034\nepoch 298 loss 0.0033\nepoch 299 loss 0.0033\n```"
+    },
+    {
+      "name": "blank cell notes are left out",
+      "body": "x",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000006",
+          "position": 6,
+          "language": "python",
+          "content": "print(1)",
+          "note_before": "  \n ",
+          "note_after": "\n",
+          "last_run": null
+        }
+      ],
+      "max": null,
+      "text": "x\n\n[Cell 1]\n```python\nprint(1)\n```\nNo output to read: it hasn't been run yet."
+    },
+    {
+      "name": "a long note keeps its newest work, its body cut at a line",
+      "body": "row 0\nrow 1\nrow 2\nrow 3\nrow 4\nrow 5\nrow 6\nrow 7\nrow 8\nrow 9\nrow 10\nrow 11\nrow 12\nrow 13\nrow 14\nrow 15\nrow 16\nrow 17\nrow 18\nrow 19\nrow 20\nrow 21\nrow 22\nrow 23\nrow 24\nrow 25\nrow 26\nrow 27\nrow 28\nrow 29\nrow 30\nrow 31\nrow 32\nrow 33\nrow 34\nrow 35\nrow 36\nrow 37\nrow 38\nrow 39",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000007",
+          "position": 7,
+          "language": "python",
+          "content": "print('cell')",
+          "note_before": "",
+          "note_after": "after",
+          "last_run": null
+        }
+      ],
+      "max": 200,
+      "text": "row 0\nrow 1\nrow 2\nrow 3\nrow 4\nrow 5\nrow 6\nrow 7\nrow 8\nrow 9\nrow 10\nrow 11\nrow 12\nrow 13\nrow 14\nrow 15\nrow 16\nrow 17\n[The rest of the note was cut to fit.]\n\n[1 earlier code cell was left out to fit.]"
+    }
+  ],
+  "reports": [
+    {
+      "n": 1,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000001",
+        "position": 1,
+        "language": "python",
+        "content": "import matplotlib.pyplot as plt\nplt.plot([1, 2])\nprint('acc', 0.91)",
+        "note_before": "Try **lr = 0.1** first.",
+        "note_after": "Accuracy looks good; check [[Baseline|9f000000-0000-4000-8000-0000000000e2]].",
+        "last_run": {
+          "stdout": "acc 0.91\n",
+          "stderr": "",
+          "error_line": null,
+          "line": null,
+          "ms": 12,
+          "where": "browser",
+          "code_hash": "h1",
+          "ran_at": "2026-11-07T02:00:00.000Z",
+          "outcome": "ok",
+          "outputs": {
+            "version": 1,
+            "dir": "9f000000-0000-4000-8000-000000000001/9f000000-0000-4000-8000-0000000000c1/9f000000-0000-4000-8000-0000000000a1",
+            "notes": [],
+            "items": [
+              {
+                "kind": "image",
+                "source": "matplotlib",
+                "width": 640,
+                "height": 480,
+                "title": "Loss curve",
+                "files": {
+                  "png": "0.png"
+                }
+              },
+              {
+                "kind": "table",
+                "index_columns": 1,
+                "columns": [
+                  "a",
+                  "b"
+                ],
+                "rows": [
+                  [
+                    1,
+                    2
+                  ]
+                ],
+                "total_rows": 10,
+                "total_columns": 2,
+                "files": {
+                  "csv": "1.csv"
+                }
+              },
+              {
+                "kind": "chart",
+                "lib": "plotly",
+                "version": "5.24.1",
+                "title": "",
+                "files": {
+                  "json": "2.json"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "text": "Cell 1 ran without error in 12 ms.\nOutput:\n```\nacc 0.91\n```\nShown in the note: a figure \"Loss curve\"; a table, 10 rows × 2 columns (columns: b); an interactive Plotly chart.\nTable · 10 × 2 (first 1 of 10 rows):\n```csv\na,b\n1,2\n```"
+    },
+    {
+      "n": 1,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000002",
+        "position": 2,
+        "language": "python",
+        "content": "1/0",
+        "note_before": "",
+        "note_after": "",
+        "last_run": {
+          "stdout": "before\n",
+          "stderr": "Traceback\nZeroDivisionError: division by zero",
+          "error_line": "ZeroDivisionError: division by zero",
+          "line": null,
+          "ms": 12,
+          "where": "browser",
+          "code_hash": "h1",
+          "ran_at": "2026-11-07T02:00:00.000Z",
+          "outcome": "error"
+        }
+      },
+      "text": "Cell 1 failed after 12 ms.\nError:\n```\nZeroDivisionError: division by zero\n```"
+    },
+    {
+      "n": 1,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000003",
+        "position": 3,
+        "language": "python",
+        "content": "while True: pass",
+        "note_before": "",
+        "note_after": "",
+        "last_run": {
+          "stdout": "partial",
+          "stderr": "",
+          "error_line": null,
+          "line": null,
+          "ms": 12,
+          "where": "browser",
+          "code_hash": "h1",
+          "ran_at": "2026-11-07T02:00:00.000Z",
+          "outcome": "timeout"
+        }
+      },
+      "text": "Cell 1 ran out of time after 12 ms."
+    },
+    {
+      "n": 2,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000004",
+        "position": 4,
+        "language": "r",
+        "content": "1",
+        "note_before": "",
+        "note_after": "",
+        "last_run": {
+          "stdout": "",
+          "stderr": "",
+          "error_line": null,
+          "line": null,
+          "ms": 12,
+          "where": "browser",
+          "code_hash": "h1",
+          "ran_at": "2026-11-07T02:00:00.000Z",
+          "outcome": "stopped"
+        }
+      },
+      "text": "Cell 2 was stopped after 12 ms."
+    },
+    {
+      "n": 1,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000005",
+        "position": 5,
+        "language": "python",
+        "content": "train()",
+        "note_before": "",
+        "note_after": "",
+        "last_run": {
+          "stdout": "epoch 0 loss 1.0000\nepoch 1 loss 0.5000\nepoch 2 loss 0.3333\nepoch 3 loss 0.2500\nepoch 4 loss 0.2000\nepoch 5 loss 0.1667\nepoch 6 loss 0.1429\nepoch 7 loss 0.1250\nepoch 8 loss 0.1111\nepoch 9 loss 0.1000\nepoch 10 loss 0.0909\nepoch 11 loss 0.0833\nepoch 12 loss 0.0769\nepoch 13 loss 0.0714\nepoch 14 loss 0.0667\nepoch 15 loss 0.0625\nepoch 16 loss 0.0588\nepoch 17 loss 0.0556\nepoch 18 loss 0.0526\nepoch 19 loss 0.0500\nepoch 20 loss 0.0476\nepoch 21 loss 0.0455\nepoch 22 loss 0.0435\nepoch 23 loss 0.0417\nepoch 24 loss 0.0400\nepoch 25 loss 0.0385\nepoch 26 loss 0.0370\nepoch 27 loss 0.0357\nepoch 28 loss 0.0345\nepoch 29 loss 0.0333\nepoch 30 loss 0.0323\nepoch 31 loss 0.0313\nepoch 32 loss 0.0303\nepoch 33 loss 0.0294\nepoch 34 loss 0.0286\nepoch 35 loss 0.0278\nepoch 36 loss 0.0270\nepoch 37 loss 0.0263\nepoch 38 loss 0.0256\nepoch 39 loss 0.0250\nepoch 40 loss 0.0244\nepoch 41 loss 0.0238\nepoch 42 loss 0.0233\nepoch 43 loss 0.0227\nepoch 44 loss 0.0222\nepoch 45 loss 0.0217\nepoch 46 loss 0.0213\nepoch 47 loss 0.0208\nepoch 48 loss 0.0204\nepoch 49 loss 0.0200\nepoch 50 loss 0.0196\nepoch 51 loss 0.0192\nepoch 52 loss 0.0189\nepoch 53 loss 0.0185\nepoch 54 loss 0.0182\nepoch 55 loss 0.0179\nepoch 56 loss 0.0175\nepoch 57 loss 0.0172\nepoch 58 loss 0.0169\nepoch 59 loss 0.0167\nepoch 60 loss 0.0164\nepoch 61 loss 0.0161\nepoch 62 loss 0.0159\nepoch 63 loss 0.0156\nepoch 64 loss 0.0154\nepoch 65 loss 0.0152\nepoch 66 loss 0.0149\nepoch 67 loss 0.0147\nepoch 68 loss 0.0145\nepoch 69 loss 0.0143\nepoch 70 loss 0.0141\nepoch 71 loss 0.0139\nepoch 72 loss 0.0137\nepoch 73 loss 0.0135\nepoch 74 loss 0.0133\nepoch 75 loss 0.0132\nepoch 76 loss 0.0130\nepoch 77 loss 0.0128\nepoch 78 loss 0.0127\nepoch 79 loss 0.0125\nepoch 80 loss 0.0123\nepoch 81 loss 0.0122\nepoch 82 loss 0.0120\nepoch 83 loss 0.0119\nepoch 84 loss 0.0118\nepoch 85 loss 0.0116\nepoch 86 loss 0.0115\nepoch 87 loss 0.0114\nepoch 88 loss 0.0112\nepoch 89 loss 0.0111\nepoch 90 loss 0.0110\nepoch 91 loss 0.0109\nepoch 92 loss 0.0108\nepoch 93 loss 0.0106\nepoch 94 loss 0.0105\nepoch 95 loss 0.0104\nepoch 96 loss 0.0103\nepoch 97 loss 0.0102\nepoch 98 loss 0.0101\nepoch 99 loss 0.0100\nepoch 100 loss 0.0099\nepoch 101 loss 0.0098\nepoch 102 loss 0.0097\nepoch 103 loss 0.0096\nepoch 104 loss 0.0095\nepoch 105 loss 0.0094\nepoch 106 loss 0.0093\nepoch 107 loss 0.0093\nepoch 108 loss 0.0092\nepoch 109 loss 0.0091\nepoch 110 loss 0.0090\nepoch 111 loss 0.0089\nepoch 112 loss 0.0088\nepoch 113 loss 0.0088\nepoch 114 loss 0.0087\nepoch 115 loss 0.0086\nepoch 116 loss 0.0085\nepoch 117 loss 0.0085\nepoch 118 loss 0.0084\nepoch 119 loss 0.0083\nepoch 120 loss 0.0083\nepoch 121 loss 0.0082\nepoch 122 loss 0.0081\nepoch 123 loss 0.0081\nepoch 124 loss 0.0080\nepoch 125 loss 0.0079\nepoch 126 loss 0.0079\nepoch 127 loss 0.0078\nepoch 128 loss 0.0078\nepoch 129 loss 0.0077\nepoch 130 loss 0.0076\nepoch 131 loss 0.0076\nepoch 132 loss 0.0075\nepoch 133 loss 0.0075\nepoch 134 loss 0.0074\nepoch 135 loss 0.0074\nepoch 136 loss 0.0073\nepoch 137 loss 0.0072\nepoch 138 loss 0.0072\nepoch 139 loss 0.0071\nepoch 140 loss 0.0071\nepoch 141 loss 0.0070\nepoch 142 loss 0.0070\nepoch 143 loss 0.0069\nepoch 144 loss 0.0069\nepoch 145 loss 0.0068\nepoch 146 loss 0.0068\nepoch 147 loss 0.0068\nepoch 148 loss 0.0067\nepoch 149 loss 0.0067\nepoch 150 loss 0.0066\nepoch 151 loss 0.0066\nepoch 152 loss 0.0065\nepoch 153 loss 0.0065\nepoch 154 loss 0.0065\nepoch 155 loss 0.0064\nepoch 156 loss 0.0064\nepoch 157 loss 0.0063\nepoch 158 loss 0.0063\nepoch 159 loss 0.0063\nepoch 160 loss 0.0062\nepoch 161 loss 0.0062\nepoch 162 loss 0.0061\nepoch 163 loss 0.0061\nepoch 164 loss 0.0061\nepoch 165 loss 0.0060\nepoch 166 loss 0.0060\nepoch 167 loss 0.0060\nepoch 168 loss 0.0059\nepoch 169 loss 0.0059\nepoch 170 loss 0.0058\nepoch 171 loss 0.0058\nepoch 172 loss 0.0058\nepoch 173 loss 0.0057\nepoch 174 loss 0.0057\nepoch 175 loss 0.0057\nepoch 176 loss 0.0056\nepoch 177 loss 0.0056\nepoch 178 loss 0.0056\nepoch 179 loss 0.0056\nepoch 180 loss 0.0055\nepoch 181 loss 0.0055\nepoch 182 loss 0.0055\nepoch 183 loss 0.0054\nepoch 184 loss 0.0054\nepoch 185 loss 0.0054\nepoch 186 loss 0.0053\nepoch 187 loss 0.0053\nepoch 188 loss 0.0053\nepoch 189 loss 0.0053\nepoch 190 loss 0.0052\nepoch 191 loss 0.0052\nepoch 192 loss 0.0052\nepoch 193 loss 0.0052\nepoch 194 loss 0.0051\nepoch 195 loss 0.0051\nepoch 196 loss 0.0051\nepoch 197 loss 0.0051\nepoch 198 loss 0.0050\nepoch 199 loss 0.0050\nepoch 200 loss 0.0050\nepoch 201 loss 0.0050\nepoch 202 loss 0.0049\nepoch 203 loss 0.0049\nepoch 204 loss 0.0049\nepoch 205 loss 0.0049\nepoch 206 loss 0.0048\nepoch 207 loss 0.0048\nepoch 208 loss 0.0048\nepoch 209 loss 0.0048\nepoch 210 loss 0.0047\nepoch 211 loss 0.0047\nepoch 212 loss 0.0047\nepoch 213 loss 0.0047\nepoch 214 loss 0.0047\nepoch 215 loss 0.0046\nepoch 216 loss 0.0046\nepoch 217 loss 0.0046\nepoch 218 loss 0.0046\nepoch 219 loss 0.0045\nepoch 220 loss 0.0045\nepoch 221 loss 0.0045\nepoch 222 loss 0.0045\nepoch 223 loss 0.0045\nepoch 224 loss 0.0044\nepoch 225 loss 0.0044\nepoch 226 loss 0.0044\nepoch 227 loss 0.0044\nepoch 228 loss 0.0044\nepoch 229 loss 0.0043\nepoch 230 loss 0.0043\nepoch 231 loss 0.0043\nepoch 232 loss 0.0043\nepoch 233 loss 0.0043\nepoch 234 loss 0.0043\nepoch 235 loss 0.0042\nepoch 236 loss 0.0042\nepoch 237 loss 0.0042\nepoch 238 loss 0.0042\nepoch 239 loss 0.0042\nepoch 240 loss 0.0041\nepoch 241 loss 0.0041\nepoch 242 loss 0.0041\nepoch 243 loss 0.0041\nepoch 244 loss 0.0041\nepoch 245 loss 0.0041\nepoch 246 loss 0.0040\nepoch 247 loss 0.0040\nepoch 248 loss 0.0040\nepoch 249 loss 0.0040\nepoch 250 loss 0.0040\nepoch 251 loss 0.0040\nepoch 252 loss 0.0040\nepoch 253 loss 0.0039\nepoch 254 loss 0.0039\nepoch 255 loss 0.0039\nepoch 256 loss 0.0039\nepoch 257 loss 0.0039\nepoch 258 loss 0.0039\nepoch 259 loss 0.0038\nepoch 260 loss 0.0038\nepoch 261 loss 0.0038\nepoch 262 loss 0.0038\nepoch 263 loss 0.0038\nepoch 264 loss 0.0038\nepoch 265 loss 0.0038\nepoch 266 loss 0.0037\nepoch 267 loss 0.0037\nepoch 268 loss 0.0037\nepoch 269 loss 0.0037\nepoch 270 loss 0.0037\nepoch 271 loss 0.0037\nepoch 272 loss 0.0037\nepoch 273 loss 0.0036\nepoch 274 loss 0.0036\nepoch 275 loss 0.0036\nepoch 276 loss 0.0036\nepoch 277 loss 0.0036\nepoch 278 loss 0.0036\nepoch 279 loss 0.0036\nepoch 280 loss 0.0036\nepoch 281 loss 0.0035\nepoch 282 loss 0.0035\nepoch 283 loss 0.0035\nepoch 284 loss 0.0035\nepoch 285 loss 0.0035\nepoch 286 loss 0.0035\nepoch 287 loss 0.0035\nepoch 288 loss 0.0035\nepoch 289 loss 0.0034\nepoch 290 loss 0.0034\nepoch 291 loss 0.0034\nepoch 292 loss 0.0034\nepoch 293 loss 0.0034\nepoch 294 loss 0.0034\nepoch 295 loss 0.0034\nepoch 296 loss 0.0034\nepoch 297 loss 0.0034\nepoch 298 loss 0.0033\nepoch 299 loss 0.0033",
+          "stderr": "",
+          "error_line": null,
+          "line": null,
+          "ms": 12,
+          "where": "browser",
+          "code_hash": "h1",
+          "ran_at": "2026-11-07T02:00:00.000Z",
+          "outcome": "ok"
+        }
+      },
+      "text": "Cell 1 ran without error in 12 ms.\nOutput (only its last lines):\n```\nepoch 234 loss 0.0043\nepoch 235 loss 0.0042\nepoch 236 loss 0.0042\nepoch 237 loss 0.0042\nepoch 238 loss 0.0042\nepoch 239 loss 0.0042\nepoch 240 loss 0.0041\nepoch 241 loss 0.0041\nepoch 242 loss 0.0041\nepoch 243 loss 0.0041\nepoch 244 loss 0.0041\nepoch 245 loss 0.0041\nepoch 246 loss 0.0040\nepoch 247 loss 0.0040\nepoch 248 loss 0.0040\nepoch 249 loss 0.0040\nepoch 250 loss 0.0040\nepoch 251 loss 0.0040\nepoch 252 loss 0.0040\nepoch 253 loss 0.0039\nepoch 254 loss 0.0039\nepoch 255 loss 0.0039\nepoch 256 loss 0.0039\nepoch 257 loss 0.0039\nepoch 258 loss 0.0039\nepoch 259 loss 0.0038\nepoch 260 loss 0.0038\nepoch 261 loss 0.0038\nepoch 262 loss 0.0038\nepoch 263 loss 0.0038\nepoch 264 loss 0.0038\nepoch 265 loss 0.0038\nepoch 266 loss 0.0037\nepoch 267 loss 0.0037\nepoch 268 loss 0.0037\nepoch 269 loss 0.0037\nepoch 270 loss 0.0037\nepoch 271 loss 0.0037\nepoch 272 loss 0.0037\nepoch 273 loss 0.0036\nepoch 274 loss 0.0036\nepoch 275 loss 0.0036\nepoch 276 loss 0.0036\nepoch 277 loss 0.0036\nepoch 278 loss 0.0036\nepoch 279 loss 0.0036\nepoch 280 loss 0.0036\nepoch 281 loss 0.0035\nepoch 282 loss 0.0035\nepoch 283 loss 0.0035\nepoch 284 loss 0.0035\nepoch 285 loss 0.0035\nepoch 286 loss 0.0035\nepoch 287 loss 0.0035\nepoch 288 loss 0.0035\nepoch 289 loss 0.0034\nepoch 290 loss 0.0034\nepoch 291 loss 0.0034\nepoch 292 loss 0.0034\nepoch 293 loss 0.0034\nepoch 294 loss 0.0034\nepoch 295 loss 0.0034\nepoch 296 loss 0.0034\nepoch 297 loss 0.0034\nepoch 298 loss 0.0033\nepoch 299 loss 0.0033\n```"
+    },
+    {
+      "n": 1,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000006",
+        "position": 6,
+        "language": "python",
+        "content": "print(1)",
+        "note_before": "  \n ",
+        "note_after": "\n",
+        "last_run": null
+      },
+      "text": "Cell 1 ran, but its result wasn't saved, so there is nothing to read."
+    },
+    {
+      "n": 1,
+      "cell": {
+        "user_id": "9f000000-0000-4000-8000-000000000001",
+        "note_id": "9f000000-0000-4000-8000-0000000000e1",
+        "filename": "",
+        "created_at": "2026-11-07T02:00:00Z",
+        "updated_at": "2026-11-07T02:00:00Z",
+        "id": "9f000000-0000-4000-8000-000000000007",
+        "position": 7,
+        "language": "python",
+        "content": "print('cell')",
+        "note_before": "",
+        "note_after": "after",
+        "last_run": null
+      },
+      "text": "Cell 1 ran, but its result wasn't saved, so there is nothing to read."
+    }
+  ],
+  "graphs": [
+    {
+      "name": "body only",
+      "title": "body only",
+      "body": "Hypothesis: warmup helps.",
+      "outcome": "success",
+      "cells": [],
+      "text": "<graph>\nNote: body only · outcome: Successful\nQuestion: warmup helps.\nCells: none yet\n</graph>"
+    },
+    {
+      "name": "every part of a cell, in order",
+      "title": "every part of a cell, in order",
+      "body": "Two parameters: lr and warmup.",
+      "outcome": "failed",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000001",
+          "position": 1,
+          "language": "python",
+          "content": "import matplotlib.pyplot as plt\nplt.plot([1, 2])\nprint('acc', 0.91)",
+          "note_before": "Try **lr = 0.1** first.",
+          "note_after": "Accuracy looks good; check [[Baseline|9f000000-0000-4000-8000-0000000000e2]].",
+          "last_run": {
+            "stdout": "acc 0.91\n",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "ok",
+            "outputs": {
+              "version": 1,
+              "dir": "9f000000-0000-4000-8000-000000000001/9f000000-0000-4000-8000-0000000000c1/9f000000-0000-4000-8000-0000000000a1",
+              "notes": [],
+              "items": [
+                {
+                  "kind": "image",
+                  "source": "matplotlib",
+                  "width": 640,
+                  "height": 480,
+                  "title": "Loss curve",
+                  "files": {
+                    "png": "0.png"
+                  }
+                },
+                {
+                  "kind": "table",
+                  "index_columns": 1,
+                  "columns": [
+                    "a",
+                    "b"
+                  ],
+                  "rows": [
+                    [
+                      1,
+                      2
+                    ]
+                  ],
+                  "total_rows": 10,
+                  "total_columns": 2,
+                  "files": {
+                    "csv": "1.csv"
+                  }
+                },
+                {
+                  "kind": "chart",
+                  "lib": "plotly",
+                  "version": "5.24.1",
+                  "title": "",
+                  "files": {
+                    "json": "2.json"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "text": "<graph>\nNote: every part of a cell, in order · outcome: Failed\nAbout: Two parameters: lr and warmup.\nCells:\n[Cell 1] python · expected: Try **lr = 0.1** first. · ran ok on the device in 12 ms; CHANGED since that run, so its results are of older code · shown in the note: a figure \"Loss curve\"; a table, 10 rows × 2 columns (columns: b); an interactive Plotly chart · printed: acc 0.91 · observed: Accuracy looks good; check [[Baseline|9f000000-0000-4000-8000-0000000000e2]]. · uses: matplotlib\n</graph>"
+    },
+    {
+      "name": "a failed run shows its error, not its output",
+      "title": "a failed run shows its error, not its output",
+      "body": "",
+      "outcome": null,
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000002",
+          "position": 2,
+          "language": "python",
+          "content": "1/0",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "before\n",
+            "stderr": "Traceback\nZeroDivisionError: division by zero",
+            "error_line": "ZeroDivisionError: division by zero",
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "error"
+          }
+        }
+      ],
+      "text": "<graph>\nNote: a failed run shows its error, not its output · outcome: not marked yet\nCells:\n[Cell 1] python · failed on the device: ZeroDivisionError: division by zero; CHANGED since that run, so its results are of older code\n</graph>"
+    },
+    {
+      "name": "a stopped or timed-out run shows neither",
+      "title": "a stopped or timed-out run shows neither",
+      "body": "b",
+      "outcome": "success",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000003",
+          "position": 3,
+          "language": "python",
+          "content": "while True: pass",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "partial",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "timeout"
+          }
+        },
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000004",
+          "position": 4,
+          "language": "r",
+          "content": "1",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "stopped"
+          }
+        }
+      ],
+      "text": "<graph>\nNote: a stopped or timed-out run shows neither · outcome: Successful\nAbout: b\nCells:\n[Cell 1] python · ran out of time on the device; CHANGED since that run, so its results are of older code\n[Cell 2] r · was stopped on the device; CHANGED since that run, so its results are of older code\n</graph>"
+    },
+    {
+      "name": "a long output keeps its last lines and says so",
+      "title": "a long output keeps its last lines and says so",
+      "body": "",
+      "outcome": "failed",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000005",
+          "position": 5,
+          "language": "python",
+          "content": "train()",
+          "note_before": "",
+          "note_after": "",
+          "last_run": {
+            "stdout": "epoch 0 loss 1.0000\nepoch 1 loss 0.5000\nepoch 2 loss 0.3333\nepoch 3 loss 0.2500\nepoch 4 loss 0.2000\nepoch 5 loss 0.1667\nepoch 6 loss 0.1429\nepoch 7 loss 0.1250\nepoch 8 loss 0.1111\nepoch 9 loss 0.1000\nepoch 10 loss 0.0909\nepoch 11 loss 0.0833\nepoch 12 loss 0.0769\nepoch 13 loss 0.0714\nepoch 14 loss 0.0667\nepoch 15 loss 0.0625\nepoch 16 loss 0.0588\nepoch 17 loss 0.0556\nepoch 18 loss 0.0526\nepoch 19 loss 0.0500\nepoch 20 loss 0.0476\nepoch 21 loss 0.0455\nepoch 22 loss 0.0435\nepoch 23 loss 0.0417\nepoch 24 loss 0.0400\nepoch 25 loss 0.0385\nepoch 26 loss 0.0370\nepoch 27 loss 0.0357\nepoch 28 loss 0.0345\nepoch 29 loss 0.0333\nepoch 30 loss 0.0323\nepoch 31 loss 0.0313\nepoch 32 loss 0.0303\nepoch 33 loss 0.0294\nepoch 34 loss 0.0286\nepoch 35 loss 0.0278\nepoch 36 loss 0.0270\nepoch 37 loss 0.0263\nepoch 38 loss 0.0256\nepoch 39 loss 0.0250\nepoch 40 loss 0.0244\nepoch 41 loss 0.0238\nepoch 42 loss 0.0233\nepoch 43 loss 0.0227\nepoch 44 loss 0.0222\nepoch 45 loss 0.0217\nepoch 46 loss 0.0213\nepoch 47 loss 0.0208\nepoch 48 loss 0.0204\nepoch 49 loss 0.0200\nepoch 50 loss 0.0196\nepoch 51 loss 0.0192\nepoch 52 loss 0.0189\nepoch 53 loss 0.0185\nepoch 54 loss 0.0182\nepoch 55 loss 0.0179\nepoch 56 loss 0.0175\nepoch 57 loss 0.0172\nepoch 58 loss 0.0169\nepoch 59 loss 0.0167\nepoch 60 loss 0.0164\nepoch 61 loss 0.0161\nepoch 62 loss 0.0159\nepoch 63 loss 0.0156\nepoch 64 loss 0.0154\nepoch 65 loss 0.0152\nepoch 66 loss 0.0149\nepoch 67 loss 0.0147\nepoch 68 loss 0.0145\nepoch 69 loss 0.0143\nepoch 70 loss 0.0141\nepoch 71 loss 0.0139\nepoch 72 loss 0.0137\nepoch 73 loss 0.0135\nepoch 74 loss 0.0133\nepoch 75 loss 0.0132\nepoch 76 loss 0.0130\nepoch 77 loss 0.0128\nepoch 78 loss 0.0127\nepoch 79 loss 0.0125\nepoch 80 loss 0.0123\nepoch 81 loss 0.0122\nepoch 82 loss 0.0120\nepoch 83 loss 0.0119\nepoch 84 loss 0.0118\nepoch 85 loss 0.0116\nepoch 86 loss 0.0115\nepoch 87 loss 0.0114\nepoch 88 loss 0.0112\nepoch 89 loss 0.0111\nepoch 90 loss 0.0110\nepoch 91 loss 0.0109\nepoch 92 loss 0.0108\nepoch 93 loss 0.0106\nepoch 94 loss 0.0105\nepoch 95 loss 0.0104\nepoch 96 loss 0.0103\nepoch 97 loss 0.0102\nepoch 98 loss 0.0101\nepoch 99 loss 0.0100\nepoch 100 loss 0.0099\nepoch 101 loss 0.0098\nepoch 102 loss 0.0097\nepoch 103 loss 0.0096\nepoch 104 loss 0.0095\nepoch 105 loss 0.0094\nepoch 106 loss 0.0093\nepoch 107 loss 0.0093\nepoch 108 loss 0.0092\nepoch 109 loss 0.0091\nepoch 110 loss 0.0090\nepoch 111 loss 0.0089\nepoch 112 loss 0.0088\nepoch 113 loss 0.0088\nepoch 114 loss 0.0087\nepoch 115 loss 0.0086\nepoch 116 loss 0.0085\nepoch 117 loss 0.0085\nepoch 118 loss 0.0084\nepoch 119 loss 0.0083\nepoch 120 loss 0.0083\nepoch 121 loss 0.0082\nepoch 122 loss 0.0081\nepoch 123 loss 0.0081\nepoch 124 loss 0.0080\nepoch 125 loss 0.0079\nepoch 126 loss 0.0079\nepoch 127 loss 0.0078\nepoch 128 loss 0.0078\nepoch 129 loss 0.0077\nepoch 130 loss 0.0076\nepoch 131 loss 0.0076\nepoch 132 loss 0.0075\nepoch 133 loss 0.0075\nepoch 134 loss 0.0074\nepoch 135 loss 0.0074\nepoch 136 loss 0.0073\nepoch 137 loss 0.0072\nepoch 138 loss 0.0072\nepoch 139 loss 0.0071\nepoch 140 loss 0.0071\nepoch 141 loss 0.0070\nepoch 142 loss 0.0070\nepoch 143 loss 0.0069\nepoch 144 loss 0.0069\nepoch 145 loss 0.0068\nepoch 146 loss 0.0068\nepoch 147 loss 0.0068\nepoch 148 loss 0.0067\nepoch 149 loss 0.0067\nepoch 150 loss 0.0066\nepoch 151 loss 0.0066\nepoch 152 loss 0.0065\nepoch 153 loss 0.0065\nepoch 154 loss 0.0065\nepoch 155 loss 0.0064\nepoch 156 loss 0.0064\nepoch 157 loss 0.0063\nepoch 158 loss 0.0063\nepoch 159 loss 0.0063\nepoch 160 loss 0.0062\nepoch 161 loss 0.0062\nepoch 162 loss 0.0061\nepoch 163 loss 0.0061\nepoch 164 loss 0.0061\nepoch 165 loss 0.0060\nepoch 166 loss 0.0060\nepoch 167 loss 0.0060\nepoch 168 loss 0.0059\nepoch 169 loss 0.0059\nepoch 170 loss 0.0058\nepoch 171 loss 0.0058\nepoch 172 loss 0.0058\nepoch 173 loss 0.0057\nepoch 174 loss 0.0057\nepoch 175 loss 0.0057\nepoch 176 loss 0.0056\nepoch 177 loss 0.0056\nepoch 178 loss 0.0056\nepoch 179 loss 0.0056\nepoch 180 loss 0.0055\nepoch 181 loss 0.0055\nepoch 182 loss 0.0055\nepoch 183 loss 0.0054\nepoch 184 loss 0.0054\nepoch 185 loss 0.0054\nepoch 186 loss 0.0053\nepoch 187 loss 0.0053\nepoch 188 loss 0.0053\nepoch 189 loss 0.0053\nepoch 190 loss 0.0052\nepoch 191 loss 0.0052\nepoch 192 loss 0.0052\nepoch 193 loss 0.0052\nepoch 194 loss 0.0051\nepoch 195 loss 0.0051\nepoch 196 loss 0.0051\nepoch 197 loss 0.0051\nepoch 198 loss 0.0050\nepoch 199 loss 0.0050\nepoch 200 loss 0.0050\nepoch 201 loss 0.0050\nepoch 202 loss 0.0049\nepoch 203 loss 0.0049\nepoch 204 loss 0.0049\nepoch 205 loss 0.0049\nepoch 206 loss 0.0048\nepoch 207 loss 0.0048\nepoch 208 loss 0.0048\nepoch 209 loss 0.0048\nepoch 210 loss 0.0047\nepoch 211 loss 0.0047\nepoch 212 loss 0.0047\nepoch 213 loss 0.0047\nepoch 214 loss 0.0047\nepoch 215 loss 0.0046\nepoch 216 loss 0.0046\nepoch 217 loss 0.0046\nepoch 218 loss 0.0046\nepoch 219 loss 0.0045\nepoch 220 loss 0.0045\nepoch 221 loss 0.0045\nepoch 222 loss 0.0045\nepoch 223 loss 0.0045\nepoch 224 loss 0.0044\nepoch 225 loss 0.0044\nepoch 226 loss 0.0044\nepoch 227 loss 0.0044\nepoch 228 loss 0.0044\nepoch 229 loss 0.0043\nepoch 230 loss 0.0043\nepoch 231 loss 0.0043\nepoch 232 loss 0.0043\nepoch 233 loss 0.0043\nepoch 234 loss 0.0043\nepoch 235 loss 0.0042\nepoch 236 loss 0.0042\nepoch 237 loss 0.0042\nepoch 238 loss 0.0042\nepoch 239 loss 0.0042\nepoch 240 loss 0.0041\nepoch 241 loss 0.0041\nepoch 242 loss 0.0041\nepoch 243 loss 0.0041\nepoch 244 loss 0.0041\nepoch 245 loss 0.0041\nepoch 246 loss 0.0040\nepoch 247 loss 0.0040\nepoch 248 loss 0.0040\nepoch 249 loss 0.0040\nepoch 250 loss 0.0040\nepoch 251 loss 0.0040\nepoch 252 loss 0.0040\nepoch 253 loss 0.0039\nepoch 254 loss 0.0039\nepoch 255 loss 0.0039\nepoch 256 loss 0.0039\nepoch 257 loss 0.0039\nepoch 258 loss 0.0039\nepoch 259 loss 0.0038\nepoch 260 loss 0.0038\nepoch 261 loss 0.0038\nepoch 262 loss 0.0038\nepoch 263 loss 0.0038\nepoch 264 loss 0.0038\nepoch 265 loss 0.0038\nepoch 266 loss 0.0037\nepoch 267 loss 0.0037\nepoch 268 loss 0.0037\nepoch 269 loss 0.0037\nepoch 270 loss 0.0037\nepoch 271 loss 0.0037\nepoch 272 loss 0.0037\nepoch 273 loss 0.0036\nepoch 274 loss 0.0036\nepoch 275 loss 0.0036\nepoch 276 loss 0.0036\nepoch 277 loss 0.0036\nepoch 278 loss 0.0036\nepoch 279 loss 0.0036\nepoch 280 loss 0.0036\nepoch 281 loss 0.0035\nepoch 282 loss 0.0035\nepoch 283 loss 0.0035\nepoch 284 loss 0.0035\nepoch 285 loss 0.0035\nepoch 286 loss 0.0035\nepoch 287 loss 0.0035\nepoch 288 loss 0.0035\nepoch 289 loss 0.0034\nepoch 290 loss 0.0034\nepoch 291 loss 0.0034\nepoch 292 loss 0.0034\nepoch 293 loss 0.0034\nepoch 294 loss 0.0034\nepoch 295 loss 0.0034\nepoch 296 loss 0.0034\nepoch 297 loss 0.0034\nepoch 298 loss 0.0033\nepoch 299 loss 0.0033",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12,
+            "where": "browser",
+            "code_hash": "h1",
+            "ran_at": "2026-11-07T02:00:00.000Z",
+            "outcome": "ok"
+          }
+        }
+      ],
+      "text": "<graph>\nNote: a long output keeps its last lines and says so · outcome: Failed\nCells:\n[Cell 1] python · ran ok on the device in 12 ms; CHANGED since that run, so its results are of older code · printed: epoch 298 loss 0.0033 | epoch 299 loss 0.0033\n</graph>"
+    },
+    {
+      "name": "blank cell notes are left out",
+      "title": "blank cell notes are left out",
+      "body": "x",
+      "outcome": null,
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000006",
+          "position": 6,
+          "language": "python",
+          "content": "print(1)",
+          "note_before": "  \n ",
+          "note_after": "\n",
+          "last_run": null
+        }
+      ],
+      "text": "<graph>\nNote: blank cell notes are left out · outcome: not marked yet\nAbout: x\nCells:\n[Cell 1] python · not run yet\n</graph>"
+    },
+    {
+      "name": "a long note keeps its newest work, its body cut at a line",
+      "title": "a long note keeps its newest work, its body cut at a line",
+      "body": "row 0\nrow 1\nrow 2\nrow 3\nrow 4\nrow 5\nrow 6\nrow 7\nrow 8\nrow 9\nrow 10\nrow 11\nrow 12\nrow 13\nrow 14\nrow 15\nrow 16\nrow 17\nrow 18\nrow 19\nrow 20\nrow 21\nrow 22\nrow 23\nrow 24\nrow 25\nrow 26\nrow 27\nrow 28\nrow 29\nrow 30\nrow 31\nrow 32\nrow 33\nrow 34\nrow 35\nrow 36\nrow 37\nrow 38\nrow 39",
+      "outcome": "success",
+      "cells": [
+        {
+          "user_id": "9f000000-0000-4000-8000-000000000001",
+          "note_id": "9f000000-0000-4000-8000-0000000000e1",
+          "filename": "",
+          "created_at": "2026-11-07T02:00:00Z",
+          "updated_at": "2026-11-07T02:00:00Z",
+          "id": "9f000000-0000-4000-8000-000000000007",
+          "position": 7,
+          "language": "python",
+          "content": "print('cell')",
+          "note_before": "",
+          "note_after": "after",
+          "last_run": null
+        }
+      ],
+      "text": "<graph>\nNote: a long note keeps its newest work, its body cut at a line · outcome: Successful\nAbout: row 0 row 1 row 2 row 3 row 4 row 5 row 6 row 7 row 8 row 9 row 10 row 11 row 12 row 13 row 14 row 15 row 16 row 17 row 18 row 19 row 20 row 21 row 22 row 23 row 24 row 25 row 26 row 27 row 28 row 29…\nCells:\n[Cell 1] python · not run yet · observed: after\n</graph>"
+    }
+  ],
+  "findNotes": [
+    {
+      "query": "",
+      "found": [
+        {
+          "id": "a",
+          "title": "Annealing at 600 C",
+          "outcome": "success",
+          "updated_at": "2026-11-18T09:00:00.000Z",
+          "why": "linked from this note"
+        },
+        {
+          "id": "b",
+          "title": "  ",
+          "outcome": "failed",
+          "updated_at": "2026-11-10T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Sweep",
+          "outcome": null,
+          "updated_at": "2026-11-01T09:00:00.000Z",
+          "why": "matches"
+        }
+      ],
+      "result": "Your other notes (use the N references with read_note, ask_note or propose_change):\nN1 · \"Annealing at 600 C\" · Successful · edited 2026-11-18 · linked from this note\nN2 · \"Untitled\" · Failed · edited 2026-11-10\nN3 · \"Sweep\" · not marked · edited 2026-11-01 · matches",
+      "action": "Looked for notes · 3 found"
+    },
+    {
+      "query": "anneal",
+      "found": [
+        {
+          "id": "a",
+          "title": "Annealing at 600 C",
+          "outcome": "success",
+          "updated_at": "2026-11-18T09:00:00.000Z",
+          "why": "linked from this note"
+        },
+        {
+          "id": "b",
+          "title": "  ",
+          "outcome": "failed",
+          "updated_at": "2026-11-10T09:00:00.000Z"
+        },
+        {
+          "id": "c",
+          "title": "Sweep",
+          "outcome": null,
+          "updated_at": "2026-11-01T09:00:00.000Z",
+          "why": "matches"
+        }
+      ],
+      "result": "Your other notes about \"anneal\" (use the N references with read_note, ask_note or propose_change):\nN1 · \"Annealing at 600 C\" · Successful · edited 2026-11-18 · linked from this note\nN2 · \"Untitled\" · Failed · edited 2026-11-10\nN3 · \"Sweep\" · not marked · edited 2026-11-01 · matches",
+      "action": "Looked for notes about \"anneal\" · 3 found"
+    },
+    {
+      "query": "none",
+      "found": [],
+      "result": "No other notes about \"none\".",
+      "action": "Looked for notes about \"none\" · none"
+    }
+  ],
+  "askRequests": [
+    {
+      "question": "What grain size did it reach?",
+      "from": "Grain growth",
+      "text": "The assistant of another note (\"Grain growth\") asks about this note: What grain size did it reach?\nAnswer from this note only: what it found, with its numbers, and how sure the note is (its outcome, whether its cells ran with their current code). Don't change the note or run its cells; call finish with your answer."
+    },
+    {
+      "question": "Why did it fail?",
+      "from": "",
+      "text": "The assistant of another note asks about this note: Why did it fail?\nAnswer from this note only: what it found, with its numbers, and how sure the note is (its outcome, whether its cells ran with their current code). Don't change the note or run its cells; call finish with your answer."
+    },
+    {
+      "question": "x",
+      "from": "  TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT",
+      "text": "The assistant of another note (\"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT…\") asks about this note: x\nAnswer from this note only: what it found, with its numbers, and how sure the note is (its outcome, whether its cells ran with their current code). Don't change the note or run its cells; call finish with your answer."
+    }
+  ],
+  "otherNotes": [
+    {
+      "name": "linked, parent, children, then the newest; never itself; each once",
+      "from": {
+        "id": "00000001-0000-4000-8000-000000000000",
+        "parent_id": "00000002-0000-4000-8000-000000000000",
+        "body": "See [[Note 5|00000005-0000-4000-8000-000000000000]] and [[Note 3|00000003-0000-4000-8000-000000000000]], again [[x|00000005-0000-4000-8000-000000000000]], and [[gone|00000009-0000-4000-8000-000000000000]]."
+      },
+      "rows": [
+        {
+          "id": "00000001-0000-4000-8000-000000000000",
+          "title": "Note 1",
+          "outcome": null,
+          "updated_at": "2026-11-20T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": "failed",
+          "updated_at": "2026-11-05T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-19T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000005-0000-4000-8000-000000000000",
+          "title": "Note 5",
+          "outcome": "success",
+          "updated_at": "2026-11-02T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000006-0000-4000-8000-000000000000",
+          "title": "Note 6",
+          "outcome": null,
+          "updated_at": "2026-11-18T10:00:00.000Z",
+          "parent_id": "00000001-0000-4000-8000-000000000000"
+        },
+        {
+          "id": "00000007-0000-4000-8000-000000000000",
+          "title": "Note 7",
+          "outcome": null,
+          "updated_at": "2026-11-17T10:00:00.000Z",
+          "parent_id": "00000001-0000-4000-8000-000000000000"
+        },
+        {
+          "id": "00000008-0000-4000-8000-000000000000",
+          "title": "Note 8",
+          "outcome": null,
+          "updated_at": "2026-11-16T10:00:00.000Z",
+          "parent_id": null
+        }
+      ],
+      "matched": false,
+      "max": 8,
+      "similar": [],
+      "list": [
+        {
+          "id": "00000005-0000-4000-8000-000000000000",
+          "title": "Note 5",
+          "outcome": "success",
+          "updated_at": "2026-11-02T10:00:00.000Z",
+          "why": "linked from this note"
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": "failed",
+          "updated_at": "2026-11-05T10:00:00.000Z",
+          "why": "linked from this note"
+        },
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "why": "this note's parent"
+        },
+        {
+          "id": "00000006-0000-4000-8000-000000000000",
+          "title": "Note 6",
+          "outcome": null,
+          "updated_at": "2026-11-18T10:00:00.000Z",
+          "why": "a note under this one"
+        },
+        {
+          "id": "00000007-0000-4000-8000-000000000000",
+          "title": "Note 7",
+          "outcome": null,
+          "updated_at": "2026-11-17T10:00:00.000Z",
+          "why": "a note under this one"
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-19T10:00:00.000Z"
+        },
+        {
+          "id": "00000008-0000-4000-8000-000000000000",
+          "title": "Note 8",
+          "outcome": null,
+          "updated_at": "2026-11-16T10:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "at most max",
+      "from": {
+        "id": "00000001-0000-4000-8000-000000000000",
+        "parent_id": null,
+        "body": ""
+      },
+      "rows": [
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-02T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-03T10:00:00.000Z",
+          "parent_id": null
+        }
+      ],
+      "matched": false,
+      "max": 2,
+      "similar": [],
+      "list": [
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-03T10:00:00.000Z"
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-02T10:00:00.000Z"
+        }
+      ]
+    },
+    {
+      "name": "search matches keep the search's order",
+      "from": {
+        "id": "00000001-0000-4000-8000-000000000000",
+        "parent_id": null,
+        "body": ""
+      },
+      "rows": [
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000001-0000-4000-8000-000000000000",
+          "title": "Note 1",
+          "outcome": null,
+          "updated_at": "2026-11-20T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-05T10:00:00.000Z",
+          "parent_id": null
+        }
+      ],
+      "matched": true,
+      "max": 8,
+      "similar": [],
+      "list": [
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "why": "matches"
+        },
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-05T10:00:00.000Z",
+          "why": "matches"
+        }
+      ]
+    },
+    {
+      "name": "no other notes",
+      "from": {
+        "id": "00000001-0000-4000-8000-000000000000",
+        "parent_id": null,
+        "body": ""
+      },
+      "rows": [
+        {
+          "id": "00000001-0000-4000-8000-000000000000",
+          "title": "Note 1",
+          "outcome": null,
+          "updated_at": "2026-11-20T10:00:00.000Z",
+          "parent_id": null
+        }
+      ],
+      "matched": false,
+      "max": 8,
+      "similar": [],
+      "list": []
+    },
+    {
+      "name": "words and meaning fused: found both ways first, then by place; meaning-only rows say so",
+      "from": {
+        "id": "00000001-0000-4000-8000-000000000000",
+        "parent_id": null,
+        "body": ""
+      },
+      "rows": [
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-02T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-03T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000005-0000-4000-8000-000000000000",
+          "title": "Note 5",
+          "outcome": null,
+          "updated_at": "2026-11-04T10:00:00.000Z",
+          "parent_id": null,
+          "matched": false
+        },
+        {
+          "id": "00000006-0000-4000-8000-000000000000",
+          "title": "Note 6",
+          "outcome": null,
+          "updated_at": "2026-11-05T10:00:00.000Z",
+          "parent_id": null,
+          "matched": false
+        }
+      ],
+      "matched": true,
+      "max": 8,
+      "similar": [
+        "00000005-0000-4000-8000-000000000000",
+        "00000003-0000-4000-8000-000000000000",
+        "00000006-0000-4000-8000-000000000000",
+        "00000009-0000-4000-8000-000000000000"
+      ],
+      "list": [
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-02T10:00:00.000Z",
+          "why": "matches"
+        },
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "why": "matches"
+        },
+        {
+          "id": "00000005-0000-4000-8000-000000000000",
+          "title": "Note 5",
+          "outcome": null,
+          "updated_at": "2026-11-04T10:00:00.000Z",
+          "why": "close in meaning"
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-03T10:00:00.000Z",
+          "why": "matches"
+        },
+        {
+          "id": "00000006-0000-4000-8000-000000000000",
+          "title": "Note 6",
+          "outcome": null,
+          "updated_at": "2026-11-05T10:00:00.000Z",
+          "why": "close in meaning"
+        }
+      ]
+    },
+    {
+      "name": "no words: close in meaning comes after the children and before the newest",
+      "from": {
+        "id": "00000001-0000-4000-8000-000000000000",
+        "parent_id": null,
+        "body": "[[Note 2|00000002-0000-4000-8000-000000000000]]"
+      },
+      "rows": [
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-19T10:00:00.000Z",
+          "parent_id": "00000001-0000-4000-8000-000000000000"
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-20T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000005-0000-4000-8000-000000000000",
+          "title": "Note 5",
+          "outcome": null,
+          "updated_at": "2026-11-02T10:00:00.000Z",
+          "parent_id": null
+        },
+        {
+          "id": "00000006-0000-4000-8000-000000000000",
+          "title": "Note 6",
+          "outcome": null,
+          "updated_at": "2026-11-03T10:00:00.000Z",
+          "parent_id": null
+        }
+      ],
+      "matched": false,
+      "max": 5,
+      "similar": [
+        "00000006-0000-4000-8000-000000000000",
+        "00000002-0000-4000-8000-000000000000",
+        "00000001-0000-4000-8000-000000000000"
+      ],
+      "list": [
+        {
+          "id": "00000002-0000-4000-8000-000000000000",
+          "title": "Note 2",
+          "outcome": null,
+          "updated_at": "2026-11-01T10:00:00.000Z",
+          "why": "linked from this note"
+        },
+        {
+          "id": "00000003-0000-4000-8000-000000000000",
+          "title": "Note 3",
+          "outcome": null,
+          "updated_at": "2026-11-19T10:00:00.000Z",
+          "why": "a note under this one"
+        },
+        {
+          "id": "00000006-0000-4000-8000-000000000000",
+          "title": "Note 6",
+          "outcome": null,
+          "updated_at": "2026-11-03T10:00:00.000Z",
+          "why": "close in meaning to this note"
+        },
+        {
+          "id": "00000004-0000-4000-8000-000000000000",
+          "title": "Note 4",
+          "outcome": null,
+          "updated_at": "2026-11-20T10:00:00.000Z"
+        },
+        {
+          "id": "00000005-0000-4000-8000-000000000000",
+          "title": "Note 5",
+          "outcome": null,
+          "updated_at": "2026-11-02T10:00:00.000Z"
+        }
+      ]
+    }
+  ],
+  "notesReach": {
+    "find": 8,
+    "askSteps": 4,
+    "budget": 12,
+    "depth": 2
+  },
+  "readOnly": "This note is read-only here: you are answering a question from another note. Answer from what it holds, and call finish with your answer.",
+  "produced": [
+    {
+      "item": {
+        "kind": "image",
+        "source": "matplotlib",
+        "width": 640,
+        "height": 480,
+        "title": "Loss curve",
+        "files": {
+          "png": "0.png"
+        }
+      },
+      "text": "a figure \"Loss curve\"",
+      "short": "a figure \"Loss curve\""
+    },
+    {
+      "item": {
+        "kind": "table",
+        "index_columns": 1,
+        "columns": [
+          "a",
+          "b"
+        ],
+        "rows": [
+          [
+            1,
+            2
+          ]
+        ],
+        "total_rows": 10,
+        "total_columns": 2,
+        "files": {
+          "csv": "1.csv"
+        }
+      },
+      "text": "a table, 10 rows × 2 columns (columns: b)",
+      "short": "a table, 10 rows × 2 columns (columns: b)"
+    },
+    {
+      "item": {
+        "kind": "chart",
+        "lib": "plotly",
+        "version": "5.24.1",
+        "title": "",
+        "files": {
+          "json": "2.json"
+        }
+      },
+      "text": "an interactive Plotly chart",
+      "short": "an interactive Plotly chart"
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "file",
+        "name": "animation-1.gif",
+        "width": 460,
+        "height": 345,
+        "title": "Grain growth",
+        "files": {
+          "gif": "0.gif",
+          "mp4": "0.mp4"
+        }
+      },
+      "text": "an animation (it plays by itself in the note) \"Grain growth\"",
+      "short": "an animation (it plays by itself in the note) \"Grain growth\""
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "file",
+        "name": "clip.mp4",
+        "width": 0,
+        "height": 0,
+        "title": "",
+        "files": {
+          "mp4": "1.mp4"
+        }
+      },
+      "text": "a video (clip.mp4) (it plays in the note)",
+      "short": "a video (clip.mp4) (it plays in the note)"
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "file",
+        "name": "plot.png",
+        "width": 10,
+        "height": 10,
+        "title": "plot.png",
+        "files": {
+          "png": "2.png"
+        }
+      },
+      "text": "an image (plot.png, a file the code wrote) \"plot.png\"",
+      "short": "an image (plot.png, a file the code wrote) \"plot.png\""
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "pil",
+        "width": 10,
+        "height": 10,
+        "title": "",
+        "files": {
+          "png": "3.png"
+        }
+      },
+      "text": "an image",
+      "short": "an image"
+    },
+    {
+      "item": {
+        "kind": "chart",
+        "lib": "bokeh",
+        "version": "3",
+        "title": "Sweep",
+        "files": {
+          "json": "4.json"
+        }
+      },
+      "text": "an interactive Bokeh chart \"Sweep\"",
+      "short": "an interactive Bokeh chart \"Sweep\""
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "matplotlib",
+        "width": 640,
+        "height": 480,
+        "title": "Mean size",
+        "files": {
+          "png": "5.png",
+          "svg": "5.svg"
+        },
+        "seen": "Mean grain size rises from 4.1 nm   to 9.3 nm over 200 MCS, levelling off after 150."
+      },
+      "text": "a figure \"Mean size\" (it shows: Mean grain size rises from 4.1 nm to 9.3 nm over 200 MCS, levelling off after 150.)",
+      "short": "a figure \"Mean size\" (it shows: Mean grain size rises from 4.…)"
+    },
+    {
+      "item": {
+        "kind": "chart",
+        "lib": "plotly",
+        "version": "5",
+        "title": "Acc",
+        "files": {
+          "json": "6.json",
+          "png": "6.png"
+        }
+      },
+      "text": "an interactive Plotly chart \"Acc\"",
+      "short": "an interactive Plotly chart \"Acc\""
+    },
+    {
+      "item": {
+        "kind": "table",
+        "index_columns": 1,
+        "columns": [
+          "",
+          "mcs",
+          "grains",
+          "mean_d"
+        ],
+        "rows": [
+          [
+            0,
+            10,
+            239,
+            4.1
+          ]
+        ],
+        "total_rows": 20,
+        "total_columns": 3,
+        "files": {
+          "csv": "7.csv"
+        }
+      },
+      "text": "a table, 20 rows × 3 columns (columns: mcs, grains, mean_d)",
+      "short": "a table, 20 rows × 3 columns (columns: mcs, grains, mean_d)"
+    }
+  ],
+  "toSee": [
+    {
+      "outputs": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "animation-1.gif",
+            "width": 4,
+            "height": 4,
+            "title": "Strip",
+            "files": {
+              "gif": "0.gif",
+              "mp4": "0.mp4",
+              "strip": "0.png"
+            }
+          }
+        ]
+      },
+      "see": [
+        {
+          "index": 0,
+          "file": "0.png",
+          "kind": "animation",
+          "title": "Strip"
+        }
+      ],
+      "kept": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "animation-1.gif",
+            "width": 4,
+            "height": 4,
+            "title": "Strip",
+            "files": {
+              "gif": "0.gif",
+              "mp4": "0.mp4",
+              "strip": "0.png"
+            },
+            "seen": "seen 0"
+          }
+        ]
+      }
+    },
+    {
+      "outputs": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "animation-1.gif",
+            "width": 460,
+            "height": 345,
+            "title": "Grain growth",
+            "files": {
+              "gif": "0.gif",
+              "mp4": "0.mp4"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "clip.mp4",
+            "width": 0,
+            "height": 0,
+            "title": "",
+            "files": {
+              "mp4": "1.mp4"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "plot.png",
+            "width": 10,
+            "height": 10,
+            "title": "plot.png",
+            "files": {
+              "png": "2.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "pil",
+            "width": 10,
+            "height": 10,
+            "title": "",
+            "files": {
+              "png": "3.png"
+            }
+          },
+          {
+            "kind": "chart",
+            "lib": "bokeh",
+            "version": "3",
+            "title": "Sweep",
+            "files": {
+              "json": "4.json"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 640,
+            "height": 480,
+            "title": "Mean size",
+            "files": {
+              "png": "5.png",
+              "svg": "5.svg"
+            },
+            "seen": "Mean grain size rises from 4.1 nm   to 9.3 nm over 200 MCS, levelling off after 150."
+          },
+          {
+            "kind": "chart",
+            "lib": "plotly",
+            "version": "5",
+            "title": "Acc",
+            "files": {
+              "json": "6.json",
+              "png": "6.png"
+            }
+          },
+          {
+            "kind": "table",
+            "index_columns": 1,
+            "columns": [
+              "",
+              "mcs",
+              "grains",
+              "mean_d"
+            ],
+            "rows": [
+              [
+                0,
+                10,
+                239,
+                4.1
+              ]
+            ],
+            "total_rows": 20,
+            "total_columns": 3,
+            "files": {
+              "csv": "7.csv"
+            }
+          }
+        ]
+      },
+      "see": [
+        {
+          "index": 0,
+          "file": "0.gif",
+          "kind": "animation",
+          "title": "Grain growth"
+        },
+        {
+          "index": 2,
+          "file": "2.png",
+          "kind": "image",
+          "title": "plot.png"
+        },
+        {
+          "index": 3,
+          "file": "3.png",
+          "kind": "image",
+          "title": ""
+        }
+      ],
+      "kept": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "animation-1.gif",
+            "width": 460,
+            "height": 345,
+            "title": "Grain growth",
+            "files": {
+              "gif": "0.gif",
+              "mp4": "0.mp4"
+            },
+            "seen": "seen 0"
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "clip.mp4",
+            "width": 0,
+            "height": 0,
+            "title": "",
+            "files": {
+              "mp4": "1.mp4"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "plot.png",
+            "width": 10,
+            "height": 10,
+            "title": "plot.png",
+            "files": {
+              "png": "2.png"
+            },
+            "seen": "seen 2"
+          },
+          {
+            "kind": "image",
+            "source": "pil",
+            "width": 10,
+            "height": 10,
+            "title": "",
+            "files": {
+              "png": "3.png"
+            },
+            "seen": "seen 3"
+          },
+          {
+            "kind": "chart",
+            "lib": "bokeh",
+            "version": "3",
+            "title": "Sweep",
+            "files": {
+              "json": "4.json"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 640,
+            "height": 480,
+            "title": "Mean size",
+            "files": {
+              "png": "5.png",
+              "svg": "5.svg"
+            },
+            "seen": "Mean grain size rises from 4.1 nm   to 9.3 nm over 200 MCS, levelling off after 150."
+          },
+          {
+            "kind": "chart",
+            "lib": "plotly",
+            "version": "5",
+            "title": "Acc",
+            "files": {
+              "json": "6.json",
+              "png": "6.png"
+            }
+          },
+          {
+            "kind": "table",
+            "index_columns": 1,
+            "columns": [
+              "",
+              "mcs",
+              "grains",
+              "mean_d"
+            ],
+            "rows": [
+              [
+                0,
+                10,
+                239,
+                4.1
+              ]
+            ],
+            "total_rows": 20,
+            "total_columns": 3,
+            "files": {
+              "csv": "7.csv"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "outputs": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "animation-1.gif",
+            "width": 460,
+            "height": 345,
+            "title": "Grain growth",
+            "files": {
+              "gif": "0.gif",
+              "mp4": "0.mp4"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "clip.mp4",
+            "width": 0,
+            "height": 0,
+            "title": "",
+            "files": {
+              "mp4": "1.mp4"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "plot.png",
+            "width": 10,
+            "height": 10,
+            "title": "plot.png",
+            "files": {
+              "png": "2.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "pil",
+            "width": 10,
+            "height": 10,
+            "title": "",
+            "files": {
+              "png": "3.png"
+            }
+          },
+          {
+            "kind": "chart",
+            "lib": "bokeh",
+            "version": "3",
+            "title": "Sweep",
+            "files": {
+              "json": "4.json"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 640,
+            "height": 480,
+            "title": "Mean size",
+            "files": {
+              "png": "5.png",
+              "svg": "5.svg"
+            }
+          },
+          {
+            "kind": "chart",
+            "lib": "plotly",
+            "version": "5",
+            "title": "Acc",
+            "files": {
+              "json": "6.json",
+              "png": "6.png"
+            }
+          },
+          {
+            "kind": "table",
+            "index_columns": 1,
+            "columns": [
+              "",
+              "mcs",
+              "grains",
+              "mean_d"
+            ],
+            "rows": [
+              [
+                0,
+                10,
+                239,
+                4.1
+              ]
+            ],
+            "total_rows": 20,
+            "total_columns": 3,
+            "files": {
+              "csv": "7.csv"
+            }
+          }
+        ]
+      },
+      "see": [
+        {
+          "index": 0,
+          "file": "0.gif",
+          "kind": "animation",
+          "title": "Grain growth"
+        },
+        {
+          "index": 2,
+          "file": "2.png",
+          "kind": "image",
+          "title": "plot.png"
+        },
+        {
+          "index": 3,
+          "file": "3.png",
+          "kind": "image",
+          "title": ""
+        }
+      ],
+      "kept": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "animation-1.gif",
+            "width": 460,
+            "height": 345,
+            "title": "Grain growth",
+            "files": {
+              "gif": "0.gif",
+              "mp4": "0.mp4"
+            },
+            "seen": "seen 0"
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "clip.mp4",
+            "width": 0,
+            "height": 0,
+            "title": "",
+            "files": {
+              "mp4": "1.mp4"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "file",
+            "name": "plot.png",
+            "width": 10,
+            "height": 10,
+            "title": "plot.png",
+            "files": {
+              "png": "2.png"
+            },
+            "seen": "seen 2"
+          },
+          {
+            "kind": "image",
+            "source": "pil",
+            "width": 10,
+            "height": 10,
+            "title": "",
+            "files": {
+              "png": "3.png"
+            },
+            "seen": "seen 3"
+          },
+          {
+            "kind": "chart",
+            "lib": "bokeh",
+            "version": "3",
+            "title": "Sweep",
+            "files": {
+              "json": "4.json"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 640,
+            "height": 480,
+            "title": "Mean size",
+            "files": {
+              "png": "5.png",
+              "svg": "5.svg"
+            }
+          },
+          {
+            "kind": "chart",
+            "lib": "plotly",
+            "version": "5",
+            "title": "Acc",
+            "files": {
+              "json": "6.json",
+              "png": "6.png"
+            }
+          },
+          {
+            "kind": "table",
+            "index_columns": 1,
+            "columns": [
+              "",
+              "mcs",
+              "grains",
+              "mean_d"
+            ],
+            "rows": [
+              [
+                0,
+                10,
+                239,
+                4.1
+              ]
+            ],
+            "total_rows": 20,
+            "total_columns": 3,
+            "files": {
+              "csv": "7.csv"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "outputs": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F0",
+            "files": {
+              "png": "0.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F1",
+            "files": {
+              "png": "1.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F2",
+            "files": {
+              "png": "2.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F3",
+            "files": {
+              "png": "3.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F4",
+            "files": {
+              "png": "4.png"
+            }
+          }
+        ]
+      },
+      "see": [
+        {
+          "index": 0,
+          "file": "0.png",
+          "kind": "figure",
+          "title": "F0"
+        },
+        {
+          "index": 1,
+          "file": "1.png",
+          "kind": "figure",
+          "title": "F1"
+        },
+        {
+          "index": 2,
+          "file": "2.png",
+          "kind": "figure",
+          "title": "F2"
+        }
+      ],
+      "kept": {
+        "version": 1,
+        "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+        "notes": [],
+        "items": [
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F0",
+            "files": {
+              "png": "0.png"
+            },
+            "seen": "seen 0"
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F1",
+            "files": {
+              "png": "1.png"
+            },
+            "seen": "seen 1"
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F2",
+            "files": {
+              "png": "2.png"
+            },
+            "seen": "seen 2"
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F3",
+            "files": {
+              "png": "3.png"
+            }
+          },
+          {
+            "kind": "image",
+            "source": "matplotlib",
+            "width": 1,
+            "height": 1,
+            "title": "F4",
+            "files": {
+              "png": "4.png"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "shown": [
+    {
+      "item": {
+        "kind": "image",
+        "source": "matplotlib",
+        "width": 640,
+        "height": 480,
+        "title": "Loss curve",
+        "files": {
+          "png": "0.png"
+        }
+      },
+      "text": "a figure \"Loss curve\""
+    },
+    {
+      "item": {
+        "kind": "table",
+        "index_columns": 1,
+        "columns": [
+          "a",
+          "b"
+        ],
+        "rows": [
+          [
+            1,
+            2
+          ]
+        ],
+        "total_rows": 10,
+        "total_columns": 2,
+        "files": {
+          "csv": "1.csv"
+        }
+      },
+      "text": "a table, 10 rows × 2 columns"
+    },
+    {
+      "item": {
+        "kind": "chart",
+        "lib": "plotly",
+        "version": "5.24.1",
+        "title": "",
+        "files": {
+          "json": "2.json"
+        }
+      },
+      "text": "an interactive Plotly chart"
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "file",
+        "name": "animation-1.gif",
+        "width": 460,
+        "height": 345,
+        "title": "Grain growth",
+        "files": {
+          "gif": "0.gif",
+          "mp4": "0.mp4"
+        }
+      },
+      "text": "an animation (it plays by itself in the note) \"Grain growth\""
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "file",
+        "name": "clip.mp4",
+        "width": 0,
+        "height": 0,
+        "title": "",
+        "files": {
+          "mp4": "1.mp4"
+        }
+      },
+      "text": "a video (clip.mp4) (it plays in the note)"
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "file",
+        "name": "plot.png",
+        "width": 10,
+        "height": 10,
+        "title": "plot.png",
+        "files": {
+          "png": "2.png"
+        }
+      },
+      "text": "an image (plot.png, a file the code wrote) \"plot.png\""
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "pil",
+        "width": 10,
+        "height": 10,
+        "title": "",
+        "files": {
+          "png": "3.png"
+        }
+      },
+      "text": "an image"
+    },
+    {
+      "item": {
+        "kind": "chart",
+        "lib": "bokeh",
+        "version": "3",
+        "title": "Sweep",
+        "files": {
+          "json": "4.json"
+        }
+      },
+      "text": "an interactive Bokeh chart \"Sweep\""
+    },
+    {
+      "item": {
+        "kind": "image",
+        "source": "matplotlib",
+        "width": 640,
+        "height": 480,
+        "title": "Mean size",
+        "files": {
+          "png": "5.png",
+          "svg": "5.svg"
+        },
+        "seen": "Mean grain size rises from 4.1 nm   to 9.3 nm over 200 MCS, levelling off after 150."
+      },
+      "text": "a figure \"Mean size\""
+    },
+    {
+      "item": {
+        "kind": "chart",
+        "lib": "plotly",
+        "version": "5",
+        "title": "Acc",
+        "files": {
+          "json": "6.json",
+          "png": "6.png"
+        }
+      },
+      "text": "an interactive Plotly chart \"Acc\""
+    },
+    {
+      "item": {
+        "kind": "table",
+        "index_columns": 1,
+        "columns": [
+          "",
+          "mcs",
+          "grains",
+          "mean_d"
+        ],
+        "rows": [
+          [
+            0,
+            10,
+            239,
+            4.1
+          ]
+        ],
+        "total_rows": 20,
+        "total_columns": 3,
+        "files": {
+          "csv": "7.csv"
+        }
+      },
+      "text": "a table, 20 rows × 3 columns"
+    }
+  ],
+  "graphExtra": [
+    {
+      "title": "Grain growth",
+      "body": "**Question** Does annealing coarsen the grains?\n\n**Setup** Potts model, 200 MCS.\n\n## Result\n\nGrains grew 5%.",
+      "outcome": "success",
+      "cells": [
+        {
+          "id": "c1",
+          "user_id": "u",
+          "created_at": "2026-11-20T10:00:00Z",
+          "updated_at": "2026-11-20T10:00:00Z",
+          "note_id": "n",
+          "language": "python",
+          "content": "# Potts grain growth, animated\nimport numpy as np\nfrom matplotlib.animation import FuncAnimation\nanim = FuncAnimation(fig, update)",
+          "note_before": "Expect: grains grow.",
+          "note_after": "They did.",
+          "position": 0,
+          "last_run": {
+            "outcome": "ok",
+            "stdout": "MCS 10: 239 grains\nFinal: 216 grains, mean d = 9.34 nm\n",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12600,
+            "where": "browser",
+            "code_hash": "a7dbdc65a3a81",
+            "ran_at": "2026-11-20T10:59:59.000Z",
+            "outputs": {
+              "version": 1,
+              "dir": "00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000/00000000-0000-4000-8000-000000000000",
+              "notes": [
+                "Notebook-only lines (% and !) were skipped."
+              ],
+              "items": [
+                {
+                  "kind": "image",
+                  "source": "file",
+                  "name": "animation-1.gif",
+                  "width": 460,
+                  "height": 345,
+                  "title": "Grain growth",
+                  "files": {
+                    "gif": "0.gif",
+                    "mp4": "0.mp4"
+                  }
+                },
+                {
+                  "kind": "image",
+                  "source": "file",
+                  "name": "clip.mp4",
+                  "width": 0,
+                  "height": 0,
+                  "title": "",
+                  "files": {
+                    "mp4": "1.mp4"
+                  }
+                },
+                {
+                  "kind": "image",
+                  "source": "file",
+                  "name": "plot.png",
+                  "width": 10,
+                  "height": 10,
+                  "title": "plot.png",
+                  "files": {
+                    "png": "2.png"
+                  }
+                },
+                {
+                  "kind": "image",
+                  "source": "pil",
+                  "width": 10,
+                  "height": 10,
+                  "title": "",
+                  "files": {
+                    "png": "3.png"
+                  }
+                },
+                {
+                  "kind": "chart",
+                  "lib": "bokeh",
+                  "version": "3",
+                  "title": "Sweep",
+                  "files": {
+                    "json": "4.json"
+                  }
+                },
+                {
+                  "kind": "image",
+                  "source": "matplotlib",
+                  "width": 640,
+                  "height": 480,
+                  "title": "Mean size",
+                  "files": {
+                    "png": "5.png",
+                    "svg": "5.svg"
+                  },
+                  "seen": "Mean grain size rises from 4.1 nm   to 9.3 nm over 200 MCS, levelling off after 150."
+                },
+                {
+                  "kind": "chart",
+                  "lib": "plotly",
+                  "version": "5",
+                  "title": "Acc",
+                  "files": {
+                    "json": "6.json",
+                    "png": "6.png"
+                  }
+                },
+                {
+                  "kind": "table",
+                  "index_columns": 1,
+                  "columns": [
+                    "",
+                    "mcs",
+                    "grains",
+                    "mean_d"
+                  ],
+                  "rows": [
+                    [
+                      0,
+                      10,
+                      239,
+                      4.1
+                    ]
+                  ],
+                  "total_rows": 20,
+                  "total_columns": 3,
+                  "files": {
+                    "csv": "7.csv"
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "id": "c2",
+          "user_id": "u",
+          "created_at": "2026-11-20T10:00:00Z",
+          "updated_at": "2026-11-20T10:00:00Z",
+          "note_id": "n",
+          "language": "python",
+          "content": "print('new')",
+          "note_before": "",
+          "note_after": "",
+          "position": 1,
+          "last_run": {
+            "outcome": "ok",
+            "stdout": "",
+            "stderr": "",
+            "error_line": null,
+            "line": null,
+            "ms": 12600,
+            "where": "browser",
+            "code_hash": "fc01357ec1afd",
+            "ran_at": "2026-11-20T10:59:59.000Z"
+          }
+        },
+        {
+          "id": "c3",
+          "user_id": "u",
+          "created_at": "2026-11-20T10:00:00Z",
+          "updated_at": "2026-11-20T10:00:00Z",
+          "note_id": "n",
+          "language": "python",
+          "content": "import torch\n1/0",
+          "note_before": "",
+          "note_after": "",
+          "position": 2,
+          "last_run": {
+            "outcome": "error",
+            "stdout": "",
+            "stderr": "",
+            "error_line": "ZeroDivisionError: division by zero",
+            "line": null,
+            "ms": 840,
+            "where": "server",
+            "code_hash": "12b80940d60c33",
+            "ran_at": "2026-11-20T10:59:59.000Z"
+          }
+        },
+        {
+          "id": "c4",
+          "user_id": "u",
+          "created_at": "2026-11-20T10:00:00Z",
+          "updated_at": "2026-11-20T10:00:00Z",
+          "note_id": "n",
+          "language": "r",
+          "content": "x <- 1",
+          "note_before": "",
+          "note_after": "",
+          "position": 3,
+          "last_run": null
+        }
+      ],
+      "text": "<graph>\nNote: Grain growth · outcome: Successful\nQuestion: Does annealing coarsen the grains?\nSetup: Potts model, 200 MCS.\nResult: Grains grew 5%.\nCells:\n[Cell 1] python · purpose: Potts grain growth, animated · expected: Expect: grains grow. · ran ok on the device in 12.6 s · shown in the note: an animation (it plays by itself in the note) \"Grain growth\"; a video (clip.mp4) (it plays in the note); an image (plot.png, a file the code wrote) \"plot.png\"; an image; an interactive Bokeh chart \"Sweep\"; a figure \"Mean size\" (it shows: Mean grain size rises from 4.1 nm to 9.3 nm over 200 MCS, levelling off after 150.); an interactive Plotly chart \"Acc\"; a table, 20 rows × 3 columns (columns: mcs, grains, mean_d) · printed: MCS 10: 239 grains | Final: 216 grains, mean d = 9.34 nm · observed: They did. · uses: numpy, matplotlib\n[Cell 2] python · ran ok on the device in 12.6 s; CHANGED since that run, so its results are of older code\n[Cell 3] python · failed on the server: ZeroDivisionError: division by zero · uses: torch\n[Cell 4] r · not run yet\n</graph>"
+    },
+    {
+      "title": "",
+      "body": "Just thinking out loud about dropout and its effect on small nets.",
+      "outcome": null,
+      "cells": [],
+      "text": "<graph>\nNote: Untitled · outcome: not marked yet\nAbout: Just thinking out loud about dropout and its effect on small nets.\nCells: none yet\n</graph>"
+    },
+    {
+      "title": "Empty",
+      "body": "",
+      "outcome": "failed",
+      "cells": [],
+      "text": ""
+    },
+    {
+      "title": "Linked",
+      "body": "**Question** Does it match [[Annealing at 600 C|00000000-0000-4000-8000-000000000000]]?\n\nSee also [[Old attempt]] and [[ Annealing at 600 C |00000000-0000-4000-8000-000000000000]].",
+      "outcome": null,
+      "cells": [],
+      "text": "<graph>\nNote: Linked · outcome: not marked yet\nQuestion: Does it match Annealing at 600 C?\nLinks to: Annealing at 600 C; Old attempt\nCells: none yet\n</graph>"
+    }
+  ],
+  "timings": [
+    {
+      "ms": 0,
+      "text": "Cell 1 ran without error in 0 ms.\nIt printed nothing."
+    },
+    {
+      "ms": 999,
+      "text": "Cell 1 ran without error in 999 ms.\nIt printed nothing."
+    },
+    {
+      "ms": 1000,
+      "text": "Cell 1 ran without error in 1.0 s.\nIt printed nothing."
+    },
+    {
+      "ms": 1149,
+      "text": "Cell 1 ran without error in 1.1 s.\nIt printed nothing."
+    },
+    {
+      "ms": 1150,
+      "text": "Cell 1 ran without error in 1.1 s.\nIt printed nothing."
+    },
+    {
+      "ms": 1250,
+      "text": "Cell 1 ran without error in 1.3 s.\nIt printed nothing."
+    },
+    {
+      "ms": 12345,
+      "text": "Cell 1 ran without error in 12.3 s.\nIt printed nothing."
+    },
+    {
+      "ms": 3600000,
+      "text": "Cell 1 ran without error in 3600.0 s.\nIt printed nothing."
+    }
+  ],
+  "steps": [
+    {
+      "input": {
+        "message": "Adding it.",
+        "calls": [
+          {
+            "tool": "add_cell",
+            "language": "python",
+            "code": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+          },
+          {
+            "tool": "run_cell",
+            "cell": 2
+          }
+        ],
+        "results": [
+          "Added cell 2 (Python).",
+          "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"
+        ]
+      },
+      "expected": {
+        "message": "Adding it.",
+        "calls": [
+          {
+            "tool": "add_cell",
+            "language": "python",
+            "code": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx…"
+          },
+          {
+            "tool": "run_cell",
+            "cell": 2
+          }
+        ],
+        "results": [
+          "Added cell 2 (Python).",
+          "rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr…"
+        ]
+      },
+      "size": 4612
+    },
+    {
+      "input": {
+        "message": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+        "calls": [
+          {
+            "tool": "edit_cell",
+            "cell": 1,
+            "code": "print(1)"
+          }
+        ],
+        "results": [
+          "Changed cell 1."
+        ]
+      },
+      "expected": {
+        "message": "mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm…",
+        "calls": [
+          {
+            "tool": "edit_cell",
+            "cell": 1,
+            "code": "print(1)"
+          }
+        ],
+        "results": [
+          "Changed cell 1."
+        ]
+      },
+      "size": 4063
+    }
+  ],
+  "summaries": [
+    {
+      "steps": [],
+      "text": "Nothing was changed."
+    },
+    {
+      "steps": [
+        {
+          "message": "Done.",
+          "actions": []
+        }
+      ],
+      "text": "Done."
+    },
+    {
+      "steps": [
+        {
+          "message": "Writing it.",
+          "actions": [
+            {
+              "text": "Added cell 2 · Python",
+              "tone": "plain"
+            },
+            {
+              "text": "Ran cell 2 · 1.2 s",
+              "tone": "ok"
+            }
+          ]
+        },
+        {
+          "message": "  ",
+          "actions": []
+        }
+      ],
+      "text": "Done in the note: Added cell 2 · Python; Ran cell 2 · 1.2 s.\n\nWriting it."
+    },
+    {
+      "steps": [
+        {
+          "message": "First.",
+          "actions": [
+            {
+              "text": "Changed cell 1",
+              "tone": "plain"
+            }
+          ]
+        },
+        {
+          "message": "It prints 2.",
+          "actions": []
+        }
+      ],
+      "text": "Done in the note: Changed cell 1.\n\nIt prints 2."
+    }
+  ],
+  "smells": [
+    {
+      "code": "try:\n    net2 = nets[\"spirals\"]\nexcept NameError:\n    net2 = None\nax.set_title(\"Spiral boundaries (placeholder)\")",
+      "smell": "it draws or prints placeholders instead of real results"
+    },
+    {
+      "code": "try:\n    x = load()\nexcept Exception:\n    pass",
+      "smell": "it catches an error and carries on as if nothing failed"
+    },
+    {
+      "code": "try:\n    m = train()\nexcept Exception as e:\n    print(e)\n    m = None",
+      "smell": "it catches an error and carries on as if nothing failed"
+    },
+    {
+      "code": "if 'nets' in globals():\n    use(nets)",
+      "smell": "it checks for variables from other cells, which never exist here (each cell runs alone)"
+    },
+    {
+      "code": "scores = globals().get('scores')",
+      "smell": "it checks for variables from other cells, which never exist here (each cell runs alone)"
+    },
+    {
+      "code": "plt.title('Accuracy (dummy data)')",
+      "smell": "it draws or prints placeholders instead of real results"
+    },
+    {
+      "code": "import numpy as np\nprint(np.mean([1, 2]))",
+      "smell": null
+    },
+    {
+      "code": "try:\n    import torch\nexcept ImportError:\n    raise SystemExit('needs torch')",
+      "smell": null
+    }
+  ],
+  "device_python": [
+    "IPython",
+    "PIL",
+    "altair",
+    "bokeh",
+    "matplotlib",
+    "mpl_toolkits",
+    "numpy",
+    "pandas",
+    "plotly",
+    "scipy",
+    "seaborn",
+    "sklearn"
+  ],
+  "server_imports": [
+    {
+      "code": "import numpy as np\nimport matplotlib.pyplot as plt",
+      "server": []
+    },
+    {
+      "code": "import torch\nimport numpy as np",
+      "server": [
+        "torch"
+      ]
+    },
+    {
+      "code": "from xgboost import XGBClassifier\nimport os, json, sys",
+      "server": [
+        "xgboost"
+      ]
+    },
+    {
+      "code": "from IPython.display import HTML, display\nimport seaborn as sns",
+      "server": []
+    },
+    {
+      "code": "import statsmodels.api as sm  # a comment\nfrom sklearn.linear_model import LinearRegression",
+      "server": [
+        "statsmodels"
+      ]
+    },
+    {
+      "code": "import transformers; import collections.abc",
+      "server": [
+        "transformers"
+      ]
+    },
+    {
+      "code": "from . import local\nimport tensorflow as tf",
+      "server": [
+        "tensorflow"
+      ]
+    }
+  ]
+}

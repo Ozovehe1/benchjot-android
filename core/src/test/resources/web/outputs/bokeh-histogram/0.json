@@ -1,0 +1,427 @@
+{
+ "doc": {
+  "config": {
+   "attributes": {
+    "notifications": {
+     "id": "p1203",
+     "name": "Notifications",
+     "type": "object"
+    }
+   },
+   "id": "p1202",
+   "name": "DocumentConfig",
+   "type": "object"
+  },
+  "roots": [
+   {
+    "attributes": {
+     "below": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1172",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1173",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1171",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1170",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "center": [
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1170"
+        }
+       },
+       "id": "p1174",
+       "name": "Grid",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1175"
+        },
+        "dimension": 1
+       },
+       "id": "p1179",
+       "name": "Grid",
+       "type": "object"
+      }
+     ],
+     "left": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1177",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1178",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1176",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1175",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "renderers": [
+      {
+       "attributes": {
+        "data_source": {
+         "attributes": {
+          "data": {
+           "entries": [
+            [
+             "left",
+             [
+              0,
+              1,
+              2
+             ]
+            ],
+            [
+             "right",
+             [
+              1,
+              2,
+              3
+             ]
+            ],
+            [
+             "top",
+             [
+              2,
+              5,
+              1
+             ]
+            ]
+           ],
+           "type": "map"
+          },
+          "selected": {
+           "attributes": {
+            "indices": [],
+            "line_indices": []
+           },
+           "id": "p1194",
+           "name": "Selection",
+           "type": "object"
+          },
+          "selection_policy": {
+           "id": "p1195",
+           "name": "UnionRenderers",
+           "type": "object"
+          }
+         },
+         "id": "p1193",
+         "name": "ColumnDataSource",
+         "type": "object"
+        },
+        "glyph": {
+         "attributes": {
+          "bottom": {
+           "type": "value",
+           "value": 0
+          },
+          "fill_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "left": {
+           "field": "left",
+           "type": "field"
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "right": {
+           "field": "right",
+           "type": "field"
+          },
+          "top": {
+           "field": "top",
+           "type": "field"
+          }
+         },
+         "id": "p1196",
+         "name": "Quad",
+         "type": "object"
+        },
+        "muted_glyph": {
+         "attributes": {
+          "bottom": {
+           "type": "value",
+           "value": 0
+          },
+          "fill_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "fill_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "left": {
+           "field": "left",
+           "type": "field"
+          },
+          "line_alpha": {
+           "type": "value",
+           "value": 0.2
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "right": {
+           "field": "right",
+           "type": "field"
+          },
+          "top": {
+           "field": "top",
+           "type": "field"
+          }
+         },
+         "id": "p1198",
+         "name": "Quad",
+         "type": "object"
+        },
+        "nonselection_glyph": {
+         "attributes": {
+          "bottom": {
+           "type": "value",
+           "value": 0
+          },
+          "fill_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "fill_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "hatch_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "left": {
+           "field": "left",
+           "type": "field"
+          },
+          "line_alpha": {
+           "type": "value",
+           "value": 0.1
+          },
+          "line_color": {
+           "type": "value",
+           "value": "#1f77b4"
+          },
+          "right": {
+           "field": "right",
+           "type": "field"
+          },
+          "top": {
+           "field": "top",
+           "type": "field"
+          }
+         },
+         "id": "p1197",
+         "name": "Quad",
+         "type": "object"
+        },
+        "view": {
+         "attributes": {
+          "filter": {
+           "id": "p1201",
+           "name": "AllIndices",
+           "type": "object"
+          }
+         },
+         "id": "p1200",
+         "name": "CDSView",
+         "type": "object"
+        }
+       },
+       "id": "p1199",
+       "name": "GlyphRenderer",
+       "type": "object"
+      }
+     ],
+     "title": {
+      "id": "p1166",
+      "name": "Title",
+      "type": "object"
+     },
+     "toolbar": {
+      "attributes": {
+       "tools": [
+        {
+         "id": "p1180",
+         "name": "PanTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "renderers": "auto"
+         },
+         "id": "p1181",
+         "name": "WheelZoomTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "overlay": {
+           "attributes": {
+            "bottom": {
+             "type": "number",
+             "value": "nan"
+            },
+            "bottom_units": "canvas",
+            "fill_alpha": 0.5,
+            "fill_color": "lightgrey",
+            "handles": {
+             "attributes": {
+              "all": {
+               "attributes": {
+                "fill_color": "white",
+                "hover_fill_color": "lightgray"
+               },
+               "id": "p1188",
+               "name": "AreaVisuals",
+               "type": "object"
+              }
+             },
+             "id": "p1189",
+             "name": "BoxInteractionHandles",
+             "type": "object"
+            },
+            "left": {
+             "type": "number",
+             "value": "nan"
+            },
+            "left_units": "canvas",
+            "level": "overlay",
+            "line_alpha": 1.0,
+            "line_color": "black",
+            "line_dash": [
+             4,
+             4
+            ],
+            "line_width": 2,
+            "right": {
+             "type": "number",
+             "value": "nan"
+            },
+            "right_units": "canvas",
+            "syncable": false,
+            "top": {
+             "type": "number",
+             "value": "nan"
+            },
+            "top_units": "canvas",
+            "visible": false
+           },
+           "id": "p1183",
+           "name": "BoxAnnotation",
+           "type": "object"
+          }
+         },
+         "id": "p1182",
+         "name": "BoxZoomTool",
+         "type": "object"
+        },
+        {
+         "id": "p1190",
+         "name": "SaveTool",
+         "type": "object"
+        },
+        {
+         "id": "p1191",
+         "name": "ResetTool",
+         "type": "object"
+        },
+        {
+         "id": "p1192",
+         "name": "HelpTool",
+         "type": "object"
+        }
+       ]
+      },
+      "id": "p1167",
+      "name": "Toolbar",
+      "type": "object"
+     },
+     "x_range": {
+      "id": "p1160",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "x_scale": {
+      "id": "p1168",
+      "name": "LinearScale",
+      "type": "object"
+     },
+     "y_range": {
+      "id": "p1161",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "y_scale": {
+      "id": "p1169",
+      "name": "LinearScale",
+      "type": "object"
+     }
+    },
+    "id": "p1159",
+    "name": "Figure",
+    "type": "object"
+   }
+  ],
+  "title": "",
+  "version": "3.10.1"
+ },
+ "root_id": "p1159",
+ "target_id": null,
+ "version": "3.10.1"
+}

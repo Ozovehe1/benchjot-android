@@ -1,0 +1,15 @@
+task,4-layer vs,test,difference,p (Welch),verdict
+moons,"2-layer, same width",test (same distribution),0.0067,0.0048,4-layer better
+moons,"2-layer, same width",noisier balls,-0.0016,0.12,no clear difference
+moons,"2-layer, same width",trained on 200 points,0.0091,0.013,no clear difference
+moons,"2-layer, same weights",test (same distribution),0.0009,0.5,no clear difference
+moons,"2-layer, same weights",noisier balls,0.0003,0.76,no clear difference
+moons,"2-layer, same weights",trained on 200 points,0.0021,0.052,no clear difference
+spirals,"2-layer, same width",test (same distribution),0.1369,0.00038,4-layer better
+spirals,"2-layer, same width",noisier balls,0.141,0.00025,4-layer better
+spirals,"2-layer, same width",trained on 200 points,0.1664,1.1e-05,4-layer better
+spirals,"2-layer, same width",outer arm (extrapolation),-0.0228,0.038,no clear difference
+spirals,"2-layer, same weights",test (same distribution),0.0027,4.6e-06,4-layer better
+spirals,"2-layer, same weights",noisier balls,0.0031,2.6e-05,4-layer better
+spirals,"2-layer, same weights",trained on 200 points,0.002,0.5,no clear difference
+spirals,"2-layer, same weights",outer arm (extrapolation),-0.0273,0.011,no clear difference

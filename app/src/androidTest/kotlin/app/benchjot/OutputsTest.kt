@@ -1,0 +1,213 @@
+package app.benchjot
+
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.click
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performTouchInput
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import app.benchjot.core.DownloadFormat
+import app.benchjot.core.Manifest
+import app.benchjot.core.OutputBuffer
+import app.benchjot.core.OutputItem
+import app.benchjot.core.RunOutcome
+import app.benchjot.core.checkManifest
+import app.benchjot.core.chart.ChartResult
+import app.benchjot.core.chart.ChartTheme
+import app.benchjot.core.chart.fullRange
+import app.benchjot.core.chart.layout
+import app.benchjot.core.chart.mapChart
+import app.benchjot.core.downloadFormats
+import app.benchjot.data.LocalOutputs
+import app.benchjot.run.DeviceRunner
+import app.benchjot.ui.BenchjotTheme
+import app.benchjot.ui.ChartCanvas
+import app.benchjot.ui.ChartState
+import app.benchjot.ui.OutputFiles
+import app.benchjot.ui.exportBytes
+import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Rule
+import org.junit.Test
+import org.junit.runner.RunWith
+
+// Rich outputs on a real Android (CI emulator: x86_64, and armeabi-v7a under ARM translation):
+// the bundled plotting libraries import, bj_capture writes every kind of output on the phone,
+// a native Plotly chart answers a tap with the point's values, and every download format the
+// viewer offers produces a file of that type.
+@RunWith(AndroidJUnit4::class)
+class OutputsTest {
+    @get:Rule val compose = createComposeRule()
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private fun runPython(code: String, outDir: File? = null, timeoutMs: Long = 240_000): Pair<app.benchjot.core.RunResult, String> = runBlocking {
+        val out = OutputBuffer()
+        val r = withContext(Dispatchers.Main) {
+            DeviceRunner.run(context, this, "python", code, onStatus = {}, onOutput = out::add, timeoutMs = timeoutMs, outDir = outDir).done.await()
+        }
+        r to out.text()
+    }
+
+    @Test fun plottingLibrariesImport() {
+        val (r, out) = runPython(
+            "import matplotlib, pandas, PIL, plotly, bokeh, seaborn, altair, scipy, sklearn\n" +
+                "print(' '.join(m.__name__ for m in (matplotlib, pandas, PIL, plotly, bokeh, seaborn, altair, scipy, sklearn)))",
+        )
+        assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
+        assertEquals("matplotlib pandas PIL plotly bokeh seaborn altair scipy sklearn\n", out)
+    }
+
+    // SciPy (Fortran-free build, LAPACK from OpenBLAS's C LAPACK) and scikit-learn, on each ABI CI runs.
+    // KMeans runs an OpenMP parallel region: with libomp's thread pinning on, it aborted on armeabi-v7a
+    // (bj_runner turns KMP_AFFINITY off).
+    @Test fun scipyAndScikitLearnRun() {
+        val (r, out) = runPython(
+            """
+            import numpy as np, scipy, sklearn
+            from scipy import linalg, special, optimize, stats
+            from sklearn.linear_model import LinearRegression
+            from sklearn.cluster import KMeans
+            a = np.array([[3.0, 1.0], [1.0, 2.0]])
+            print("solve", np.round(linalg.solve(a, [9.0, 8.0]), 6).tolist())
+            print("eig", np.round(np.sort(linalg.eigvalsh(a)), 4).tolist())
+            print("gamma", round(float(special.gamma(5.0)), 6))
+            print("min", round(float(optimize.minimize_scalar(lambda x: (x - 2) ** 2).x), 4))
+            print("norm", round(float(stats.norm.cdf(0.0)), 4))
+            x = np.arange(10.0).reshape(-1, 1)
+            m = LinearRegression().fit(x, 3 * x.ravel() + 1)
+            print("fit", round(float(m.coef_[0]), 6), round(float(m.intercept_), 6))
+            km = KMeans(n_clusters=2, n_init=3, random_state=0).fit(np.array([[0.0], [0.1], [10.0], [10.1]]))
+            print("kmeans", sorted(np.round(km.cluster_centers_.ravel(), 2).tolist()))
+            print("numpy", np.__version__.split(".")[0])
+            import os; print("omp affinity", os.environ.get("KMP_AFFINITY"))
+            """.trimIndent(),
+        )
+        assertEquals("${r.error?.text}\n--- output before it stopped ---\n$out", RunOutcome.Ok, r.outcome)
+        assertEquals(
+            "solve [2.0, 3.0]\neig [1.382, 3.618]\ngamma 24.0\nmin 2.0\nnorm 0.5\nfit 3.0 1.0\nkmeans [0.05, 10.05]\nnumpy 2\nomp affinity disabled\n",
+            out,
+        )
+    }
+
+    @Test fun captureWritesEveryKindOfOutput() {
+        val dir = File(context.cacheDir, "test-out-${System.nanoTime()}")
+        val code = """
+            import matplotlib.pyplot as plt
+            import pandas as pd
+            import plotly.express as px
+            import altair as alt
+            import seaborn as sns
+            from bokeh.plotting import figure, show
+            from PIL import Image
+            df = pd.DataFrame({"epoch": [1, 2, 3, 4], "loss": [0.9, 0.6, 0.5, 0.45]})
+            plt.plot(df.epoch, df.loss); plt.title("Loss"); plt.show()
+            display(df)
+            px.line(df, x="epoch", y="loss").show()
+            alt.Chart(df).mark_line().encode(x="epoch", y="loss").show()
+            p = figure(title="Bokeh loss"); p.line(df.epoch, df.loss); show(p)
+            sns.lineplot(data=df, x="epoch", y="loss"); plt.show()
+            display(Image.new("RGB", (8, 4), (40, 120, 200)))
+            print("done")
+        """.trimIndent()
+        val (r, out) = runPython(code, dir)
+        assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
+        assertEquals("done\n", out)
+        val m = checkManifest(json.decodeFromString(Manifest.serializer(), File(dir, "manifest.json").readText()))
+        val kinds = m.items.map { it.kind + ":" + (it.lib ?: it.source ?: "") }
+        assertEquals(listOf("image:matplotlib", "table:", "chart:plotly", "chart:vega-lite", "chart:bokeh", "image:matplotlib", "image:pil"), kinds)
+        // Matplotlib figures come as PNG + the kept figure (SVG / PDF are made from it on Download);
+        // every file the manifest names exists.
+        assertEquals(setOf("png", "mpl"), m.items[0].files.keys)
+        assertTrue(m.items[0].matplotlib.orEmpty().isNotEmpty())
+        for (item in m.items) for (name in item.files.values) assertTrue("missing $name", File(dir, name).length() > 0)
+        dir.deleteRecursively()
+    }
+
+    // The user's case (smaller): a 3D surface, saved only as PNG at run time; SVG and PDF are made on
+    // Download by the phone's Python from the kept figure, through the viewer's own export path.
+    @Test fun figureSvgAndPdfAreMadeOnDownload() {
+        val dir = File(context.cacheDir, "test-fig-${System.nanoTime()}")
+        val code = """
+            import numpy as np
+            import matplotlib.pyplot as plt
+            x, y = np.meshgrid(np.linspace(-5, 5, 60), np.linspace(-5, 5, 60))
+            fig = plt.figure(figsize=(8, 6))
+            ax = fig.add_subplot(111, projection="3d")
+            ax.plot_surface(x, y, np.sin(np.sqrt(x**2 + y**2)), cmap="viridis")
+            ax.set_zlabel("z")
+            plt.show()
+        """.trimIndent()
+        val (r, _) = runPython(code, dir)
+        assertEquals(r.error?.text, RunOutcome.Ok, r.outcome)
+        val m = checkManifest(json.decodeFromString(Manifest.serializer(), File(dir, "manifest.json").readText()))
+        val item = m.items.single()
+        val files = OutputFiles.Live(LocalOutputs(m, dir))
+        val formats = downloadFormats(item)
+        assertEquals(listOf("png:file", "jpg:convert", "webp:convert", "svg:figure", "pdf:figure"), formats.map { "${it.format}:${it.how}" })
+        val render: app.benchjot.ui.FigureRenderer = { data, format, made -> app.benchjot.run.PythonRunner.renderFigure(context, data, format, made) }
+        for ((format, sig) in listOf("svg" to "<?xml", "pdf" to "%PDF")) {
+            val bytes = runBlocking { exportBytes(item, files, formats.single { it.format == format }, null, 2f, render) }
+            assertTrue("$format: ${String(bytes.copyOfRange(0, 8), Charsets.ISO_8859_1)}", String(bytes.copyOfRange(0, 8), Charsets.ISO_8859_1).startsWith(sig))
+        }
+        // A figure kept by another matplotlib (the browser's) can't load here, and says so.
+        val other = runCatching { runBlocking { exportBytes(item.copy(matplotlib = "2.0.0"), files, formats.single { it.format == "svg" }, null, 2f, render) } }.exceptionOrNull()
+        assertTrue("$other", other is app.benchjot.core.FriendlyException && other.message!!.contains("matplotlib 2.0"))
+        // The run after a render still runs.
+        assertEquals("ok\n", runPython("print('ok')").second)
+        dir.deleteRecursively()
+    }
+
+    private val plotly = """{"data":[{"type":"scatter","mode":"lines+markers","name":"loss","x":[1,2,3,4],"y":[0.9,0.6,0.5,0.45]}],"layout":{"title":{"text":"Loss"}}}"""
+
+    @Test fun tapOnAPlotlyPointShowsItsValue() {
+        val chart = (mapChart("plotly", plotly) as ChartResult.Ok).chart
+        val state = ChartState(chart)
+        compose.setContent { BenchjotTheme { ChartCanvas(state, interactive = true, modifier = Modifier.fillMaxWidth().height(320.dp)) } }
+        compose.waitForIdle()
+        val node = compose.onNodeWithTag("chart").fetchSemanticsNode()
+        val w = node.size.width.toFloat(); val h = node.size.height.toFloat()
+        val density = context.resources.displayMetrics.density
+        val scene = layout(chart, w, h, ChartTheme(0, 0, 0, 0), density)
+        val v = fullRange(chart, emptySet())
+        val x = scene.plot.l + ((2.0 - v.x0) / (v.x1 - v.x0)).toFloat() * scene.plot.w
+        val y = scene.plot.b - ((0.6 - v.y0) / (v.y1 - v.y0)).toFloat() * scene.plot.h
+        compose.onNodeWithTag("chart").performTouchInput { click(Offset(x, y)) }
+        // A tap is only a tap once the double-tap window has passed (detectTapGestures waits for a
+        // second tap on the test clock), so move that clock past it instead of relying on timing.
+        compose.mainClock.advanceTimeBy(2L * android.view.ViewConfiguration.getDoubleTapTimeout())
+        compose.waitForIdle()
+        val said = compose.onNodeWithTag("chart").fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+        assertTrue("tooltip '$said' after a tap at ($x, $y) in ${scene.plot}", said.contains("0.6"))
+    }
+
+    @Test fun everyChartDownloadFormatIsThatFileType() = runBlocking {
+        val dir = File(context.cacheDir, "test-dl-${System.nanoTime()}").apply { mkdirs() }
+        File(dir, "0.json").writeText(plotly)
+        val item = OutputItem(kind = "chart", lib = "plotly", version = "6", title = "Loss", files = mapOf("json" to "0.json"))
+        val files = OutputFiles.Live(LocalOutputs(Manifest(items = listOf(item)), dir))
+        val chart = ChartState((mapChart("plotly", plotly) as ChartResult.Ok).chart)
+        val formats: List<DownloadFormat> = downloadFormats(item)
+        assertEquals(listOf("png", "html", "jpg", "webp", "svg", "pdf", "json"), formats.map { it.format })
+        val sig = mapOf("png" to "\u0089PNG", "html" to "<!doctype html>", "jpg" to "\u00ff\u00d8\u00ff", "webp" to "RIFF", "svg" to "<svg", "pdf" to "%PDF", "json" to "{")
+        for (f in formats) {
+            val bytes = exportBytes(item, files, f, chart, 2f) { _, _, _ -> error("a chart has no kept figure") }
+            val head = String(bytes.copyOfRange(0, minOf(bytes.size, 64)), Charsets.ISO_8859_1)
+            assertTrue("${f.format}: ${head.take(16)}", head.trimStart().startsWith(sig.getValue(f.format)) || (f.format == "svg" && head.contains("<svg")))
+        }
+        dir.deleteRecursively()
+        Unit
+    }
+}
+

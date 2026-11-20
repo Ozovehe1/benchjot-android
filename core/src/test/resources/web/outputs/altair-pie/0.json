@@ -1,0 +1,37 @@
+{
+ "$schema": "https://vega.github.io/schema/vega-lite/v6.4.1.json",
+ "config": {
+  "view": {
+   "continuousHeight": 300,
+   "continuousWidth": 300
+  }
+ },
+ "data": {
+  "name": "data-8a88529f773a37b0ddfdf6ae409df049"
+ },
+ "datasets": {
+  "data-8a88529f773a37b0ddfdf6ae409df049": [
+   {
+    "k": "a",
+    "v": 70
+   },
+   {
+    "k": "b",
+    "v": 30
+   }
+  ]
+ },
+ "encoding": {
+  "color": {
+   "field": "k",
+   "type": "nominal"
+  },
+  "theta": {
+   "field": "v",
+   "type": "quantitative"
+  }
+ },
+ "mark": {
+  "type": "arc"
+ }
+}
