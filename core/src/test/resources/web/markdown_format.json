@@ -1,0 +1,899 @@
+[
+  {
+    "input": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    },
+    "format": "bold",
+    "output": {
+      "text": "a **b** c",
+      "start": 4,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "a **b** c",
+      "start": 4,
+      "end": 5
+    },
+    "format": "bold",
+    "output": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "a **b** c",
+      "start": 2,
+      "end": 7
+    },
+    "format": "bold",
+    "output": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "ab",
+      "start": 2,
+      "end": 2
+    },
+    "format": "bold",
+    "output": {
+      "text": "ab****",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "ab****",
+      "start": 4,
+      "end": 4
+    },
+    "format": "bold",
+    "output": {
+      "text": "ab",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "word",
+      "start": 0,
+      "end": 4
+    },
+    "format": "italic",
+    "output": {
+      "text": "_word_",
+      "start": 1,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "_word_",
+      "start": 1,
+      "end": 5
+    },
+    "format": "italic",
+    "output": {
+      "text": "word",
+      "start": 0,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "x y z",
+      "start": 2,
+      "end": 3
+    },
+    "format": "code",
+    "output": {
+      "text": "x `y` z",
+      "start": 3,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "x `y` z",
+      "start": 3,
+      "end": 4
+    },
+    "format": "code",
+    "output": {
+      "text": "x y z",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "e = mc^2",
+      "start": 4,
+      "end": 8
+    },
+    "format": "math",
+    "output": {
+      "text": "e = $mc^2$",
+      "start": 5,
+      "end": 9
+    }
+  },
+  {
+    "input": {
+      "text": "e = $mc^2$",
+      "start": 5,
+      "end": 9
+    },
+    "format": "math",
+    "output": {
+      "text": "e = mc^2",
+      "start": 4,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "Title",
+      "start": 2,
+      "end": 2
+    },
+    "format": "heading",
+    "output": {
+      "text": "# Title",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "# Title",
+      "start": 4,
+      "end": 4
+    },
+    "format": "heading",
+    "output": {
+      "text": "## Title",
+      "start": 5,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "## Title",
+      "start": 5,
+      "end": 5
+    },
+    "format": "heading",
+    "output": {
+      "text": "### Title",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "### Title",
+      "start": 6,
+      "end": 6
+    },
+    "format": "heading",
+    "output": {
+      "text": "Title",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "#### Title",
+      "start": 7,
+      "end": 7
+    },
+    "format": "heading",
+    "output": {
+      "text": "Title",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "# a\nb",
+      "start": 0,
+      "end": 5
+    },
+    "format": "heading",
+    "output": {
+      "text": "## a\n## b",
+      "start": 3,
+      "end": 9
+    }
+  },
+  {
+    "input": {
+      "text": "## Title",
+      "start": 1,
+      "end": 1
+    },
+    "format": "heading",
+    "output": {
+      "text": "### Title",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "one\ntwo",
+      "start": 4,
+      "end": 4
+    },
+    "format": "heading",
+    "output": {
+      "text": "one\n# two",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "",
+      "start": 0,
+      "end": 0
+    },
+    "format": "heading",
+    "output": {
+      "text": "# ",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n- b",
+      "start": 2,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "- a\n- b",
+      "start": 2,
+      "end": 7
+    },
+    "format": "list",
+    "output": {
+      "text": "1. a\n2. b",
+      "start": 3,
+      "end": 9
+    }
+  },
+  {
+    "input": {
+      "text": "1. a\n2. b",
+      "start": 3,
+      "end": 9
+    },
+    "format": "list",
+    "output": {
+      "text": "- [ ] a\n- [ ] b",
+      "start": 6,
+      "end": 15
+    }
+  },
+  {
+    "input": {
+      "text": "- [ ] a\n- [x] b",
+      "start": 6,
+      "end": 15
+    },
+    "format": "list",
+    "output": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "  - a",
+      "start": 4,
+      "end": 4
+    },
+    "format": "list",
+    "output": {
+      "text": "  1. a",
+      "start": 5,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "a\n- b",
+      "start": 0,
+      "end": 5
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n- b",
+      "start": 2,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "a",
+      "start": 0,
+      "end": 0
+    },
+    "format": "checklist",
+    "output": {
+      "text": "- [ ] a",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "- a",
+      "start": 2,
+      "end": 2
+    },
+    "format": "checklist",
+    "output": {
+      "text": "- [ ] a",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "- [ ] a\n- [x] b",
+      "start": 6,
+      "end": 15
+    },
+    "format": "checklist",
+    "output": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "- [x] a\nb",
+      "start": 6,
+      "end": 9
+    },
+    "format": "checklist",
+    "output": {
+      "text": "- [x] a\n- [ ] b",
+      "start": 6,
+      "end": 15
+    }
+  },
+  {
+    "input": {
+      "text": "3. a",
+      "start": 3,
+      "end": 3
+    },
+    "format": "checklist",
+    "output": {
+      "text": "- [ ] a",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "a\n\nb",
+      "start": 0,
+      "end": 4
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n\n- b",
+      "start": 2,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "- a\nb",
+      "start": 4,
+      "end": 5
+    },
+    "format": "list",
+    "output": {
+      "text": "- a\n- b",
+      "start": 6,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "see docs",
+      "start": 4,
+      "end": 8
+    },
+    "format": "link",
+    "output": {
+      "text": "see [docs](url)",
+      "start": 11,
+      "end": 14
+    }
+  },
+  {
+    "input": {
+      "text": "see [docs](url)",
+      "start": 4,
+      "end": 15
+    },
+    "format": "link",
+    "output": {
+      "text": "see docs",
+      "start": 4,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "see [docs](url) now",
+      "start": 5,
+      "end": 9
+    },
+    "format": "link",
+    "output": {
+      "text": "see docs now",
+      "start": 4,
+      "end": 8
+    }
+  },
+  {
+    "input": {
+      "text": "go ",
+      "start": 3,
+      "end": 3
+    },
+    "format": "link",
+    "output": {
+      "text": "go [](url)",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "\nnext",
+      "start": 0,
+      "end": 0
+    },
+    "format": "list",
+    "output": {
+      "text": "- \nnext",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "**",
+      "start": 2,
+      "end": 2
+    },
+    "format": "bold",
+    "output": {
+      "text": "******",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "a **bold** c",
+      "start": 6,
+      "end": 6
+    },
+    "format": "bold",
+    "output": {
+      "text": "a bold c",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "**a b c**",
+      "start": 4,
+      "end": 5
+    },
+    "format": "bold",
+    "output": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "x *ital* y",
+      "start": 5,
+      "end": 5
+    },
+    "format": "italic",
+    "output": {
+      "text": "x ital y",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "~~gane~~",
+      "start": 4,
+      "end": 4
+    },
+    "format": "strike",
+    "output": {
+      "text": "gane",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "`code`",
+      "start": 3,
+      "end": 3
+    },
+    "format": "code",
+    "output": {
+      "text": "code",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "$x^2$",
+      "start": 3,
+      "end": 3
+    },
+    "format": "math",
+    "output": {
+      "text": "x^2",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "**a** b",
+      "start": 7,
+      "end": 7
+    },
+    "format": "bold",
+    "output": {
+      "text": "**a** b****",
+      "start": 9,
+      "end": 9
+    }
+  },
+  {
+    "input": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    },
+    "format": "strike",
+    "output": {
+      "text": "a ~~b~~ c",
+      "start": 4,
+      "end": 5
+    }
+  },
+  {
+    "input": {
+      "text": "a ~~b~~ c",
+      "start": 4,
+      "end": 5
+    },
+    "format": "strike",
+    "output": {
+      "text": "a b c",
+      "start": 2,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "",
+      "start": 0,
+      "end": 0
+    },
+    "format": "strike",
+    "output": {
+      "text": "~~~~",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    },
+    "format": "quote",
+    "output": {
+      "text": "> a\n> b",
+      "start": 2,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "> a\n> b",
+      "start": 2,
+      "end": 7
+    },
+    "format": "quote",
+    "output": {
+      "text": "a\nb",
+      "start": 0,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": ">a",
+      "start": 1,
+      "end": 1
+    },
+    "format": "quote",
+    "output": {
+      "text": "a",
+      "start": 0,
+      "end": 0
+    }
+  },
+  {
+    "input": {
+      "text": "> a\nb",
+      "start": 4,
+      "end": 5
+    },
+    "format": "quote",
+    "output": {
+      "text": "> a\n> b",
+      "start": 6,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "- a",
+      "start": 2,
+      "end": 2
+    },
+    "format": "indent",
+    "output": {
+      "text": "  - a",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "  - a",
+      "start": 4,
+      "end": 4
+    },
+    "format": "indent",
+    "output": {
+      "text": "    - a",
+      "start": 6,
+      "end": 6
+    }
+  },
+  {
+    "input": {
+      "text": "a\n- b",
+      "start": 0,
+      "end": 5
+    },
+    "format": "indent",
+    "output": {
+      "text": "a\n  - b",
+      "start": 0,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "  - a",
+      "start": 4,
+      "end": 4
+    },
+    "format": "outdent",
+    "output": {
+      "text": "- a",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": "- a",
+      "start": 2,
+      "end": 2
+    },
+    "format": "outdent",
+    "output": {
+      "text": "- a",
+      "start": 2,
+      "end": 2
+    }
+  },
+  {
+    "input": {
+      "text": " 1. a",
+      "start": 4,
+      "end": 4
+    },
+    "format": "outdent",
+    "output": {
+      "text": "1. a",
+      "start": 3,
+      "end": 3
+    }
+  },
+  {
+    "input": {
+      "text": "plain",
+      "start": 0,
+      "end": 0
+    },
+    "format": "indent",
+    "output": {
+      "text": "plain",
+      "start": 0,
+      "end": 0
+    }
+  },
+  {
+    "input": {
+      "text": "    - [ ] a\n  - b",
+      "start": 0,
+      "end": 17
+    },
+    "format": "outdent",
+    "output": {
+      "text": "  - [ ] a\n- b",
+      "start": 0,
+      "end": 13
+    }
+  },
+  {
+    "input": {
+      "text": "",
+      "start": 0,
+      "end": 0
+    },
+    "format": "divider",
+    "output": {
+      "text": "---\n",
+      "start": 4,
+      "end": 4
+    }
+  },
+  {
+    "input": {
+      "text": "text",
+      "start": 4,
+      "end": 4
+    },
+    "format": "divider",
+    "output": {
+      "text": "text\n\n---\n",
+      "start": 10,
+      "end": 10
+    }
+  },
+  {
+    "input": {
+      "text": "text\nmore",
+      "start": 2,
+      "end": 2
+    },
+    "format": "divider",
+    "output": {
+      "text": "text\n\n---\n\nmore",
+      "start": 10,
+      "end": 10
+    }
+  },
+  {
+    "input": {
+      "text": "a\n\n\nb",
+      "start": 3,
+      "end": 3
+    },
+    "format": "divider",
+    "output": {
+      "text": "a\n\n---\n\nb",
+      "start": 7,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "a\n",
+      "start": 2,
+      "end": 2
+    },
+    "format": "divider",
+    "output": {
+      "text": "a\n\n---\n",
+      "start": 7,
+      "end": 7
+    }
+  },
+  {
+    "input": {
+      "text": "",
+      "start": 0,
+      "end": 0
+    },
+    "format": "table",
+    "output": {
+      "text": "| Column 1 | Column 2 |\n| --- | --- |\n|  |  |\n",
+      "start": 2,
+      "end": 10
+    }
+  },
+  {
+    "input": {
+      "text": "notes",
+      "start": 5,
+      "end": 5
+    },
+    "format": "table",
+    "output": {
+      "text": "notes\n\n| Column 1 | Column 2 |\n| --- | --- |\n|  |  |\n",
+      "start": 9,
+      "end": 17
+    }
+  },
+  {
+    "input": {
+      "text": "| a | b |",
+      "start": 2,
+      "end": 2
+    },
+    "format": "bold",
+    "output": {
+      "text": "| ****a | b |",
+      "start": 4,
+      "end": 4
+    }
+  }
+]

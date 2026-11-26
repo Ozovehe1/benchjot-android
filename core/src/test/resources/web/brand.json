@@ -1,0 +1,60 @@
+{
+  "brand": {
+    "charcoal": "#161616",
+    "ash": "#e8e6e3"
+  },
+  "mark": {
+    "viewBox": 64,
+    "radius": 14,
+    "stroke": 4,
+    "paths": [
+      "M13 15H51V55H13Z",
+      "M22 9V19M32 9V19M42 9V19",
+      "M21 30L27 36L21 42"
+    ],
+    "cursor": {
+      "x": 31,
+      "y": 39,
+      "width": 10,
+      "height": 4
+    }
+  },
+  "dark": {
+    "bg": "#161616",
+    "fg": "#e8e6e3",
+    "muted": "#a8a6a2",
+    "faint": "#878582",
+    "line": "#262523",
+    "tint": "#1e1d1b",
+    "ok": "#6fb07f",
+    "run": "#d4a44c",
+    "fail": "#c4726a",
+    "hl-keyword": "#d9d7d4",
+    "hl-string": "#a3aeb1",
+    "hl-number": "#c2c0bc",
+    "hl-comment": "#878582",
+    "hl-type": "#b3b1ad",
+    "raise": "#1d1c1a",
+    "shell": "#121211",
+    "shadow-float": "0 8px 24px rgb(0 0 0 / 0.4)"
+  },
+  "light": {
+    "bg": "#e8e6e3",
+    "fg": "#161616",
+    "muted": "#4a4845",
+    "faint": "#62605d",
+    "line": "#d6d4d0",
+    "tint": "#dedcd9",
+    "ok": "#276a3c",
+    "run": "#8a5a12",
+    "fail": "#924840",
+    "hl-keyword": "#161616",
+    "hl-string": "#4b585c",
+    "hl-number": "#3f3d3a",
+    "hl-comment": "#62605d",
+    "hl-type": "#34322f",
+    "raise": "#efedea",
+    "shell": "#e0deda",
+    "shadow-float": "0 8px 24px rgb(40 36 30 / 0.16)"
+  }
+}

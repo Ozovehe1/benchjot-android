@@ -1,0 +1,366 @@
+{
+ "doc": {
+  "config": {
+   "attributes": {
+    "notifications": {
+     "id": "p1110",
+     "name": "Notifications",
+     "type": "object"
+    }
+   },
+   "id": "p1109",
+   "name": "DocumentConfig",
+   "type": "object"
+  },
+  "roots": [
+   {
+    "attributes": {
+     "below": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1079",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1080",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1078",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1077",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "center": [
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1077"
+        }
+       },
+       "id": "p1081",
+       "name": "Grid",
+       "type": "object"
+      },
+      {
+       "attributes": {
+        "axis": {
+         "id": "p1082"
+        },
+        "dimension": 1
+       },
+       "id": "p1086",
+       "name": "Grid",
+       "type": "object"
+      }
+     ],
+     "left": [
+      {
+       "attributes": {
+        "formatter": {
+         "id": "p1084",
+         "name": "BasicTickFormatter",
+         "type": "object"
+        },
+        "major_label_policy": {
+         "id": "p1085",
+         "name": "AllLabels",
+         "type": "object"
+        },
+        "ticker": {
+         "attributes": {
+          "mantissas": [
+           1,
+           2,
+           5
+          ]
+         },
+         "id": "p1083",
+         "name": "BasicTicker",
+         "type": "object"
+        }
+       },
+       "id": "p1082",
+       "name": "LinearAxis",
+       "type": "object"
+      }
+     ],
+     "renderers": [
+      {
+       "attributes": {
+        "data_source": {
+         "attributes": {
+          "data": {
+           "entries": [
+            [
+             "x",
+             {
+              "array": {
+               "data": "H4sIAAEAAAAA/2NgQAYf7KE8BwjN4QAAqXfu4SAAAAA=",
+               "type": "bytes"
+              },
+              "dtype": "float64",
+              "order": "little",
+              "shape": [
+               4
+              ],
+              "type": "ndarray"
+             }
+            ],
+            [
+             "y",
+             {
+              "array": {
+               "data": "H4sIAAEAAAAA/2NgQAEOEJ4AlJZwAAB/a7dJIAAAAA==",
+               "type": "bytes"
+              },
+              "dtype": "float64",
+              "order": "little",
+              "shape": [
+               4
+              ],
+              "type": "ndarray"
+             }
+            ]
+           ],
+           "type": "map"
+          },
+          "selected": {
+           "attributes": {
+            "indices": [],
+            "line_indices": []
+           },
+           "id": "p1101",
+           "name": "Selection",
+           "type": "object"
+          },
+          "selection_policy": {
+           "id": "p1102",
+           "name": "UnionRenderers",
+           "type": "object"
+          }
+         },
+         "id": "p1100",
+         "name": "ColumnDataSource",
+         "type": "object"
+        },
+        "glyph": {
+         "attributes": {
+          "line_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1103",
+         "name": "Line",
+         "type": "object"
+        },
+        "muted_glyph": {
+         "attributes": {
+          "line_alpha": 0.2,
+          "line_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1105",
+         "name": "Line",
+         "type": "object"
+        },
+        "nonselection_glyph": {
+         "attributes": {
+          "line_alpha": 0.1,
+          "line_color": "#1f77b4",
+          "x": {
+           "field": "x",
+           "type": "field"
+          },
+          "y": {
+           "field": "y",
+           "type": "field"
+          }
+         },
+         "id": "p1104",
+         "name": "Line",
+         "type": "object"
+        },
+        "view": {
+         "attributes": {
+          "filter": {
+           "id": "p1108",
+           "name": "AllIndices",
+           "type": "object"
+          }
+         },
+         "id": "p1107",
+         "name": "CDSView",
+         "type": "object"
+        }
+       },
+       "id": "p1106",
+       "name": "GlyphRenderer",
+       "type": "object"
+      }
+     ],
+     "title": {
+      "id": "p1073",
+      "name": "Title",
+      "type": "object"
+     },
+     "toolbar": {
+      "attributes": {
+       "tools": [
+        {
+         "id": "p1087",
+         "name": "PanTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "renderers": "auto"
+         },
+         "id": "p1088",
+         "name": "WheelZoomTool",
+         "type": "object"
+        },
+        {
+         "attributes": {
+          "overlay": {
+           "attributes": {
+            "bottom": {
+             "type": "number",
+             "value": "nan"
+            },
+            "bottom_units": "canvas",
+            "fill_alpha": 0.5,
+            "fill_color": "lightgrey",
+            "handles": {
+             "attributes": {
+              "all": {
+               "attributes": {
+                "fill_color": "white",
+                "hover_fill_color": "lightgray"
+               },
+               "id": "p1095",
+               "name": "AreaVisuals",
+               "type": "object"
+              }
+             },
+             "id": "p1096",
+             "name": "BoxInteractionHandles",
+             "type": "object"
+            },
+            "left": {
+             "type": "number",
+             "value": "nan"
+            },
+            "left_units": "canvas",
+            "level": "overlay",
+            "line_alpha": 1.0,
+            "line_color": "black",
+            "line_dash": [
+             4,
+             4
+            ],
+            "line_width": 2,
+            "right": {
+             "type": "number",
+             "value": "nan"
+            },
+            "right_units": "canvas",
+            "syncable": false,
+            "top": {
+             "type": "number",
+             "value": "nan"
+            },
+            "top_units": "canvas",
+            "visible": false
+           },
+           "id": "p1090",
+           "name": "BoxAnnotation",
+           "type": "object"
+          }
+         },
+         "id": "p1089",
+         "name": "BoxZoomTool",
+         "type": "object"
+        },
+        {
+         "id": "p1097",
+         "name": "SaveTool",
+         "type": "object"
+        },
+        {
+         "id": "p1098",
+         "name": "ResetTool",
+         "type": "object"
+        },
+        {
+         "id": "p1099",
+         "name": "HelpTool",
+         "type": "object"
+        }
+       ]
+      },
+      "id": "p1074",
+      "name": "Toolbar",
+      "type": "object"
+     },
+     "x_range": {
+      "id": "p1067",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "x_scale": {
+      "id": "p1075",
+      "name": "LinearScale",
+      "type": "object"
+     },
+     "y_range": {
+      "id": "p1068",
+      "name": "DataRange1d",
+      "type": "object"
+     },
+     "y_scale": {
+      "id": "p1076",
+      "name": "LinearScale",
+      "type": "object"
+     }
+    },
+    "id": "p1066",
+    "name": "Figure",
+    "type": "object"
+   }
+  ],
+  "title": "",
+  "version": "3.10.1"
+ },
+ "root_id": "p1066",
+ "target_id": null,
+ "version": "3.10.1"
+}

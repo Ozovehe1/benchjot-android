@@ -1,0 +1,5 @@
+<resources>
+    <!-- Brand colours from the web's src/lib/brand.ts (only for the launcher icon and the first frame). -->
+    <color name="charcoal">#161616</color>
+    <color name="ash">#E8E6E3</color>
+</resources>

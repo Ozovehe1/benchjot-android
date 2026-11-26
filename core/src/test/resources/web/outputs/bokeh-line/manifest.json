@@ -1,0 +1,15 @@
+{
+ "items": [
+  {
+   "files": {
+    "json": "0.json"
+   },
+   "kind": "chart",
+   "lib": "bokeh",
+   "title": "Loss",
+   "version": "3.10.1"
+  }
+ ],
+ "notes": [],
+ "version": 1
+}

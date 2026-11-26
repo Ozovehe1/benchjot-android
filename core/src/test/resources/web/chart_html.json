@@ -1,0 +1,23 @@
+[
+  {
+    "lib": "plotly",
+    "version": "6.0.0",
+    "spec": "{\"data\":[{\"type\":\"scatter\",\"x\":[1,2],\"y\":[3,4]}],\"layout\":{\"title\":\"</script><!-- x\"}}",
+    "title": "Orbit <1> & \"two\"",
+    "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Orbit &lt;1&gt; &amp; &quot;two&quot;</title>\n<style>html,body{margin:0;height:100%;font-family:system-ui,sans-serif}#chart{width:100%;height:100vh}</style>\n<script src=\"https://cdn.plot.ly/plotly-4.1.1.min.js\"></script>\n</head>\n<body>\n<div id=\"chart\"></div>\n<script>\nconst spec = {\"data\":[{\"type\":\"scatter\",\"x\":[1,2],\"y\":[3,4]}],\"layout\":{\"title\":\"\\u003c/script>\\u003c!-- x\"}};\nconst el = document.getElementById(\"chart\");\nPlotly.newPlot(el, { data: spec.data || [], layout: spec.layout || {}, frames: spec.frames || [], config: { responsive: true, displaylogo: false } });\n</script>\n</body>\n</html>\n"
+  },
+  {
+    "lib": "vega-lite",
+    "version": "5.0",
+    "spec": "{\"mark\":\"bar\",\"data\":{\"values\":[{\"a\":1}]}}",
+    "title": "",
+    "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Chart</title>\n<style>html,body{margin:0;height:100%;font-family:system-ui,sans-serif}#chart{width:100%;height:100vh}</style>\n<script src=\"https://cdn.jsdelivr.net/npm/vega@6\"></script>\n<script src=\"https://cdn.jsdelivr.net/npm/vega-lite@6\"></script>\n<script src=\"https://cdn.jsdelivr.net/npm/vega-embed@7\"></script>\n</head>\n<body>\n<div id=\"chart\"></div>\n<script>\nconst spec = {\"mark\":\"bar\",\"data\":{\"values\":[{\"a\":1}]}};\nconst el = document.getElementById(\"chart\");\nvegaEmbed(el, spec, { actions: false });\n</script>\n</body>\n</html>\n"
+  },
+  {
+    "lib": "bokeh",
+    "version": "3.6.2.dev1",
+    "spec": "{\"target_id\":null,\"root_id\":\"x\",\"doc\":{\"roots\":[]}}",
+    "title": "B",
+    "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>B</title>\n<style>html,body{margin:0;height:100%;font-family:system-ui,sans-serif}#chart{width:100%;height:100vh}</style>\n<script src=\"https://cdn.bokeh.org/bokeh/release/bokeh-3.6.2.1.min.js\"></script>\n</head>\n<body>\n<div id=\"chart\"></div>\n<script>\nconst spec = {\"target_id\":null,\"root_id\":\"x\",\"doc\":{\"roots\":[]}};\nconst el = document.getElementById(\"chart\");\nBokeh.embed.embed_item(spec, \"chart\");\n</script>\n</body>\n</html>\n"
+  }
+]

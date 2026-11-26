@@ -1,0 +1,236 @@
+[
+  {
+    "name": "earlier today",
+    "then": [
+      2026,
+      11,
+      5,
+      0,
+      1
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      23,
+      0
+    ],
+    "group": "Today"
+  },
+  {
+    "name": "in the future (clock skew) is today",
+    "then": [
+      2026,
+      11,
+      7,
+      10,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      10,
+      0
+    ],
+    "group": "Today"
+  },
+  {
+    "name": "just before midnight is yesterday",
+    "then": [
+      2026,
+      11,
+      4,
+      23,
+      59
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      0,
+      0
+    ],
+    "group": "Yesterday"
+  },
+  {
+    "name": "two days back",
+    "then": [
+      2026,
+      11,
+      3,
+      12,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "Previous 7 days"
+  },
+  {
+    "name": "seven days back",
+    "then": [
+      2026,
+      10,
+      29,
+      12,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "Previous 7 days"
+  },
+  {
+    "name": "eight days back",
+    "then": [
+      2026,
+      10,
+      28,
+      12,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "Previous 30 days"
+  },
+  {
+    "name": "thirty days back",
+    "then": [
+      2026,
+      10,
+      6,
+      12,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "Previous 30 days"
+  },
+  {
+    "name": "thirty-one days back is its month",
+    "then": [
+      2026,
+      10,
+      5,
+      12,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "October"
+  },
+  {
+    "name": "earlier this year",
+    "then": [
+      2026,
+      1,
+      2,
+      9,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "January"
+  },
+  {
+    "name": "last year is its year",
+    "then": [
+      2025,
+      11,
+      3,
+      9,
+      0
+    ],
+    "now": [
+      2026,
+      11,
+      5,
+      9,
+      0
+    ],
+    "group": "2025"
+  },
+  {
+    "name": "new year's eve seen on new year's day",
+    "then": [
+      2025,
+      12,
+      31,
+      23,
+      30
+    ],
+    "now": [
+      2026,
+      1,
+      1,
+      0,
+      10
+    ],
+    "group": "Yesterday"
+  },
+  {
+    "name": "across the new year, within 30 days",
+    "then": [
+      2025,
+      12,
+      10,
+      10,
+      0
+    ],
+    "now": [
+      2026,
+      1,
+      2,
+      10,
+      0
+    ],
+    "group": "Previous 30 days"
+  },
+  {
+    "name": "leap day",
+    "then": [
+      2028,
+      2,
+      29,
+      10,
+      0
+    ],
+    "now": [
+      2028,
+      3,
+      1,
+      10,
+      0
+    ],
+    "group": "Yesterday"
+  }
+]

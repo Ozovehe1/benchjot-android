@@ -1,0 +1,18 @@
+{
+ "items": [
+  {
+   "files": {
+    "mpl": "0.mpl",
+    "png": "0.png"
+   },
+   "height": 0,
+   "kind": "image",
+   "matplotlib": "3.11.2",
+   "source": "matplotlib",
+   "title": "Training loss",
+   "width": 0
+  }
+ ],
+ "notes": [],
+ "version": 1
+}

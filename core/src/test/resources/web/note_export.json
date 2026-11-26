@@ -1,0 +1,168 @@
+{
+  "note": {
+    "title": "Does warmup help? (v2) — été",
+    "body": "Hypothesis: [[Baseline run|abc]] beats [[Other]].\n\n- a\n- b",
+    "outcome": "success",
+    "exportedAt": "2026-11-19T10:00:00.000Z",
+    "cells": [
+      {
+        "filename": "train.py",
+        "language": "python",
+        "code": "print(1)\n",
+        "noteBefore": "Expect 1.",
+        "noteAfter": "Got [[it]].",
+        "run": {
+          "outcome": "ok",
+          "stdout": "1\n100%|██████████| 9.91M/9.91M [00:00<00:00, 12.5MB/s]\nacc 0.97\n",
+          "stderr": "[Benchjot] Ran on a T4 GPU.\n[Benchjot] Server ready in 26 s; your code ran for 4 s.\nwarn: slow\n",
+          "error_line": null,
+          "line": null,
+          "ms": 30000,
+          "where": "server",
+          "code_hash": "h",
+          "ran_at": "2026-11-19T09:00:00.000Z",
+          "outputs": {
+            "dir": "d",
+            "items": [
+              {
+                "kind": "table",
+                "title": "",
+                "columns": [
+                  "a",
+                  "b"
+                ],
+                "index_columns": 0,
+                "rows": [
+                  [
+                    1,
+                    "x|y"
+                  ],
+                  [
+                    2.5,
+                    null
+                  ]
+                ],
+                "total_rows": 3,
+                "total_columns": 2,
+                "files": {
+                  "csv": "0.csv"
+                }
+              },
+              {
+                "kind": "image",
+                "source": "matplotlib",
+                "title": "Loss",
+                "width": 10,
+                "height": 10,
+                "files": {
+                  "png": "1.png",
+                  "mpl": "1.mpl",
+                  "pdf": "1.pdf"
+                }
+              },
+              {
+                "kind": "chart",
+                "lib": "plotly",
+                "version": "6.0.0",
+                "title": "Orbit",
+                "files": {
+                  "json": "2.json",
+                  "png": "2.png"
+                }
+              }
+            ]
+          }
+        },
+        "files": {
+          "0.csv": "YSxiCjEseHx5Cg==",
+          "1.png": "iVBORw0KGgoAAQL6",
+          "1.mpl": "iVBORw0KGgoAAQL6",
+          "1.pdf": "JVBERi0xLjQ=",
+          "2.json": "eyJkYXRhIjpbeyJ4IjpbMV19XSwibGF5b3V0Ijp7fX0=",
+          "2.png": "iVBORw0KGgoAAQL6"
+        }
+      },
+      {
+        "filename": "",
+        "language": "r",
+        "code": "x <- 1\nprint(x)",
+        "noteBefore": "",
+        "noteAfter": "",
+        "run": {
+          "outcome": "error",
+          "stdout": "",
+          "stderr": "Error: boom\n",
+          "error_line": "Error: boom",
+          "line": 2,
+          "ms": 1234,
+          "where": "server",
+          "code_hash": "h",
+          "ran_at": "2026-11-19T09:00:00.000Z"
+        },
+        "files": {}
+      },
+      {
+        "filename": "b.py",
+        "language": "python",
+        "code": "1/0",
+        "noteBefore": "",
+        "noteAfter": "",
+        "run": {
+          "outcome": "error",
+          "stdout": "",
+          "stderr": "Traceback (most recent call last):\n  File \"<exec>\", line 1\nZeroDivisionError: division by zero\n",
+          "error_line": "ZeroDivisionError: division by zero",
+          "line": 1,
+          "ms": 12,
+          "where": "browser",
+          "code_hash": "h",
+          "ran_at": "2026-11-19T09:00:00.000Z"
+        },
+        "files": {}
+      },
+      {
+        "filename": "empty.py",
+        "language": "python",
+        "code": "",
+        "noteBefore": "",
+        "noteAfter": "",
+        "run": null,
+        "files": {}
+      }
+    ]
+  },
+  "base": "Does-warmup-help-v2-ete",
+  "ipynb": "{\n \"nbformat\": 4,\n \"nbformat_minor\": 5,\n \"metadata\": {\n  \"kernelspec\": {\n   \"name\": \"python3\",\n   \"display_name\": \"Python 3\",\n   \"language\": \"python\"\n  },\n  \"language_info\": {\n   \"name\": \"python\"\n  },\n  \"benchjot\": {\n   \"title\": \"Does warmup help? (v2) — été\",\n   \"outcome\": \"success\",\n   \"exported_at\": \"2026-11-19T10:00:00.000Z\"\n  }\n },\n \"cells\": [\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"bj-001\",\n   \"metadata\": {},\n   \"source\": [\n    \"# Does warmup help? (v2) — été\\n\",\n    \"\\n\",\n    \"**Outcome:** Successful\\n\",\n    \"\\n\",\n    \"Hypothesis: Baseline run beats Other.\\n\",\n    \"\\n\",\n    \"- a\\n\",\n    \"- b\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"bj-002\",\n   \"metadata\": {},\n   \"source\": [\n    \"**Before run**\\n\",\n    \"\\n\",\n    \"Expect 1.\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"bj-003\",\n   \"metadata\": {\n    \"benchjot\": {\n     \"filename\": \"train.py\",\n     \"run\": \"Ran on a T4 GPU · 4 s\"\n    }\n   },\n   \"execution_count\": null,\n   \"source\": [\n    \"print(1)\\n\"\n   ],\n   \"outputs\": [\n    {\n     \"output_type\": \"stream\",\n     \"name\": \"stdout\",\n     \"text\": [\n      \"1\\n\",\n      \"acc 0.97\\n\"\n     ]\n    },\n    {\n     \"output_type\": \"stream\",\n     \"name\": \"stderr\",\n     \"text\": [\n      \"warn: slow\\n\"\n     ]\n    },\n    {\n     \"output_type\": \"display_data\",\n     \"data\": {\n      \"text/html\": [\n       \"<table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x|y</td></tr><tr><td>2.5</td><td></td></tr></tbody></table><p class=\\\"more\\\">First 2 of 3 rows.</p>\"\n      ],\n      \"text/plain\": [\n       \"a,b\\n\",\n       \"1,x|y\\n\",\n       \"2.5,\\n\"\n      ]\n     },\n     \"metadata\": {}\n    },\n    {\n     \"output_type\": \"display_data\",\n     \"data\": {\n      \"image/png\": \"iVBORw0KGgoAAQL6\",\n      \"text/plain\": [\n       \"Figure: Loss\"\n      ]\n     },\n     \"metadata\": {}\n    },\n    {\n     \"output_type\": \"display_data\",\n     \"data\": {\n      \"application/vnd.plotly.v1+json\": {\n       \"data\": [\n        {\n         \"x\": [\n          1\n         ]\n        }\n       ],\n       \"layout\": {}\n      },\n      \"image/png\": \"iVBORw0KGgoAAQL6\",\n      \"text/plain\": [\n       \"Plotly chart: Orbit\"\n      ]\n     },\n     \"metadata\": {}\n    }\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"bj-004\",\n   \"metadata\": {},\n   \"source\": [\n    \"**After run**\\n\",\n    \"\\n\",\n    \"Got it.\"\n   ]\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"bj-005\",\n   \"metadata\": {},\n   \"source\": [\n    \"**R** (R)\\n\",\n    \"\\n\",\n    \"```r\\n\",\n    \"x <- 1\\n\",\n    \"print(x)\\n\",\n    \"```\\n\",\n    \"\\n\",\n    \"Output:\\n\",\n    \"\\n\",\n    \"```text\\n\",\n    \"Error: boom\\n\",\n    \"```\"\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"bj-006\",\n   \"metadata\": {\n    \"benchjot\": {\n     \"filename\": \"b.py\",\n     \"run\": \"Ran in the browser · 0.01 s\"\n    }\n   },\n   \"execution_count\": null,\n   \"source\": [\n    \"1/0\"\n   ],\n   \"outputs\": [\n    {\n     \"output_type\": \"error\",\n     \"ename\": \"ZeroDivisionError\",\n     \"evalue\": \"division by zero\",\n     \"traceback\": [\n      \"Traceback (most recent call last):\",\n      \"  File \\\"<exec>\\\", line 1\",\n      \"ZeroDivisionError: division by zero\"\n     ]\n    }\n   ]\n  },\n  {\n   \"cell_type\": \"code\",\n   \"id\": \"bj-007\",\n   \"metadata\": {\n    \"benchjot\": {\n     \"filename\": \"empty.py\"\n    }\n   },\n   \"execution_count\": null,\n   \"source\": [],\n   \"outputs\": []\n  },\n  {\n   \"cell_type\": \"markdown\",\n   \"id\": \"bj-008\",\n   \"metadata\": {},\n   \"source\": [\n    \"_Exported from Benchjot on 2026-11-19._\"\n   ]\n  }\n ]\n}\n",
+  "html": "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Does warmup help? (v2) — été</title>\n<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css\">\n<style>\n:root { color-scheme: light; --fg: #1a1a19; --muted: #5f5e5a; --line: #e2e1dc; --tint: #f4f3ef; }\n* { box-sizing: border-box; }\nbody { margin: 0; background: #fff; color: var(--fg); font: 16px/1.6 system-ui, -apple-system, \"Segoe UI\", sans-serif; }\nmain { max-width: 820px; margin: 0 auto; padding: 40px 20px 64px; }\nh1 { font-size: 30px; line-height: 1.2; margin: 0 0 8px; }\n.meta { color: var(--muted); font-size: 14px; margin: 0 0 24px; }\n.cell { border-top: 1px solid var(--line); padding: 20px 0; }\n.label { font: 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }\n.file { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); margin: 14px 0 6px; }\npre { background: var(--tint); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; }\npre.out { background: #fff; border: 1px solid var(--line); }\npre.err { border-color: #e3b7b3; }\nfigure { margin: 14px 0; }\nfigure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; }\nfigcaption, .more { color: var(--muted); font-size: 13px; margin-top: 6px; }\ntable { border-collapse: collapse; font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; display: block; overflow-x: auto; }\nth, td { border-bottom: 1px solid var(--line); padding: 4px 10px; text-align: left; white-space: nowrap; }\nth { color: var(--muted); font-weight: 500; }\n.body p:first-child { margin-top: 0; }\nfooter { color: var(--muted); font-size: 13px; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 24px; }\n@media print { main { padding: 0; } pre { white-space: pre-wrap; } .cell { break-inside: avoid-page; } }\n</style>\n</head>\n<body>\n<main>\n<h1>Does warmup help? (v2) — été</h1>\n<p class=\"meta\">Outcome: Successful</p>\n<div class=\"body\"><p>Hypothesis: Baseline run beats Other.\n\n- a\n- b</p></div>\n<section class=\"cell\"><p class=\"label\">Before run</p><div class=\"body\"><p>Expect 1.</p></div>\n<p class=\"file\">train.py · Python</p><pre><code>print(1)\n</code></pre>\n<pre class=\"out\">1\nacc 0.97\nwarn: slow</pre>\n<p class=\"more\">Ran on a T4 GPU · 4 s</p>\n<figure><table><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x|y</td></tr><tr><td>2.5</td><td></td></tr></tbody></table><p class=\"more\">First 2 of 3 rows.</p></figure>\n<figure><img src=\"data:image/png;base64,iVBORw0KGgoAAQL6\" alt=\"Figure · Loss\"><figcaption>Figure · Loss</figcaption></figure>\n<figure><img src=\"data:image/png;base64,iVBORw0KGgoAAQL6\" alt=\"Plotly chart · Orbit\"><figcaption>Plotly chart · Orbit</figcaption></figure>\n<p class=\"label\">After run</p><div class=\"body\"><p>Got it.</p></div></section>\n<section class=\"cell\"><p class=\"file\">code · R</p><pre><code>x &lt;- 1\nprint(x)</code></pre>\n<pre class=\"out err\">Error: boom</pre>\n<p class=\"more\">Ran on the server's CPU · 1.23 s</p></section>\n<section class=\"cell\"><p class=\"file\">b.py · Python</p><pre><code>1/0</code></pre>\n<pre class=\"out err\">Traceback (most recent call last):\n  File &quot;&lt;exec&gt;&quot;, line 1\nZeroDivisionError: division by zero</pre>\n<p class=\"more\">Ran in the browser · 0.01 s</p></section>\n<section class=\"cell\"><p class=\"file\">empty.py · Python</p><pre><code></code></pre></section>\n<footer>Exported from Benchjot on 2026-11-19.</footer>\n</main>\n</body>\n</html>\n",
+  "md": [
+    {
+      "name": "note.md",
+      "data": "IyBEb2VzIHdhcm11cCBoZWxwPyAodjIpIOKAlCDDqXTDqQoKKipPdXRjb21lOioqIFN1Y2Nlc3NmdWwKCkh5cG90aGVzaXM6IEJhc2VsaW5lIHJ1biBiZWF0cyBPdGhlci4KCi0gYQotIGIKCiMjIHRyYWluLnB5CgoqKkJlZm9yZSBydW4qKgoKRXhwZWN0IDEuCgpgYGBweXRob24KcHJpbnQoMSkKYGBgCgpPdXRwdXQ6CgpgYGB0ZXh0CjEKYWNjIDAuOTcKYGBgCgpfUmFuIG9uIGEgVDQgR1BVIMK3IDQgc18KCnwgYSB8IGIgfAp8IC0tLSB8IC0tLSB8CnwgMSB8IHhcfHkgfAp8IDIuNSB8ICB8CgpfRmlyc3QgMiBvZiAzIHJvd3MuXwoKW1RhYmxlIMK3IDMgw5cgMiBhcyBDU1ZdKGZpbGVzL2NlbGwxLTEuY3N2KQoKIVtGaWd1cmU6IExvc3NdKGZpbGVzL2NlbGwxLTIucG5nKQoKIVtQbG90bHkgY2hhcnQ6IE9yYml0XShmaWxlcy9jZWxsMS0zLnBuZykKCioqQWZ0ZXIgcnVuKioKCkdvdCBpdC4KCiMjIENlbGwgMgoKYGBgcgp4IDwtIDEKcHJpbnQoeCkKYGBgCgpPdXRwdXQ6CgpgYGB0ZXh0CkVycm9yOiBib29tCmBgYAoKX1JhbiBvbiB0aGUgc2VydmVyJ3MgQ1BVIMK3IDEuMjMgc18KCiMjIGIucHkKCmBgYHB5dGhvbgoxLzAKYGBgCgpPdXRwdXQ6CgpgYGB0ZXh0ClRyYWNlYmFjayAobW9zdCByZWNlbnQgY2FsbCBsYXN0KToKICBGaWxlICI8ZXhlYz4iLCBsaW5lIDEKWmVyb0RpdmlzaW9uRXJyb3I6IGRpdmlzaW9uIGJ5IHplcm8KYGBgCgpfUmFuIGluIHRoZSBicm93c2VyIMK3IDAuMDEgc18KCiMjIGVtcHR5LnB5CgpgYGBweXRob24KCmBgYAoKLS0tCgpfRXhwb3J0ZWQgZnJvbSBCZW5jaGpvdCBvbiAyMDI2LTExLTE5Ll8K"
+    },
+    {
+      "name": "files/cell1-1.csv",
+      "data": "YSxiCjEseHx5Cg=="
+    },
+    {
+      "name": "files/cell1-2.png",
+      "data": "iVBORw0KGgoAAQL6"
+    },
+    {
+      "name": "files/cell1-2.pdf",
+      "data": "JVBERi0xLjQ="
+    },
+    {
+      "name": "files/cell1-3.png",
+      "data": "iVBORw0KGgoAAQL6"
+    },
+    {
+      "name": "files/cell1-3.json",
+      "data": "eyJkYXRhIjpbeyJ4IjpbMV19XSwibGF5b3V0Ijp7fX0="
+    }
+  ],
+  "summaries": [
+    "Ran on a T4 GPU · 4 s",
+    "Ran on the server's CPU · 1.23 s",
+    "Ran in the browser · 0.01 s"
+  ]
+}
